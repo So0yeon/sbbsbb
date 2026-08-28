@@ -26,6 +26,7 @@ var ATLAS_CREDITS_PHOTOS = [
   { file:"ganggamchan.jpg", item:"ganggamchan", orig:"hb_65844808", author:"War Memorial of Korea Open Archives", license:"KOGL Type 1", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"ganghwa-dolmen.jpg", item:"ganghwa-dolmen", orig:"hb_33610823", author:"ChongDae", license:"CC BY-SA 3.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"ganghwa-treaty.jpg", item:"ganghwa-treaty", orig:"hb_25966186", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
+  { file:"garakbakwi.jpg", item:"ganseok", orig:"가락바퀴 (신석기 시대)", author:"국립중앙박물관", license:"공공누리 제1유형", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"gaya-iron.jpg", item:"gaya-iron", orig:"hb_13193622", author:"Gary Lee Todd, Ph.D.", license:"CC0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"geumdong.jpg", item:"geumdong", orig:"hb_71497777", author:"Gary Todd from Xinzheng, China", license:"CC0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"geumgwan.jpg", item:"geumgwan", orig:"hb_54725302", author:"Gary Todd", license:"CC0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },

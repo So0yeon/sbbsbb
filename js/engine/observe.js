@@ -162,10 +162,33 @@ export function runObserve(spec, host, done){
   stage.addEventListener('pointerup', endPinch);
   stage.addEventListener('pointercancel', endPinch);
 
-  /* ── 관찰 지점 찾기 ────────────────────────────────────────── */
+  /* ── 관찰 지점 찾기 ──────────────────────────────────────────
+     좌표는 자료(사진·그림) 기준으로 적는다.
+
+     틀은 정사각형인데 사진은 그렇지 않다. object-fit:contain 이라
+     사진은 틀 안에서 위아래(또는 좌우)에 여백을 두고 놓인다.
+     그 여백을 셈에 넣지 않으면, 그림에 맞춰 찍은 자리가 사진에서는
+     어긋난다. 여기서 자료가 실제로 그려진 네모를 구해 옮겨 준다. */
   function markHost(side){
-    const p = host.querySelector(`.ob-plate[data-side="${side}"] .ob-marks`);
-    return p;
+    return host.querySelector(`.ob-plate[data-side="${side}"] .ob-marks`);
+  }
+
+  /** 틀 안에서 자료가 실제로 차지하는 네모 (틀 크기에 대한 비율 0~1) */
+  function fitBox(pl){
+    const el = pl.querySelector('.ob-img, .ob-art');
+    const r = pl.getBoundingClientRect();
+    if (!el || !r.width || !r.height) return { x:0, y:0, w:1, h:1 };
+
+    // 사진은 실제 화소 비율, 그림(SVG)은 viewBox 비율
+    let nw = el.naturalWidth || 0, nh = el.naturalHeight || 0;
+    if (!nw && el.viewBox && el.viewBox.baseVal){
+      nw = el.viewBox.baseVal.width; nh = el.viewBox.baseVal.height;
+    }
+    if (!nw || !nh) return { x:0, y:0, w:1, h:1 };
+
+    const s = Math.min(r.width / nw, r.height / nh);       // contain
+    const w = nw * s / r.width, h = nh * s / r.height;
+    return { x: (1 - w) / 2, y: (1 - h) / 2, w, h };
   }
 
   function paintProgress(){
@@ -183,12 +206,14 @@ export function runObserve(spec, host, done){
   }
 
   function reveal(p){
+    const pl = host.querySelector(`.ob-plate[data-side="${p.side}"]`);
     const mh = markHost(p.side);
-    if (mh){
+    if (mh && pl){
+      const b = fitBox(pl);
       const dot = document.createElement('span');
       dot.className = 'ob-mark';
-      dot.style.left = p.at[0] + '%';
-      dot.style.top  = p.at[1] + '%';
+      dot.style.left = ((b.x + p.at[0] / 100 * b.w) * 100).toFixed(2) + '%';
+      dot.style.top  = ((b.y + p.at[1] / 100 * b.h) * 100).toFixed(2) + '%';
       dot.innerHTML = icon('check', { size:12 });
       mh.appendChild(dot);
     }
@@ -201,10 +226,13 @@ export function runObserve(spec, host, done){
       if (finished) return;
       const r = pl.getBoundingClientRect();
       const side = +pl.dataset.side;
-      // 확대·이동을 되돌려 자료 안의 좌표(%)로 바꾼다
-      const cx = ((e.clientX - r.left) / r.width  - .5) / zoom + .5;
-      const cy = ((e.clientY - r.top)  / r.height - .5) / zoom + .5;
-      const x = cx * 100 - panX * 0, y = cy * 100 - panY * 0;
+      // 확대를 되돌려 틀 안의 비율로, 다시 자료 안의 비율(%)로 바꾼다
+      const fx = ((e.clientX - r.left) / r.width  - .5) / zoom + .5;
+      const fy = ((e.clientY - r.top)  / r.height - .5) / zoom + .5;
+      const b = fitBox(pl);
+      if (fx < b.x || fx > b.x + b.w || fy < b.y || fy > b.y + b.h) return;   // 여백은 자료가 아니다
+      const x = (fx - b.x) / b.w * 100;
+      const y = (fy - b.y) / b.h * 100;
 
       const hit = points.find(p => !p.found && p.side === side &&
         Math.hypot(p.at[0] - x, p.at[1] - y) <= p.r);
@@ -229,13 +257,15 @@ export function runObserve(spec, host, done){
     if (!rest.length) return;
     hinted = true;
     const p = rest[0];
+    const pl = host.querySelector(`.ob-plate[data-side="${p.side}"]`);
     const mh = markHost(p.side);
-    if (mh){
+    if (mh && pl){
+      const b = fitBox(pl);
       const g = document.createElement('span');
       g.className = 'ob-glow';
-      g.style.left = p.at[0] + '%';
-      g.style.top  = p.at[1] + '%';
-      g.style.width = g.style.height = (p.r * 2.6) + '%';
+      g.style.left = ((b.x + p.at[0] / 100 * b.w) * 100).toFixed(2) + '%';
+      g.style.top  = ((b.y + p.at[1] / 100 * b.h) * 100).toFixed(2) + '%';
+      g.style.width = g.style.height = (p.r * 2.6 * b.w) + '%';
       mh.appendChild(g);
     }
     helpEl.textContent = '이쯤을 보시오. 무언가 있소.';

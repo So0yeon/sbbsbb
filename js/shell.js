@@ -588,6 +588,62 @@
                   return;
                 }
 
+                if (STOP === 'walk') {
+                  /* 미션 첫 걸음이 실제로 넘어가는지 — 걸어 보고 확인한다 */
+                  try { localStorage.removeItem('neolithicChain_v1'); } catch (e) {}
+                  window.AtlasExplore.switchWorld('neolithic');
+                  setTimeout(function () {
+                    var g9 = document.getElementById('exStoryGo'); if (g9) g9.click();
+                    setTimeout(function () {
+                      say('저절로열림', document.getElementById('mqModal').classList.contains('on') ? 'O' : 'X');
+                      say('첫걸음', (document.querySelector('.mq-goal') || {}).textContent || '없음');
+
+                      // 「나가 보겠소」 를 누르고 실제로 걸어 본다
+                      var go = document.querySelector('#mqCard .mq-next');
+                      say('첫단추', go ? go.textContent.trim() : '없음');
+                      if (go) go.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                      say('창닫힘', document.getElementById('mqModal').classList.contains('on') ? 'X' : 'O');
+
+                      var A3w = window.__atlas3d, STw = A3w && A3w.ST;
+                      if (STw && STw.player) {
+                        STw.player.position.x += 14;      // 여섯 걸음보다 멀리
+                        if (A3w.tick) A3w.tick();
+                      }
+                      say('걸은뒤걸음', '');
+                      // 다시 열어 무엇이 보이는지
+                      document.getElementById('mqBtn').click();
+                      setTimeout(function () {
+                        say('다시연화면',
+                          (document.querySelector('.mq-after-title') || {}).textContent ||
+                          (document.querySelector('.mq-goal') || {}).textContent || '없음');
+
+                        // 정리 카드면 넘겨 다음 걸음까지 본다
+                        var nx = document.querySelector('#mqCard .mq-next');
+                        if (nx) nx.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                        setTimeout(function () {
+                          say('다음걸음', (document.querySelector('.mq-goal') || {}).textContent || '없음');
+                          say('진행표시', (document.querySelector('.mq-seq') || {}).textContent || '');
+
+                          /* 시대를 다시 열면 저절로 뜨지 않아야 한다 */
+                          var mqx2 = document.getElementById('mqX');
+                          if (mqx2 && document.getElementById('mqModal').classList.contains('on')) mqx2.click();
+                          window.AtlasExplore.switchWorld('bronze');
+                          setTimeout(function () {
+                            window.AtlasExplore.switchWorld('neolithic');
+                            var gg = document.getElementById('exStoryGo'); if (gg) gg.click();
+                            setTimeout(function () {
+                              say('두번째진입', document.getElementById('mqModal').classList.contains('on')
+                                    ? '또 뜸(틀림)' : '안 뜸');
+                              console.log('[SELFTEST] ' + JSON.stringify(out));
+                            }, 500);
+                          }, 500);
+                        }, 350);
+                      }, 350);
+                    }, 800);
+                  }, 900);
+                  return;
+                }
+
                 if (STOP === 'flash') {
                   /* 임무 목록에서 한 곳을 고르고, 세상에 세워진 표시등을 남겨 둔다
                      (화면을 찍어 눈으로 확인하기 위한 갈래) */
@@ -648,7 +704,18 @@
                       say('이식한놀이틀', host ? '있음' : '없음');
                       say('놀이속', host ? host.querySelector('.mg') ? '그려짐' : '빔' : '없음');
                       say('숫돌그림', document.querySelector('.neo-host .neo-svg') ? '있음' : '없음');
-                      say('안내문', (document.querySelector('.neo-host .mg-intro') || {}).textContent.slice(0, 28) || '');
+                      var introEl = document.querySelector('.neo-host .mg-intro');
+                      say('안내문', introEl ? introEl.textContent.slice(0, 28) : '없음');
+
+                      /* 관찰 걸음이면 자료와 출처를 본다 */
+                      var obImg = document.querySelector('.ob-plate .ob-img');
+                      if (obImg || document.querySelector('.ob-plate')) {
+                        say('관찰자료', obImg ? '사진 ' + obImg.getAttribute('src')
+                                             : (document.querySelector('.ob-plate .ob-art') ? '그림' : '없음'));
+                        say('출처줄', (document.querySelector('.ob-credit') || {}).textContent || '없음');
+                        say('지점미리표시', document.querySelectorAll('.ob-mark').length);
+                        say('이름미리공개', document.querySelector('.ob-rv-name') ? '새어나감' : '감춰짐');
+                      }
                       var EMO3 = /(?![©®™])\p{Extended_Pictographic}/u;
                       var n = 0, w2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), nd2;
                       while ((nd2 = w2.nextNode())) if (EMO3.test(nd2.nodeValue)) n++;

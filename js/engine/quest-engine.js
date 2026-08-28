@@ -40,8 +40,12 @@ let walkFrom = null;   // explore 걸음에서 '얼마나 걸었나'를 재는 �
 let pendingAfter = null;   // 창이 닫힌 채로 끝난 걸음의 정리 카드 — 다음에 열 때 보여 준다
 
 function blank(){
-  return { at:0, flags:{}, inventory:[], relations:{}, kept:[], observed:[], done:false };
+  return { at:0, flags:{}, inventory:[], relations:{}, kept:[], observed:[], done:false, opened:false };
 }
+
+/** 시대에 들어설 때 저절로 열어도 되는가 — 처음 한 번만 연다.
+    그 뒤에는 위쪽 「지금 할 일」 을 눌러야 열린다. */
+export function shouldAutoOpen(){ return !!chain && !S.done && !S.opened; }
 
 export function initQuestEngine(h){ hooks = h || {}; }
 
@@ -84,11 +88,16 @@ export function openChain(){
   if (scrim) scrim.classList.add('on');
   if (modal) modal.classList.add('on');
   pushPopup('mission', closeChain);
+  if (!S.opened){ S.opened = true; save(); }
   if (pendingAfter){ const a = pendingAfter; pendingAfter = null; showAfter(a); }
   else render();
 }
 
 export function closeChain(){
+  // 걸어야 하는 걸음이면, 창을 어떻게 닫든 그 자리부터 재기 시작한다
+  const st = step();
+  if (st && st.act === 'explore' && !st.target) startWalk(st);
+
   openNow = false;
   const scrim = document.getElementById('mqScrim');
   const modal = document.getElementById('mqModal');
@@ -212,17 +221,29 @@ function renderExplore(st, body){
     nextButton(body, '나가 보겠소 →', () => { walkFrom = null; closeChain(); });
     body.insertAdjacentHTML('beforeend',
       `<p class="mq-target">찾을 것 · ${esc(st.targetName || st.target)}</p>`);
-  } else {
-    // 걸어 다니기만 하면 되는 걸음
-    walkFrom = null;
-    nextButton(body, '나가 보겠소 →', () => {
-      const p = hooks.player && hooks.player();
-      walkFrom = p ? { x:p.x, z:p.z, need: st.walk || 8 } : null;
-      closeChain();
-    });
-    const now = walked();
-    if (now) nextButton(body, '둘러보았소 →', () => complete());
+    return;
   }
+
+  /* 걸어 다니기만 하면 되는 걸음.
+
+     예전에는 여기서 walkFrom 을 비웠다. 그래서 창을 다시 열 때마다
+     '어디서부터 걸었는지' 가 지워져, 아무리 걸어도 「둘러보았소」 가
+     나타나지 않고 첫 걸음에 갇혔다. 기준점은 걸음을 마칠 때만 비운다. */
+  if (walked()){
+    nextButton(body, st.doneLabel || '둘러보았소 →', () => { walkFrom = null; complete(); });
+    return;
+  }
+  nextButton(body, walkFrom ? '더 둘러보겠소 →' : '나가 보겠소 →', () => {
+    startWalk(st);
+    closeChain();
+  });
+}
+
+/** 이 걸음의 '걸은 거리' 재기를 시작한다 (이미 재고 있으면 그대로 둔다) */
+function startWalk(st){
+  if (walkFrom) return;
+  const p = hooks.player && hooks.player();
+  if (p) walkFrom = { x:p.x, z:p.z, need: st.walk || 8 };
 }
 function walked(){
   if (!walkFrom) return false;
@@ -238,8 +259,8 @@ export function tickChain(){
   if (!st || st.act !== 'explore' || st.target) return;
   if (walked()){
     walkFrom = null;
-    if (hooks.toast) hooks.toast('둘러보았소. 「지금 할 일」을 누르시오');
-    paintBadge(true);
+    complete();                       // 스스로 다음 걸음으로 넘어간다
+    if (hooks.toast) hooks.toast('지금 할 일을 하나 마쳤소');
   }
 }
 

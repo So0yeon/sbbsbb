@@ -24,6 +24,7 @@
 | `ganggamchan.jpg` | ganggamchan | `hb_65844808` | War Memorial of Korea Open Archives | KOGL Type 1 |
 | `ganghwa-dolmen.jpg` | ganghwa-dolmen | `hb_33610823` | ChongDae | CC BY-SA 3.0 |
 | `ganghwa-treaty.jpg` | ganghwa-treaty | `hb_25966186` | Unknown authorUnknown author | Public domain |
+| `garakbakwi.jpg` | ganseok | `가락바퀴 (신석기 시대)` | 국립중앙박물관 | 공공누리 제1유형 |
 | `gaya-iron.jpg` | gaya-iron | `hb_13193622` | Gary Lee Todd, Ph.D. | CC0 |
 | `geumdong.jpg` | geumdong | `hb_71497777` | Gary Todd from Xinzheng, China | CC0 |
 | `geumgwan.jpg` | geumgwan | `hb_54725302` | Gary Todd | CC0 |

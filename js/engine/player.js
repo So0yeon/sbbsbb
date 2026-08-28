@@ -17,6 +17,7 @@ import { anyOpen } from './popups.js';
 import { MASCOT } from './constants.js';
 
 const SPEED = 9;              // 초당 이동 거리
+const RUN_MULT = 1.85;        // Shift 를 누르고 있으면 이만큼 빨라진다
 const CAM_DIST = 13.5;
 const EYE_Y = 1.35;                        // 바라보는 높이 (아바타 가슴께)
 const FOLLOW_LIMIT = 25 * Math.PI / 180;   // 25도
@@ -172,6 +173,10 @@ export function bindInput(canvas, hooks){
   });
   window.addEventListener('keyup', e => keys.delete(keyId(e)));
 
+  // Shift 는 창을 벗어나면 놓은 것으로 친다 (계속 달리는 것을 막는다)
+  window.addEventListener('keydown', e => { if (e.key === 'Shift') running = true; });
+  window.addEventListener('keyup',   e => { if (e.key === 'Shift') running = false; });
+
   // 창을 벗어나면 누른 키를 모두 비운다 — 안 그러면 계속 걷는다 (§6-1)
   window.addEventListener('blur', clearKeys);
   document.addEventListener('visibilitychange', () => { if (document.hidden) clearKeys(); });
@@ -224,7 +229,13 @@ function touchGap(e){
   return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
 }
 
-export function clearKeys(){ keys.clear(); joy.x = 0; joy.z = 0; joy.active = false; }
+export function clearKeys(){ keys.clear(); joy.x = 0; joy.z = 0; joy.active = false; running = false; }
+
+/* 달리기 — Shift 를 누르고 있는 동안만.
+   키 목록(keys)에 넣지 않는 까닭은, Shift 는 방향키와 달리
+   '눌린 동안의 상태' 이지 '눌렀다' 는 사건이 아니기 때문이다. */
+let running = false;
+export function isRunning(){ return running; }
 
 function tryJump(){
   if (ST.jumpY > 0.01) return;
@@ -301,10 +312,15 @@ export function updatePlayer(dt){
   ST.moving = moving;
   setSpeed(Math.min(1, Math.hypot(fwd, strafe)));
 
+  // Shift 를 누르고 있으면 달린다 (요구: 이동 중 Shift = 달리기)
+  const run = running && !ST.questOpen && !ST.paused;
+  const speed = SPEED * (run ? RUN_MULT : 1);
+  setSpeed(Math.min(1, Math.hypot(fwd, strafe) * (run ? 1.6 : 1)));
+
   if (moving){
     _dir.set(dx, 0, dz).normalize();
-    const nx = p.position.x + _dir.x * SPEED * dt;
-    const nz = p.position.z + _dir.z * SPEED * dt;
+    const nx = p.position.x + _dir.x * speed * dt;
+    const nz = p.position.z + _dir.z * speed * dt;
     const r = Math.hypot(nx, nz);
     const lim = ST.BOUND;
     if (r <= lim){ p.position.x = nx; p.position.z = nz; }

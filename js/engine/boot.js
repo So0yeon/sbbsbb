@@ -20,7 +20,7 @@ import { icon } from './icons.js';
 import { pushPopup, popPopup } from './popups.js';
 import { resetAreaClaims } from './props.js';
 import { chainOf } from './chains.js';
-import { initQuestEngine, setChain, openChain, tickChain, hasChain, chainDone } from './quest-engine.js';
+import { initQuestEngine, setChain, openChain, closeChain, tickChain, shouldAutoOpen } from './quest-engine.js';
 import './neo-games.js';                      // 이식해 온 신석기 미니게임을 엔진 표에 올린다
 import { applyNeoMinis } from './neo-quest-minis.js';
 
@@ -115,6 +115,7 @@ export function switchWorld(id){
   closeQuest();
   hideEraComplete();
   hideNpcBubble();
+  closeChain();            // 앞 시대의 미션 창도 함께 닫는다
 
   loading(w.loading || '시간의 틈을 건너는 중…');
 
@@ -369,8 +370,9 @@ function bindChrome(){
     document.getElementById('exIntroStory').classList.remove('on');
     ST.paused = false;
     clearKeys();
-    // 미션이 있는 시대는 곧바로 첫 걸음으로 들어간다 (요청서 §3 빙의 연출)
-    if (hasChain() && !chainDone()) setTimeout(openChain, 260);
+    // 미션이 있는 시대는 처음 들어설 때 한 번만 저절로 열린다 (요청서 §3 빙의 연출).
+    // 그 뒤로는 위쪽 「지금 할 일」 을 눌러야 열린다.
+    if (shouldAutoOpen()) setTimeout(openChain, 260);
   };
   on('exStoryGo', startStory);
   on('exStoryX', startStory);

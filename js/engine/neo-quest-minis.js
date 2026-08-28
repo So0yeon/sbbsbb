@@ -68,12 +68,17 @@ export const NEO_QUEST_MINIS = {
    화면에는 "실물 사진이 아니라 그린 그림" 이라고 밝힌다.
 
    사진을 구하면 그 임무의 여기 한 줄을 지우고 자료에 img 를 넣으면 된다. */
+/* 출처가 확인된 사진이 있는 임무 — 그림보다 사진을 앞세운다.
+   국립중앙박물관 · 공공누리 제1유형 (assets/photos/CREDITS.md) */
+export const NEO_QUEST_IMG = {
+  'garak-yumul': ['garakbakwi.jpg'],
+  'garakbakwi':  ['garakbakwi.jpg']
+};
+
 export const NEO_QUEST_ART = {
   'gansingi':     'gan',        // 갈아서 만든 돌
-  'garak-yumul':  'garak',      // 가락바퀴
   'galdolgalpan': 'galdol',     // 갈돌과 갈판
   'nongsa':       'ssiat',      // 거둔 곡식
-  'garakbakwi':   'garak',      // 실 잣기
   'umjip':        'umjipteo',   // 움집터
   'umjip-yumul':  'umjipteo',
   'sinang':       'jedan',      // 기원을 올리던 자리
@@ -87,7 +92,9 @@ export function applyNeoMinis(quests){
     if (!q) return;
     const m = NEO_QUEST_MINIS[q.id];
     if (m) q.mini = m;
-    // 사진이 이미 있으면 그림을 얹지 않는다
+    // 사진이 있으면 사진을, 없으면 그림을 얹는다
+    const img = NEO_QUEST_IMG[q.id];
+    if (img && !(q.img && q.img.length)) q.img = img.slice();
     const a = NEO_QUEST_ART[q.id];
     if (a && !(q.img && q.img.length)) q.art = a;
   });
