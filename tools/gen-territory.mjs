@@ -146,11 +146,11 @@ let totalRaw = 0, totalPts = 0;
 
 for (const f of FRAMES) {
   const nations = [];
-  for (const [id, file] of f.use) {
+  for (const [id, file, as] of f.use) {
     const full = path.join(SRC, f.dir, file);
     if (!fs.existsSync(full)) { console.warn('  건너뜀 — 파일 없음:', file); continue; }
     const o = pathOf(full);
-    nations.push({ id, d: o.d });
+    nations.push({ id, d: o.d, as });
     used.add(id);
     totalRaw += o.rawPts; totalPts += o.pts;
     console.log(`  ${f.key.padEnd(4)} ${id.padEnd(9)} 조각 ${String(o.rings).padStart(4)}  ${String(o.rawPts).padStart(6)}점 → ${String(o.pts).padStart(5)}점  ${(o.d.length / 1024).toFixed(0)}KB`);
@@ -173,7 +173,7 @@ window.TERRITORY = {
   frames: [
 ${frames.map(f => `    { key:'${f.key}', century:${f.century}, label:'${f.label}', eras:${JSON.stringify(f.eras)}${f.still ? ', still:true' : ''},
       nations:[
-${f.nations.map(n => `        { id:'${n.id}', d:'${n.d}' }`).join(',\n')}
+${f.nations.map(n => `        { id:'${n.id}'${n.as ? `, as:'${n.as}'` : ''}, d:'${n.d}' }`).join(',\n')}
       ] }`).join(',\n')}
   ]
 };

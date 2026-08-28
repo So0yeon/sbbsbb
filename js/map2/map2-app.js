@@ -16,7 +16,8 @@
   var timer = null;       // 다음 세기 예약
   var frameIdx = -1;
   var eraId = null;
-  var queue = [];         // 이 시대에서 남은 프레임
+  var queue = [];         // 남은 장면 (시대를 넘어 이어집니다)
+  var playing = false;
 
   /* ── 움직임 ──────────────────────────────────────────────── */
   /* 윈도우에서 「애니메이션 효과」를 끄면 브라우저가 prefers-reduced-motion 으로 알려 줍니다.
@@ -338,14 +339,49 @@
     return out;
   }
 
-  function playEra(id, fresh) {
+  /* 재생은 시대에서 멈추지 않고 다음 시대로 이어집니다.
+     고조선 → 4 → 5 → 6 → 7 → 10 → 11 → 12 → 조선 이 한 줄로 흘러갑니다. */
+  function playFrom(i, fresh) {
     stopAnims();
+    playing = true;
+    queue = [];
+    for (var k = i; k < T.frames.length; k++) queue.push(k);
+    paintPlay();
+    stepAll(fresh);
+  }
+
+  function stepAll(fresh) {
+    var i = queue.shift();
+    if (i == null) { playing = false; paintPlay(); return; }
+    var f = T.frames[i];
+
+    /* 한 장면이 여러 시대에 걸치면(조선 전기~6·25) 지금 보고 있던 시대를 그대로 둡니다 */
+    var era = (eraId && f.eras.indexOf(eraId) >= 0) ? eraId : f.eras[0];
+    if (era !== eraId) { var had = !!view; eraId = era; fitTo(boxOfEra(era), had); }
+
+    showFrame(i, true, fresh);
+    if (queue.length) {
+      timer = setTimeout(function () { stepAll(false); }, (f.still ? 0 : motion.dur()) + 900);
+    } else {
+      playing = false;
+      paintPlay();
+    }
+  }
+
+  function stopPlay() {
+    stopAnims();
+    playing = false;
+    paintPlay();
+  }
+
+  function playEra(id, fresh) {
+    var list = framesOfEra(id);
     var had = !!view;
     eraId = id;
-    queue = framesOfEra(id);
-    fitTo(boxOfEra(id), had);
 
-    if (!queue.length) {              // 구석기·신석기 — 나라가 없던 때
+    if (!list.length) {              // 구석기·신석기 — 나라가 없던 때
+      stopPlay();
+      fitTo(boxOfEra(id), had);
       Object.keys(live).forEach(function (nid) {
         var o = live[nid];
         o.g.classList.add('going');
@@ -363,18 +399,16 @@
       paintChrome(null);
       return;
     }
-    step(fresh);
+
+    fitTo(boxOfEra(id), had);
+    playFrom(list[0], fresh);
   }
 
-  /* 시대 안에 세기가 여럿이면 (삼국 4→5→6, 고려 11→12) 이어서 흘러갑니다. */
-  function step(fresh) {
-    var i = queue.shift();
-    if (i == null) return;
-    showFrame(i, true, fresh);
-    if (queue.length) {
-      var wait = (T.frames[i].still ? 0 : motion.dur()) + 900;
-      timer = setTimeout(function () { step(false); }, wait);
-    }
+  function paintPlay() {
+    var b = $('pause');
+    if (!b) return;
+    b.textContent = playing ? '멈춤' : '이어보기';
+    b.classList.toggle('on', playing);
   }
 
   /* ── 화면 글씨 ───────────────────────────────────────────── */
@@ -428,7 +462,7 @@
       b.type = 'button';
       b.className = 'dot' + (i === frameIdx ? ' on' : '');
       b.textContent = f.label;
-      b.addEventListener('click', function () { stopAnims(); queue = []; showFrame(i, true); });
+      b.addEventListener('click', function () { stopPlay(); queue = []; showFrame(i, true); });
       wrap.appendChild(b);
     });
   }
@@ -503,7 +537,17 @@
     buildTrack();
     bindZoom();
 
-    $('replay').addEventListener('click', function () { playEra(eraId, true); });
+    $('replay').addEventListener('click', function () {   /* 고조선부터 조선까지 죽 */
+      eraId = T.frames[0].eras[0];
+      fitTo(boxOfEra(eraId), !!view);
+      playFrom(0, true);
+    });
+    $('pause').addEventListener('click', function () {
+      if (playing) { stopPlay(); return; }
+      var next = frameIdx + 1;
+      if (next >= T.frames.length) next = 0;
+      playFrom(next, next === 0);
+    });
 
     var q = new URLSearchParams(location.search);
     var m = q.get('motion');
@@ -526,8 +570,9 @@
 
     if (q.get('selftest')) { eraId = 'three'; selftest(); return; }
 
-    var want = q.get('era') || 'three';       // 처음에는 삼국시대 — 4→5→6세기가 이어집니다
+    var want = q.get('era') || 'three';       // 처음에는 삼국시대에서 시작해 끝까지 이어집니다
     playEra(eraOf(want) ? want : 'three');
+    paintPlay();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
