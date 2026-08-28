@@ -85,13 +85,13 @@
         } else {
           activeCats[b.dataset.k] = activeCats[b.dataset.k] ? 0 : 1;
         }
-        drawFilter(); drawList(); drawMarkers();
+        drawFilter(); drawList(); drawMarkers(); drawEraExtras();
       });
     });
     /* 「전체」는 켜져 있으면 모두 끄고, 아니면 모두 켭니다 */
     $('catAll').addEventListener('click', function () {
       activeCats = anyCat() ? { relic: 0, person: 0, culture: 0, event: 0, exchange: 0, life: 0 } : null;
-      drawFilter(); drawList(); drawMarkers();
+      drawFilter(); drawList(); drawMarkers(); drawEraExtras();
     });
   }
 
@@ -180,7 +180,10 @@
     if (!era) return;
     var upp = api.unitsPerPx();
 
-    (era.rel || []).forEach(function (r) {
+    /* 교류선은 '교류' 분류를 켰을 때만 보인다 (요구 5) — activeCats 가
+       null 이면 전체 보기이므로 그때도 보인다 */
+    var showRel = !activeCats || activeCats.exchange;
+    (showRel ? (era.rel || []) : []).forEach(function (r) {
       if (!r.from || !r.to) return;
       var x1 = p2x(r.from[1]), y1 = p2y(r.from[0]), x2 = p2x(r.to[1]), y2 = p2y(r.to[0]);
       var mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, b = r.bend || 0;
