@@ -168,6 +168,8 @@ export function updateMarkers(t){
     if (lit) u.aura.rotation.z -= 0.03;
   });
 
+  updateBeacons();          // 세상에 세운 표시등 (요구: 화면에서도 반짝이게)
+
   ST.activeNear = best;
   return best;
 }
@@ -201,6 +203,75 @@ function nowSec(){
   return ST.clock ? ST.clock.elapsedTime : (performance.now() / 1000);
 }
 
+/* ── 세상에 세우는 표시등 ─────────────────────────────────────
+   표지가 조금 커졌다 작아지는 것만으로는 멀리서 보이지 않는다.
+   빛기둥을 세우고 바닥에 고리를 퍼뜨려 어디인지 한눈에 알게 한다. */
+let beacons = [];
+
+function makeBeacon(color){
+  const g = new THREE.Group();
+
+  // 빛기둥 — 위로 갈수록 옅어진다
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(.5, 1.15, 11, 12, 1, true),
+    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:.3,
+                                  depthWrite:false, side:THREE.DoubleSide })
+  );
+  beam.position.y = 5.5;
+  g.add(beam);
+
+  // 바닥에서 퍼져 나가는 고리 둘 (엇갈려 퍼진다)
+  const rings = [0, .5].map(() => {
+    const r = new THREE.Mesh(
+      new THREE.TorusGeometry(1, .1, 8, 30),
+      new THREE.MeshBasicMaterial({ color, transparent:true, opacity:.9, depthWrite:false })
+    );
+    r.rotation.x = -Math.PI / 2;
+    r.position.y = .12;
+    g.add(r);
+    return r;
+  });
+
+  // 머리 위에서 도는 표 — 위에서 내려다볼 때도 보이게
+  const cap = new THREE.Mesh(
+    new THREE.TorusGeometry(1.5, .13, 8, 24),
+    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:.85, depthWrite:false })
+  );
+  cap.position.y = 3.4;
+  g.add(cap);
+
+  g.userData = { beam, rings, cap };
+  return g;
+}
+
+function clearBeacons(){
+  beacons.forEach(b => { if (ST.scene) ST.scene.remove(b); });
+  beacons = [];
+}
+
+/** 표시등을 자라게 한다 — updateMarkers 가 매 프레임 부른다 */
+function updateBeacons(){
+  if (!beacons.length) return;
+  if (!flashActive()){ clearBeacons(); return; }
+  const t = nowSec();
+  const life = Math.max(0, (flash.until - t) / FLASH_SEC);      // 1 → 0
+  const beat = flashBeat();
+
+  beacons.forEach(g => {
+    const u = g.userData;
+    u.beam.material.opacity = (.16 + beat * .30) * (0.35 + life * 0.65);
+    u.cap.rotation.z += 0.05;
+    u.cap.material.opacity = (.55 + beat * .45) * life;
+    u.rings.forEach((r, i) => {
+      // 0 → 1 로 퍼졌다가 처음으로 돌아간다. 둘이 엇갈리게 시작한다
+      const p = ((t * 0.85 + i * 0.5) % 1);
+      const s = 0.6 + p * 3.4;
+      r.scale.set(s, s, 1);
+      r.material.opacity = (1 - p) * 0.85 * life;
+    });
+  });
+}
+
 /** 그 임무가 있는 자리를 미니맵에 반짝여 준다. 자리가 없으면 false */
 export function flashQuest(q){
   if (!q) return false;
@@ -208,12 +279,17 @@ export function flashQuest(q){
   if (q.kind === 'find' && q.items) q.items.forEach(it => { if (it.pos) pts.push(it.pos); });
   else if (q.pos) pts.push(q.pos);
   if (!pts.length){ flash = null; return false; }
-  flash = {
-    id: q.id,                                   // 세상에서도 이 자리를 반짝이게 한다
-    pts,
-    color: q.kind === 'gate' ? '#6E9B94' : catColor(q.cat),
-    until: nowSec() + FLASH_SEC
-  };
+  const color = q.kind === 'gate' ? '#6E9B94' : catColor(q.cat);
+  flash = { id: q.id, pts, color, until: nowSec() + FLASH_SEC };
+
+  // 세상에도 표시등을 세운다 — 멀리서도 보이게
+  clearBeacons();
+  if (ST.scene) pts.forEach(p => {
+    const g = makeBeacon(color);
+    g.position.set(p.x, 0, p.z);
+    ST.scene.add(g);
+    beacons.push(g);
+  });
   return true;
 }
 
@@ -228,7 +304,7 @@ function isFlashed(u){
 /** 0 ↔ 1 로 오가는 숨결. 미니맵과 세상이 같은 박자로 뛴다 */
 function flashBeat(){ return (Math.sin(nowSec() * 6.6) + 1) / 2; }
 export function flashActive(){ return !!(flash && nowSec() < flash.until); }
-export function clearFlash(){ flash = null; }
+export function clearFlash(){ flash = null; clearBeacons(); }
 
 /* ── 미니맵 레이더 ───────────────────────────────────────────── */
 export function drawRadar(){

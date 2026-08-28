@@ -90,6 +90,66 @@ export function buildWater(x, z, w, d, rotY){
   return add(m);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   강 — 굽이치는 한 줄기
+
+   예전에는 넓은 네모 판 하나를 비스듬히 눕혀 강이라 했다.
+   신석기에서는 20 × 144 짜리 판이었다 — 강이라기보다 깔아 놓은 물이라,
+   세상 끝에서 솟는 땅에 잠겼다 드러났다 했다.
+
+   여기서는 가운데 선을 굽이치게 두고, 그 선을 따라 좌우로 벌려
+   폭이 조금씩 변하는 띠를 뜬다. 강처럼 보이고, 땅과 다투지 않는다.
+   ══════════════════════════════════════════════════════════════ */
+export function buildRiver(cx, cz, opts){
+  const o = opts || {};
+  const b = ST.BOUND || 40;
+  const len   = o.length || b * 2.8;      // 세상 밖까지 이어져 흘러가 보이게
+  const segs  = o.segs   || 56;
+  const wid   = o.width  || b * 0.13;     // 반폭
+  const amp   = o.amp    || b * 0.17;     // 굽이의 크기
+  const turns = o.turns  || 1.6;          // 굽이 수
+
+  const pos = [], idx = [];
+  const at = t => {
+    const z = cz - len / 2 + len * t;
+    const x = cx + Math.sin(t * Math.PI * turns * 2) * amp;
+    return { x, z };
+  };
+
+  for (let i = 0; i <= segs; i++){
+    const t = i / segs;
+    const p = at(t);
+    // 앞뒤 점으로 흐르는 방향을 구하고, 그에 수직으로 벌린다
+    const a = at(Math.max(0, t - 1 / segs));
+    const c = at(Math.min(1, t + 1 / segs));
+    const dx = c.x - a.x, dz = c.z - a.z;
+    const dl = Math.hypot(dx, dz) || 1;
+    const nx = dz / dl, nz = -dx / dl;               // 법선
+    // 폭은 조금씩 변한다 — 자로 잰 듯한 강은 강으로 보이지 않는다
+    const w = wid * (0.82 + 0.3 * Math.sin(t * Math.PI * 3.4 + 0.9));
+    pos.push(p.x + nx * w, 0, p.z + nz * w);
+    pos.push(p.x - nx * w, 0, p.z - nz * w);
+  }
+  for (let i = 0; i < segs; i++){
+    const a = i * 2;
+    idx.push(a, a + 1, a + 2,  a + 1, a + 3, a + 2);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    color: o.color || '#8FC1C4', transparent:true, opacity:.74,
+    flatShading:true, side:THREE.DoubleSide,
+    depthWrite:false                     // 바닥 얼룩과 그리는 차례를 다투지 않게
+  }));
+  m.position.y = 0.08;
+  m.renderOrder = -2;
+  return add(m);
+}
+
 /* 산에 쓰는 밝은 초록 세 가지.
    한 가지로 두면 종이 오린 것처럼 납작해 보인다 — 셋을 번갈아 섞는다. */
 export const HILL_GREENS = ['#A9C48A', '#BBD29B', '#96B87C'];

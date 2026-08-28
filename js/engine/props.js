@@ -14,7 +14,7 @@ import { preloadBricks } from './bricks.js';
 import { NEO_PROPS } from './props-neolithic.js';
 import {
   mat, box, cyl, cone, sph, place, add,
-  buildGround, buildWater, buildMountains, buildMountainsWide,
+  buildGround, buildWater, buildRiver, buildMountains, buildMountainsWide,
   jRoofHanok, buildStrawHouse, buildTileHouse, brickBuilding, timberGate,
   buildFortressWall, buildStonePagoda, buildTombMound, buildTrainingGround,
   buildPier, buildShipHull, buildDolmen, buildFirePit, buildPitHouse,
@@ -386,13 +386,14 @@ function claimBigWater(){
   return true;
 }
 
-/** 강 — 마을을 가로지르지 않게 한쪽으로 비켜서 비스듬히 흐른다 */
+/** 강 — 마을을 가로지르지 않게 한쪽으로 비켜서 굽이쳐 흐른다.
+    넓은 판을 눕히는 대신 한 줄기로 뜬다 (scene-helpers 의 buildRiver). */
 export function buildRiverBand(x, z){
   if (!claimBigWater()) return null;
   const b = ST.BOUND || 40;
   const px = (x === undefined || x === 0) ? -b * 0.72 : x;
   const pz = (z === undefined) ? 0 : z;
-  return buildWater(px, pz, b * 0.42, b * 3.0, 0.22);
+  return buildRiver(px, pz, { length: b * 2.8, width: b * 0.13, amp: b * 0.17, turns: 1.6 });
 }
 
 /** 바다·나루 — 한쪽 바깥을 넓게 채운다 */
@@ -504,6 +505,18 @@ function sandbag(x, z, i){
 /** 지역이 바뀌면 '큰 물을 이미 놓았다' 표시를 지운다 (boot.js 가 부르지 않아도
     지역 키가 달라지면 저절로 풀린다 — claimBigWater 가 지역 키로 판단한다) */
 export function resetWaterClaim(){ bigWaterArea = null; }
+
+/** 지역을 새로 짓기 직전에 부른다 (boot.js 의 goArea).
+
+    같은 지역을 다시 지을 때가 있다 — 지도에 갔다 돌아오거나
+    같은 시대를 다시 고를 때다. 그때 씬은 비워지는데 '이미 놓았다'는
+    기록만 남아 있어서, 큰 물(강·바다)이 다시 놓이지 않고 사라졌다.
+    자리 기록도 함께 비운다. */
+export function resetAreaClaims(){
+  bigWaterArea = null;
+  lastAreaKey = null;
+  ST.propSpots = [];
+}
 
 let lastAreaKey = null;
 

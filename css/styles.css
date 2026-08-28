@@ -1543,3 +1543,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   border:1px solid var(--border-strong); background:var(--land-far);
 }
 .q-art svg{ display:block; width:100%; height:auto; }
+
+/* 홈 단추 — 두 모드 모두 왼쪽 위에서 두 갈래길로 돌아간다 */
+.ex-home{ min-width:40px; min-height:40px; flex:0 0 auto; color:var(--text2);
+          background:rgba(255,255,255,.9); backdrop-filter:blur(6px); }
+.ex-home:hover{ color:var(--accent); }

@@ -18,6 +18,7 @@ import { dressArea, updateSky, preloadNature } from './skyground.js';
 import { applyBrief } from './era-briefs.js';
 import { icon } from './icons.js';
 import { pushPopup, popPopup } from './popups.js';
+import { resetAreaClaims } from './props.js';
 import { chainOf } from './chains.js';
 import { initQuestEngine, setChain, openChain, tickChain, hasChain, chainDone } from './quest-engine.js';
 import './neo-games.js';                      // 이식해 온 신석기 미니게임을 엔진 표에 올린다
@@ -192,6 +193,7 @@ export function goArea(areaId, gate, silent){
 
   areaEpoch++;                       // 앞선 지역의 늦은 비동기 작업을 무효로 만든다
   clearFlash();                      // 지역이 바뀌면 가리키던 자리는 뜻이 없다
+  resetAreaClaims();                 // 씬을 비우므로 '이미 놓았다' 기록도 비운다
   if (!silent) loading((a && a.loading) || '길을 옮기는 중…');
 
   // 씬 비우기 — 조명·아바타만 남긴다
@@ -354,6 +356,14 @@ function bindChrome(){
 
   /* 지도 모드로 돌아가기 (요구 7) — 이 단추에 아무 것도 걸려 있지 않았다 */
   on('toMapBtn', toMapMode);
+
+  /* 홈 — 두 갈래길로 돌아간다 */
+  on('exHomeBtn', () => {
+    closeMiniModal();
+    closeQuest();
+    hideEraComplete();
+    if (window.AtlasShell) window.AtlasShell.toIntro();
+  });
 
   const startStory = () => {
     document.getElementById('exIntroStory').classList.remove('on');

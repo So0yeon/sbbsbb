@@ -588,6 +588,48 @@
                   return;
                 }
 
+                if (STOP === 'flash') {
+                  /* 임무 목록에서 한 곳을 고르고, 세상에 세워진 표시등을 남겨 둔다
+                     (화면을 찍어 눈으로 확인하기 위한 갈래) */
+                  window.AtlasExplore.switchWorld(ERA);
+                  setTimeout(function () {
+                    var g8 = document.getElementById('exStoryGo'); if (g8) g8.click();
+                    var mx = document.getElementById('mqX');
+                    if (mx && document.getElementById('mqModal').classList.contains('on')) mx.click();
+                    setTimeout(function () {
+                      var rails = document.querySelectorAll('#exRailList .rail-item');
+                      var pick = rails[+(new URLSearchParams(location.search).get('n') || 0)] || rails[0];
+                      if (pick) pick.click();
+
+                      var STf = (window.__atlas3d || {}).ST;
+                      // 고른 자리를 바라보게 아바타를 옮긴다
+                      var W8 = window.AtlasExplore.WORLDS[window.AtlasExplore.currentWorld()];
+                      var qid = pick && pick.dataset.id;
+                      var q8 = W8.quests.find(function (x) { return x.id === qid; });
+                      if (q8 && q8.pos && STf && STf.player) {
+                        STf.player.position.set(q8.pos.x, 0, q8.pos.z + 13);
+                        STf.camYaw = Math.PI;
+                      }
+                      say('고른임무', q8 ? q8.title : '없음');
+                      var A3f = window.__atlas3d;
+                      if (A3f && A3f.tick) A3f.tick();
+                      var beam = 0;
+                      A3f.scene.children.forEach(function (o) {
+                        if (o.type === 'Group' && o.children.length === 4 &&
+                            o.children[0].geometry && o.children[0].geometry.type === 'CylinderGeometry') beam++;
+                      });
+                      say('표시등', beam);
+                      say('강줄기', A3f.scene.children.filter(function (o) {
+                        return o.geometry && o.geometry.type === 'BufferGeometry' &&
+                               o.material && o.material.color &&
+                               o.material.color.getHexString() === '8fc1c4';
+                      }).length);
+                      console.log('[SELFTEST] ' + JSON.stringify(out));
+                    }, 700);
+                  }, 900);
+                  return;
+                }
+
                 if (STOP === 'neomini') {
                   /* 이식해 온 신석기 놀이 — 미션 시퀀스의 '돌 갈기' 자리에서 확인한다 */
                   var AT = +(new URLSearchParams(location.search).get('at') || 8);
