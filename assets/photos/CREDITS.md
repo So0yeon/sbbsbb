@@ -21,6 +21,7 @@
 | `daewongun.jpg` | daewongun | `hb_32196305` | Hulbert, Homer B. | Public domain |
 | `dangun-2.jpg` | dangun | `hb_9215304` | Salamander724 | Public domain |
 | `dangun.jpg` | dangun | `hb_68979560` | User:CatOnMars | CC BY 4.0 |
+| `galdol.jpg` | — | `갈판(碾石, 연석) 신수22909` | 국립중앙박물관 | 공공누리 제1유형 |
 | `ganggamchan.jpg` | ganggamchan | `hb_65844808` | War Memorial of Korea Open Archives | KOGL Type 1 |
 | `ganghwa-dolmen.jpg` | ganghwa-dolmen | `hb_33610823` | ChongDae | CC BY-SA 3.0 |
 | `ganghwa-treaty.jpg` | ganghwa-treaty | `hb_25966186` | Unknown authorUnknown author | Public domain |
