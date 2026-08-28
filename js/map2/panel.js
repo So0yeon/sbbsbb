@@ -228,6 +228,8 @@
     var rel = (c.rel || []).map(function (id) {
       return (window.CONTENT || []).find(function (x) { return x.id === id; });
     }).filter(Boolean);
+    /* 역사 가방을 거쳐 여기로 왔으면 '걸어 보기' 대신 '돌아가기' — 새로 들어가는 게 아니다 (요구 7) */
+    var backHome = window.AtlasShell && window.AtlasShell.cameFromExplore && window.AtlasShell.cameFromExplore();
 
     card.innerHTML =
       (ph ? '<img class="mc-photo" src="' + esc(ph.src) + '" alt="' + esc(c.t) + '">' +
@@ -247,7 +249,9 @@
             '<span class="item-bar" style="background:' + catColor((r.cat || [])[0]) + '"></span>' +
             '<span class="item-txt"><b>' + esc(r.t) + '</b><span>' + esc(r.d || '') + '</span></span></button>';
         }).join('') + '</div></div>' : '') +
-      (window.startExploreMode ?
+      (backHome ?
+        '<div class="mc-rel"><button class="intro-btn" id="mcExplore" type="button">🧭 탐험 모드로 돌아가기</button></div>' :
+       window.startExploreMode ?
         '<div class="mc-rel"><button class="intro-btn" id="mcExplore" type="button">🧭 이 시대를 걸어 보기</button></div>' : '');
 
     card.querySelectorAll('.mc-rel .item-row').forEach(function (b) {
@@ -261,7 +265,8 @@
     var ex = card.querySelector('#mcExplore');
     if (ex) ex.addEventListener('click', function () {
       closeSheet();
-      window.startExploreMode(eraId);
+      if (backHome) window.AtlasShell.backToExplore();
+      else window.startExploreMode(eraId);
     });
     openSheet();
   }

@@ -645,7 +645,9 @@
     if ((b = $('mapHomeBtn'))) b.addEventListener('click', function () { window.AtlasShell.toIntro(); });
     if ((b = $('mapBagBtn'))) b.addEventListener('click', function () { window.AtlasShell.openRelics(); });
     if ((b = $('toExploreBtn'))) b.addEventListener('click', function () {
-      if (window.startExploreMode) window.startExploreMode(eraId);
+      var S = window.AtlasShell;
+      if (S && S.cameFromExplore && S.cameFromExplore()) S.backToExplore();
+      else if (window.startExploreMode) window.startExploreMode(eraId);
     });
     if ((b = $('mapMenuBtn'))) b.addEventListener('click', function () { window.AtlasShell.openSettings(); });
   }

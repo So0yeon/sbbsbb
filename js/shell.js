@@ -149,9 +149,19 @@
     else document.addEventListener('atlas:explore-ready', go, { once: true });
   }
 
-  function toMap(eraId) {
+  /* 역사 가방을 거쳐 지도로 넘어왔는가 — 그때는 '돌아가기' 로 보여 준다 (요구 7) */
+  var mapFromExplore = false;
+  function toMap(eraId, fromExplore) {
+    mapFromExplore = !!fromExplore;
     showOnly('map');
     if (window.AtlasMap) window.AtlasMap.open(eraId);
+  }
+  function cameFromExplore() { return mapFromExplore; }
+
+  /** 탐험 모드로 돌아간다 — 새로 들어가는 게 아니라 멈춰 뒀던 자리 그대로 이어간다.
+      switchWorld 를 다시 부르지 않으므로 시대 안내 팝업도 뜨지 않고, 서 있던 자리도 그대로다. */
+  function backToExplore() {
+    showOnly('explore');
   }
 
   function toIntro() {
@@ -1112,7 +1122,8 @@
     openRank: openRank, openRelics: openRelics, openStamps: openStamps,
     openCredits: openCredits, openPrivacy: openPrivacy, openSettings: openSettings,
     closeSheets: closeSheets, toast: toast, renderRank: renderRank,
-    step: step
+    step: step,
+    cameFromExplore: cameFromExplore, backToExplore: backToExplore
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

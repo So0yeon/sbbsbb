@@ -671,16 +671,17 @@ export function renderBag(){
       </button>`;
     }).join('')}</div>`;
 
-  /* 누르면 지도 모드로 건너가 그 항목을 펼친다 (요구 4) */
+  /* 누르면 지도 모드로 건너가 그 항목을 펼친다 (요구 4).
+     지도 쪽 DOM 이 자리 잡을 시간(레이아웃 계산)이 필요해서, 정해진
+     시간을 그냥 기다리는 대신 화면이 실제로 한 번 그려진 뒤(rAF 두 번)로 미룬다. */
   body.querySelectorAll('.item-row').forEach(b => onPress(b, () => {
     const c = items.find(x => x.id === b.dataset.id);
     if (!c) return;
     closeBag();
-    if (window.AtlasShell) window.AtlasShell.toMap(c.era);
-    // 지도가 그려진 뒤에 카드를 연다
-    setTimeout(() => {
+    if (window.AtlasShell) window.AtlasShell.toMap(c.era, true);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (window.AtlasMap && window.AtlasMap.showItemById) window.AtlasMap.showItemById(c.id);
-    }, 60);
+    }));
   }));
 }
 
