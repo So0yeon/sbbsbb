@@ -4,3 +4,4 @@ Thumbs.db
 *.log
 tools/.cache/
 .superpowers/
+tools/.out/
