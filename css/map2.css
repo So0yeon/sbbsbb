@@ -197,6 +197,7 @@
 
 /* 지도 위 — 글자 크기와 외곽선 두께는 js 가 배율에 맞춰 넣습니다 */
 .rel-line{ fill:none; stroke-dasharray:5 4; opacity:.75; }
+.rel-hit{ fill:none; stroke:transparent; pointer-events:stroke; cursor:pointer; }
 .mk{ cursor:pointer; }
 .mk circle.hit{ fill:transparent; }
 .mk circle.dot{ stroke:#fff; }

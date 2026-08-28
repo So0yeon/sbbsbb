@@ -184,15 +184,22 @@
       if (!r.from || !r.to) return;
       var x1 = p2x(r.from[1]), y1 = p2y(r.from[0]), x2 = p2x(r.to[1]), y2 = p2y(r.to[0]);
       var mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, b = r.bend || 0;
+      var d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) +
+              ' Q' + (mx - dy * b).toFixed(1) + ',' + (my + dx * b).toFixed(1) +
+              ' ' + x2.toFixed(1) + ',' + y2.toFixed(1);
+
+      /* 점선은 화면에서 얇고 듬성듬성해서 정확히 그 위를 눌러야만 반응한다 —
+         굵고 투명한 선을 겹쳐 그려서 그 근처 아무 데나 눌러도 걸리게 한다 */
+      var hit = add(G.rel, 'path', {
+        d: d, class: 'rel-hit', 'stroke-width': (16 * upp).toFixed(2)
+      });
       var p = add(G.rel, 'path', {
-        d: 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) +
-           ' Q' + (mx - dy * b).toFixed(1) + ',' + (my + dx * b).toFixed(1) +
-           ' ' + x2.toFixed(1) + ',' + y2.toFixed(1),
-        'class': 'rel-line', stroke: era.accent || '#7C6BA8',
+        d: d, 'class': 'rel-line', stroke: era.accent || '#7C6BA8',
         'stroke-width': (2 * upp).toFixed(2)
       });
-      p.style.cursor = 'pointer';
-      p.addEventListener('click', function () { openRel(r); });
+      p.style.pointerEvents = 'none';   // 보이는 선은 장식일 뿐, 판정은 hit 쪽에서
+      hit.style.cursor = 'pointer';
+      hit.addEventListener('click', function () { openRel(r); });
     });
 
     /* 수도는 v2 영토 자료에 없어 기존 시대 자료에서 위치만 가져옵니다 (영토는 쓰지 않습니다) */
