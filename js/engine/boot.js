@@ -111,13 +111,22 @@ export function switchWorld(id){
   showStory(w);
 }
 
+/** 이름을 부르는 말 — 받침이 있으면 '이여', 없으면 '여'. 이름이 없으면 부르지 않는다 */
+function vocative(){
+  const n = Store ? Store.displayName() : '';
+  if (!n) return '';
+  const last = n.charCodeAt(n.length - 1) - 0xAC00;
+  const hasJong = (last >= 0 && last < 11172) ? (last % 28) !== 0 : false;
+  return n + (hasJong ? '이여, ' : '여, ');
+}
+
 function showStory(w){
   const wrap = document.getElementById('exIntroStory');
   if (!wrap) return;
-  const name = Store ? Store.callName() : '그대';
   document.getElementById('exStoryEyebrow').textContent = w.eyebrow || '';
   document.getElementById('exStoryTitle').textContent = w.title || w.name || '';
-  document.getElementById('exStoryBody').textContent = (w.body || '').replace(/\{이름\}/g, name);
+  document.getElementById('exStoryBody').textContent =
+    (w.body || '').replace(/\{이름\}이여, /g, vocative()).replace(/\{이름\}/g, '');
   document.getElementById('exStoryHint').textContent = w.hint || '';
   wrap.classList.add('on');
   ST.paused = true;

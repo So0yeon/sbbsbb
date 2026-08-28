@@ -114,6 +114,10 @@ export function openQuest(q){
   else if (q.stages && q.stages.length) renderStages(q, card);
   else                              renderRole(q, card);
 
+  // 사진은 눌러서 크게 볼 수 있다
+  const ph = card.querySelector('.q-photo');
+  if (ph) ph.addEventListener('click', () => ph.classList.toggle('zoom'));
+
   openModal();
 }
 

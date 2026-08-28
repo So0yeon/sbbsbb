@@ -167,8 +167,10 @@ export function drawRadar(){
   const R = 56, C = 64;
   const lim = ST.BOUND || 40;
 
-  let s = `<circle cx="${C}" cy="${C}" r="${R}" fill="#F1F1EC" stroke="#DDDDDA"/>`;
-  s += `<circle cx="${C}" cy="${C}" r="${R*.55}" fill="none" stroke="#EAEAEA"/>`;
+  let s = `<circle cx="${C}" cy="${C}" r="${R}" fill="#EDEDE6" stroke="#B9B6AA" stroke-width="1.4"/>`;
+  s += `<circle cx="${C}" cy="${C}" r="${R*.55}" fill="none" stroke="#D2CFC3" stroke-dasharray="3 3"/>`;
+  s += `<line x1="${C}" y1="${C-R}" x2="${C}" y2="${C+R}" stroke="#DDDAD0"/>`;
+  s += `<line x1="${C-R}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#DDDAD0"/>`;
 
   ST.markerGroups.forEach(g => {
     const q = g.userData.quest;

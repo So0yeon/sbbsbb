@@ -1,0 +1,49 @@
+<!-- © 2026 김용현 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보 처리방침 — 史뿐史뿐</title>
+<link rel="stylesheet" href="vendor/font/pretendard.css">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  body{ background:var(--bg); }
+  .page{ max-width:760px; margin:0 auto; padding:40px 24px 80px; }
+  .page-head{ border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:8px; }
+  .page-head .eyebrow{ font-size:13px; color:var(--accent); font-weight:600; }
+  .page-head h1{ font-size:30px; margin-top:6px; }
+  .page-head p{ font-size:14px; color:var(--text2); margin-top:8px; }
+  .page-actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .page-foot{ margin-top:40px; padding-top:16px; border-top:1px solid var(--border); font-size:13px; color:var(--text2); }
+  @media print{
+    .page-actions{ display:none; }
+    .page{ padding:0; max-width:none; }
+    body{ background:#fff; }
+    #printArea{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="page-head">
+      <p class="eyebrow">史뿐史뿐 · 초등 5학년 2학기 사회(역사)</p>
+      <h1>개인정보 처리방침</h1>
+      <p>이 프로그램은 서버가 없습니다. 입력한 내용은 이용자의 기기에만 저장되며 외부로 전송되지 않습니다.</p>
+      <div class="page-actions">
+        <a class="intro-btn" href="index.html">← 프로그램으로 돌아가기</a>
+        <button class="intro-btn ghost" type="button" onclick="window.print()">🖨 인쇄 / PDF로 저장</button>
+      </div>
+    </div>
+    <div id="doc"></div>
+    <p class="page-foot" id="foot"></p>
+  </div>
+
+  <script src="js/privacy-text.js"></script>
+  <script>
+    document.getElementById('doc').innerHTML = window.ATLAS_PRIVACY.html;
+    document.getElementById('foot').textContent =
+      window.ATLAS_PRIVACY.team + ' · 시행일 ' + window.ATLAS_PRIVACY.updated;
+  </script>
+</body>
+</html>
