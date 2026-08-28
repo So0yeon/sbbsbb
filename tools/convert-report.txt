@@ -1,0 +1,15 @@
+시대  퀘스트  관문  NPC  유물  사진  지역
+paleo              9     0     5     9     0  main
+neolithic         10     0    10     9     0  main
+bronze            12     0     7    10     0  main
+samguk            33     8    16    12    10  goguryeo,baekje,silla,gaya
+unified-silla     17     2     8    10     0  silla,balhae
+later             11     4    10    11     0  cheorwon,wansan,songak
+goryeo            20    12    16    12     0  gaegyeong,byeokrando,gangjin,ganghwado,haeinsa,namdo,gukgyeong
+joseon-early      27    16    24    12     0  hanyang,gyeongbok,jongmyo,sajikdan,donuimun,sungnyemun,heunginjimun,sukjeongmun,gukgyeong
+joseon-late       33     6    14    12    12  hanyang,namhae,namhansan,hwaseong
+open-port         16     6    10     6     1  hanseong,jemulpo,jeongdong,ganghwa
+colonial          25     8    14    12     0  hub,manchuria,shanghai,cheonan,gunsan
+war               30     8    20    12     0  seoul,busan,nakdong,incheon,hungnam
+합계            243  70  154  127  23
+학습 항목 cat 표: 146개

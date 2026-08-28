@@ -1,0 +1,174 @@
+=== 파일별 정의된 빌더 ===
+01-paleo.md
+  buildCaveCamp, buildMammothGround, buildWorldPaleo
+02-neolithic.md
+  buildGroundNeo, buildRiverNeo, buildHillsNeo, buildReedsNeo, buildTreesNeo, buildRocksNeo, buildBushesNeo, buildShellMoundNeo, buildCanoeNeo, buildFieldFenceNeo, buildVillageNeo, buildFarmFieldNeo, buildKilnNeo, buildShrineNeo, buildFloodZoneNeo, buildWorldNeo
+03-bronze.md
+  buildGroundBronze, buildHillsBronze, buildCoastBronze, buildTreesBronze, buildStorehouseBronze, buildVillageBronze, buildCastingSiteBronze, buildMirrorShrineBronze, buildPaddyBronze, buildDefenseBronze, buildDolmenBronze, buildDolmenFieldBronze, buildDangunShrineBronze, buildBorderMarkerBronze, buildWorldBronze
+04-samguk.md
+  buildObservatoryTower, buildForge, buildSamgukGoguryeo, buildSamgukBaekje, buildSamgukSilla, buildSamgukGaya
+05-unified-silla.md
+  buildUnifiedSilla, buildUnifiedBalhae
+06-later.md
+  buildLaterCheorwon, buildLaterWansan, buildLaterSongak
+07-goryeo.md
+  buildGoryeoGaegyeong, buildGoryeoByeokrando, buildGoryeoGangjin, buildGoryeoGanghwado, buildGoryeoHaeinsa, buildGoryeoNamdo, buildGoryeoGukgyeong
+08-joseon-early.md
+  buildGroundJoseon, buildTreesJoseon, buildCityWallGate, buildBellPavilion, buildGyeongbokPalace, buildJongmyoShrine, buildJiphyeonjeon, buildGwahakPavilion, buildKilnVillageBaekja, buildRiverWihwado, buildPortWaegwan, buildNorthernFort, buildGroundWideJoseon, buildYukjoStreet, buildJongnoMarket, buildSajikAltar, buildWestGateRoad, buildMarketRow, buildSeodangSchool, buildJoseonEHanyang, buildJoseonEGyeongbok, buildJoseonEJongmyo, buildJoseonESajikdan, buildJoseonEDonuimun, buildJoseonESungnyemun, buildJoseonEHeunginjimun, buildJoseonESukjeongmun, buildJoseonEGukgyeong
+09-joseon-late.md
+  buildCrane, buildJangsi, buildJoseonLHanyang, buildJoseonLNamhae, buildJoseonLNamhansan, buildJoseonLHwaseong
+10-open-port.md
+  buildTram, buildSteamTrain, buildRailTrack, buildStele, buildStreetLamp, buildTelegraphLine, buildRickshaw, buildMarketStall, buildShopFront, buildHarborWater, buildSteamShip, buildCargoStack, buildWarehouse, buildLighthouse, buildChurchSpire, buildIronFence, buildLegationFlag, buildCannon, buildReeds, buildOpenHanseong, buildOpenJemulpo, buildOpenJeongdong, buildOpenGanghwa
+11-colonial.md
+  buildColonialGround, buildColonialHazeHills, buildHubTrees, buildJongno, buildTapgolPark, buildSchool, buildGovStreet, buildMitsukoshi, buildDosiRow, buildStationGate, buildPortSign, buildCheonanGateSign, buildColonialHub, buildManchuriaGround, buildIndependenceCamp, buildBattleField, buildColonialManchuria, buildShanghaiGround, buildProvisionalGovt, buildHongkouPark, buildColonialShanghai, buildCheonanGround, buildAunaeMarket, buildAunaeVillage, buildColonialCheonan, buildGunsanGround, buildGunsanPort, buildImpiStation, buildColonialGunsan
+12-war.md
+  buildRubble, buildRuinedHouse, buildBarbedWire, buildBunker, buildWatchtower, buildBrokenBridge, buildVotingBooth, buildCapitolBuilding, buildMemorialFence, buildShantyHouse, buildShantyTown, buildWell, buildTentSchool, buildMarketStalls, buildCzechHedgehogs, buildTankHull, buildCrates, buildWarSeoul, buildWarBusan, buildWarNakdong, buildWarIncheon, buildWarHungnam
+
+=== 표에서 호출된 것 ===
+  60 for
+  36 buildGround
+  36 scatterTreesArea
+  35 if
+  32 buildMountains
+  28 scatterHouses
+  24 jRoofHanok
+  14 buildWater
+  12 buildFortressWall
+  11 buildStonePagoda
+  10 timberGate
+  10 buildTombMound
+  10 buildShipHull
+   8 buildPier
+   7 while
+   5 buildMountainsWide
+   4 buildStreetLamp
+   4 buildMarketStall
+   3 buildTrainingGround
+   3 buildCargoStack
+   3 buildLegationFlag
+   3 buildCannon
+   2 buildTrees
+   2 buildDolmenBronze
+   2 buildShopFront
+   2 buildRailTrack
+   2 buildTelegraphLine
+   2 buildRickshaw
+   2 buildHarborWater
+   2 buildSteamShip
+   2 buildWarehouse
+   2 buildIronFence
+   2 buildReeds
+   2 buildRubble
+   2 buildBarbedWire
+   2 buildRuinedHouse
+   2 tentCluster
+   1 buildCaveCamp
+   1 buildMammothGround
+   1 buildGroundNeo
+   1 buildRiverNeo
+   1 buildHillsNeo
+   1 buildTreesNeo
+   1 buildReedsNeo
+   1 buildRocksNeo
+   1 buildBushesNeo
+   1 buildShellMoundNeo
+   1 buildCanoeNeo
+   1 buildVillageNeo
+   1 buildFarmFieldNeo
+   1 buildFieldFenceNeo
+   1 buildKilnNeo
+   1 buildShrineNeo
+   1 buildFloodZoneNeo
+   1 buildStorehouseBronze
+   1 buildGroundBronze
+   1 buildHillsBronze
+   1 buildCoastBronze
+   1 buildTreesBronze
+   1 buildVillageBronze
+   1 buildCastingSiteBronze
+   1 buildMirrorShrineBronze
+   1 buildPaddyBronze
+   1 buildDefenseBronze
+   1 buildDolmenFieldBronze
+   1 buildDangunShrineBronze
+   1 buildBorderMarkerBronze
+   1 loadBronzeSpearhead
+   1 buildObservatoryTower
+   1 buildForge
+   1 buildPalaceGaegyeong
+   1 buildGwancheongRow
+   1 buildJeojatgeoriGaegyeong
+   1 buildByeokrandoHarbor
+   1 buildGamaGangjin
+   1 buildGagwolGanghwado
+   1 buildJanggyeongPanjeon
+   1 buildHeungdeoksa
+   1 buildMokhwabatNamdo
+   1 buildHwapoJejakso
+   1 buildBongsudaeGukgyeong
+   1 buildGroundJoseon
+   1 buildBellPavilion
+   1 buildRiverWihwado
+   1 buildYukjoStreet
+   1 buildJongnoMarket
+   1 buildGyeongbokPalace
+   1 buildJiphyeonjeon
+   1 buildGwahakPavilion
+   1 buildKilnVillageBaekja
+   1 loadJagyeokru
+   1 buildJongmyoShrine
+   1 buildSajikAltar
+   1 buildWestGateRoad
+   1 buildCityWallGate
+   1 buildMarketRow
+   1 buildSeodangSchool
+   1 buildGroundWideJoseon
+   1 buildNorthernFort
+   1 buildPortWaegwan
+   1 buildJangsi
+   1 buildCrane
+   1 buildTram
+   1 buildLighthouse
+   1 buildSteamTrain
+   1 buildChurchSpire
+   1 buildStele
+   1 buildColonialGround
+   1 buildColonialHazeHills
+   1 buildHubTrees
+   1 buildJongno
+   1 buildTapgolPark
+   1 buildSchool
+   1 buildGovStreet
+   1 buildMitsukoshi
+   1 buildDosiRow
+   1 buildStationGate
+   1 buildPortSign
+   1 buildCheonanGateSign
+   1 buildManchuriaGround
+   1 buildIndependenceCamp
+   1 buildBattleField
+   1 buildShanghaiGround
+   1 buildProvisionalGovt
+   1 buildHongkouPark
+   1 buildCheonanGround
+   1 buildAunaeMarket
+   1 buildAunaeVillage
+   1 buildGunsanGround
+   1 buildGunsanPort
+   1 buildImpiStation
+   1 brickBuilding
+   1 buildShantyHouse
+   1 buildBrokenBridge
+   1 buildVotingBooth
+   1 buildCapitolBuilding
+   1 buildMemorialFence
+   1 buildShantyTown
+   1 buildWell
+   1 buildTentSchool
+   1 buildMarketStalls
+   1 sandbagRow
+   1 buildBunker
+   1 buildWatchtower
+   1 buildCzechHedgehogs
+   1 buildTankHull
+   1 buildCrates
