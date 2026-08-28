@@ -83,6 +83,18 @@
       if (e.key === 'Enter') { e.preventDefault(); $('nameNext').click(); }
     });
 
+    ['kitBag', 'kitBook'].forEach(function (id) {
+      $(id).addEventListener('click', function () {
+        var el = $(id);
+        if (el.classList.contains('got')) return;
+        el.classList.add('got');
+        el.setAttribute('aria-pressed', 'true');
+        var desc = el.querySelector('.kit-desc');
+        if (desc) desc.hidden = false;
+        var bothGot = $('kitBag').classList.contains('got') && $('kitBook').classList.contains('got');
+        $('kitNext').disabled = !bothGot;
+      });
+    });
     $('kitNext').addEventListener('click', function () { step('mode'); });
 
     $('startExploreBtn').addEventListener('click', function () { toExplore(); });
