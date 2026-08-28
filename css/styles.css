@@ -99,7 +99,8 @@ b{ font-weight:700; }
   position:fixed; inset:0; z-index:60; overflow-y:auto;
   background:
     radial-gradient(1100px 620px at 50% -8%, rgba(110,155,148,.13), transparent 62%),
-    linear-gradient(180deg,#FBFAF7 0%, var(--bg) 55%);
+    linear-gradient(180deg, rgba(251,250,247,.22) 0%, rgba(247,247,245,.30) 55%, rgba(247,247,245,.38) 100%),
+    url('../assets/photos/mainbackground.png') center/cover no-repeat;
   display:grid; place-items:center; padding:24px;
 }
 #intro.off{ display:none; }
