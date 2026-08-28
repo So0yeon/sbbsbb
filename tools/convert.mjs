@@ -64,6 +64,50 @@ function extractMapData(){
   return { eras, content };
 }
 
+/** 학습 항목 전체 (id · era · cat · 이름) */
+function listContent(contentSrc){
+  const out = [];
+  const re = /\{\s*id:'([^']+)'\s*,\s*era:'([^']+)'\s*,\s*cat:\[([^\]]*)\]\s*,\s*t:'([^']+)'/g;
+  let m;
+  while ((m = re.exec(contentSrc))){
+    out.push({ id: m[1], era: m[2], cat: (m[3].match(/'([^']+)'/) || [])[1], t: m[4] });
+  }
+  return out;
+}
+
+/* 탐험 시대(slug) → 지도 시대(ERAS.id) */
+const ERA_OF_SLUG = {
+  'paleo':['paleo'], 'neolithic':['neo'], 'bronze':['bronze'], 'samguk':['three'],
+  'unified-silla':['unified'], 'later':['later'], 'goryeo':['goryeo'],
+  'joseon-early':['joseon_e'], 'joseon-late':['joseon_l'], 'open-port':['open'],
+  'colonial':['colonial'], 'war':['war','liberation']
+};
+
+/** 퀘스트에 학습 항목이 안 적힌 경우, 이름이 그대로 들어 있을 때만 잇는다.
+    (넓게 잇지 않는다 — 잘못 이으면 엉뚱한 사진과 도감 항목이 붙는다) */
+function linkContent(slug, quests, content){
+  const eras = ERA_OF_SLUG[slug] || [];
+  const pool = content.filter(c => eras.includes(c.era));
+  let n = 0;
+  quests.forEach(q => {
+    if (q.contentId) return;
+    if (q.kind === 'gate') return;
+    // ① id 가 같은 항목
+    let hit = pool.find(c => c.id === q.id);
+    // ② 퀘스트 제목 안에 항목 이름이 통째로 들어 있는 경우 (두 글자 이상)
+    if (!hit){
+      const cands = pool.filter(c => c.t.length >= 2 && q.title.includes(c.t));
+      if (cands.length === 1) hit = cands[0];
+      else if (cands.length > 1){
+        cands.sort((a, b) => b.t.length - a.t.length);
+        if (cands[0].t.length > cands[1].t.length) hit = cands[0];   // 가장 긴 이름 하나만
+      }
+    }
+    if (hit){ q.contentId = hit.id; n++; }
+  });
+  return n;
+}
+
 function catOfContent(contentSrc){
   const map = {};
   const re = /\{\s*id:'([^']+)'\s*,\s*era:'([^']+)'\s*,\s*cat:\[([^\]]*)\]/g;
@@ -258,7 +302,14 @@ function parseQuest(head, body, areaFallback){
       mini = mini || {}; mini.retry = m[1].trim(); continue;
     }
     if ((m = l.match(/^\*\*정답\*\*\s*:\s*(.+)$/))){
-      mini = mini || {}; mini.answer = m[1].trim().replace(/`/g,''); continue;
+      // "빗살무늬토기 (허용: 빗살무늬 토기)" → ['빗살무늬토기','빗살무늬 토기']
+      const raw = m[1].trim().replace(/`/g, '');
+      const am = raw.match(/^(.*?)\s*[（(]\s*허용\s*:\s*([^)）]*)[)）]\s*$/);
+      mini = mini || {};
+      mini.answer = am
+        ? [am[1].trim()].concat(am[2].split(/[,·、]/).map(x => x.trim())).filter(Boolean)
+        : [raw];
+      continue;
     }
     if (l === '**단계**'){
       const r = readList(lines, i + 1);
@@ -288,6 +339,10 @@ function parseQuest(head, body, areaFallback){
       continue;
     }
   }
+
+  /* 문서가 '역할 선택'이라 적었어도, 살펴볼 것만 있고 묻는 말이 없으면 조사형이다
+     (joseon-early gyeonggukdaejeon 이 그런 경우였다 — 그대로 두면 완료할 수 없다) */
+  if (!q.kind && hotspots.length >= 2 && !questions.length) q.kind = 'inspect';
 
   /* 조립 */
   if (pendingStory && !questions.length) q.story = pendingStory;
@@ -498,31 +553,30 @@ function buildRelics(slug, quests){
    사진 (요구 10)
    ══════════════════════════════════════════════════════════════ */
 function photoIndex(){
-  const dir = path.join(ROOT, 'assets', 'photos');
-  const set = new Set();
+  // 학습 항목 id → 실제 파일 이름
+  const map = {};
   try {
-    fs.readdirSync(dir).forEach(f => {
-      const m = f.match(/^(.+)\.(jpg|jpeg|png|webp)$/i);
-      if (m) set.add(m[1]);
+    fs.readdirSync(path.join(ROOT, 'assets', 'photos')).forEach(f => {
+      const m = f.match(/^(.+?)(-2)?\.(jpg|jpeg|png|webp)$/i);
+      if (!m) return;
+      if (!map[m[1]] || m[2]) { if (!map[m[1]]) map[m[1]] = f; }
     });
   } catch(e){}
   try {
     fs.readdirSync(path.join(ROOT, 'assets')).forEach(f => {
       const m = f.match(/^(.+)\.webp$/i);
-      if (m) set.add('..:' + m[1]);
+      if (m && !map[m[1]]) map[m[1]] = 'assets/' + f;
     });
   } catch(e){}
-  return set;
+  return map;
 }
 
 function attachPhotos(quests, photos){
   let n = 0;
   quests.forEach(q => {
     if (!q.contentId) return;
-    const id = q.contentId;
-    if (photos.has(id)){ q.img = [id + '.jpg']; n++; }
-    else if (photos.has(id + '-2')){ q.img = [id + '-2.jpg']; n++; }
-    else if (photos.has('..:' + id)){ q.img = ['assets/' + id + '.webp']; n++; }
+    const f = photos[q.contentId];
+    if (f){ q.img = [f]; n++; }
   });
   return n;
 }
@@ -608,10 +662,34 @@ function emitBuilders(doc, slug){
   return out;
 }
 
-function emitEra(slug, doc, contentCat, photos){
+/** 마커가 4단위 안에서 겹치면 누를 수 없다 (MASTER §6-5) — 결정적으로 밀어 놓는다 */
+function spreadMarkers(quests){
+  let moved = 0;
+  for (let i = 0; i < quests.length; i++){
+    const a = quests[i];
+    if (!a.pos) continue;
+    for (let j = i + 1; j < quests.length; j++){
+      const b = quests[j];
+      if (!b.pos || b.area !== a.area) continue;
+      let dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z;
+      let d = Math.hypot(dx, dz);
+      if (d >= 4.2) continue;
+      if (d < 0.001){ dx = 1; dz = 0; d = 1; }
+      const push = (4.4 - d) / d;
+      b.pos.x = Math.round((b.pos.x + dx * push) * 10) / 10;
+      b.pos.z = Math.round((b.pos.z + dz * push) * 10) / 10;
+      moved++;
+    }
+  }
+  return moved;
+}
+
+function emitEra(slug, doc, contentCat, photos, contentList){
   const meta = ERA_META[slug];
   const K = meta.key;
 
+  const nLink = linkContent(slug, doc.quests, contentList);
+  spreadMarkers(doc.quests.concat(doc.gates));
   doc.quests.forEach(q => { q.cat = decideCat(q, contentCat); });
   const nPhoto = attachPhotos(doc.quests, photos);
   const relics = buildRelics(slug, doc.quests);
@@ -646,7 +724,7 @@ export const RELICS_${K} = ${J(relics)};
   fs.writeFileSync(path.join(ERAS_DIR, slug + '.js'), out, 'utf8');
 
   return {
-    slug, key: K, quests: doc.quests.length, gates: doc.gates.length,
+    slug, key: K, links: nLink, quests: doc.quests.length, gates: doc.gates.length,
     npcs: doc.npcs.length, relics: relics.length, photos: nPhoto,
     areas: Object.keys(doc.areas), startArea: Object.keys(doc.areas)[0], areasObj: doc.areas
   };
@@ -655,18 +733,27 @@ export const RELICS_${K} = ${J(relics)};
 /* ══════════════════════════════════════════════════════════════
    실행
    ══════════════════════════════════════════════════════════════ */
+/** atlas-content.js 로 새로 더한 항목도 후보에 넣는다 */
+function extraContent(){
+  try {
+    const src = fs.readFileSync(path.join(ROOT, 'js', 'atlas-content.js'), 'utf8');
+    return listContent(src);
+  } catch(e){ return []; }
+}
+
 function main(){
   fs.mkdirSync(ERAS_DIR, { recursive: true });
 
   const { eras, content } = extractMapData();
   const contentCat = catOfContent(content);
+  const contentList = listContent(content).concat(extraContent());
   const photos = photoIndex();
 
   const stats = [];
   Object.entries(FILE_OF).forEach(([file, slug]) => {
     const text = fs.readFileSync(path.join(CONTENT_DIR, file + '.md'), 'utf8');
     const doc = parseDoc(slug, text);
-    stats.push(emitEra(slug, doc, contentCat, photos));
+    stats.push(emitEra(slug, doc, contentCat, photos, contentList));
   });
 
   /* worlds-registry */
@@ -737,9 +824,9 @@ ${content.trim()}
   }), { q:0, g:0, n:0, r:0, p:0 });
 
   const lines = [];
-  lines.push('시대  퀘스트  관문  NPC  유물  사진  지역');
+  lines.push('시대  퀘스트  관문  NPC  유물  사진  연결  지역');
   stats.forEach(s => lines.push(
-    `${s.slug.padEnd(15)} ${String(s.quests).padStart(4)} ${String(s.gates).padStart(5)} ${String(s.npcs).padStart(5)} ${String(s.relics).padStart(5)} ${String(s.photos).padStart(5)}  ${s.areas.join(',')}`
+    `${s.slug.padEnd(15)} ${String(s.quests).padStart(4)} ${String(s.gates).padStart(5)} ${String(s.npcs).padStart(5)} ${String(s.relics).padStart(5)} ${String(s.photos).padStart(5)} ${String(s.links).padStart(5)}  ${s.areas.join(',')}`
   ));
   lines.push(`합계            ${tot.q}  ${tot.g}  ${tot.n}  ${tot.r}  ${tot.p}`);
   lines.push(`학습 항목 cat 표: ${Object.keys(contentCat).length}개`);

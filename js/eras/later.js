@@ -128,6 +128,7 @@ export const QUESTS_LATER_BASE = [
    "ok": "그러하오. 통일신라 말 나라가 어지러워지자 지방에서 호족이 자라났소. 그중 힘이 큰 이들이 나라를 세우면서 다시 세 나라로 나뉜 것이 후삼국 시대라오.",
    "no": "신라 조정이 흔들리는 사이, 지방에서 무엇이 자라났는지 다시 살펴보시오."
   },
+  "contentId": "hb_later_hoju",
   "cat": "relic"
  },
  {
@@ -200,7 +201,8 @@ export const QUESTS_LATER_BASE = [
    "ok": "그렇다. 그대는 옛 백제 땅 사람들의 마음을 얻고자 나라 이름을 후백제라 한다. 백제가 신라에 무너진 지 이백여 년, 이 땅 사람들의 가슴에는 아직 그 이름이 남아 있었다. 넓은 곡창 지대를 등에 업은 후백제는 후삼국에서 가장 강한 나라가 된다.",
    "no": "이 땅 사람들이 어느 나라를 그리워하는지 다시 생각하라."
   },
-  "cat": "event"
+  "contentId": "gyeonhwon",
+  "cat": "person"
  },
  {
   "title": "포석정의 밤",
@@ -338,7 +340,8 @@ export const QUESTS_LATER_BASE = [
    "ok": "그렇다. 그대는 경순왕을 정중히 맞이하고 높은 벼슬과 경주를 다스릴 권한을 주었으며, 딸을 그에게 시집보내기까지 했다. 견훤이 경주를 짓밟았던 것과는 정반대의 길이다. 신라 사람들의 마음이 고려로 향한 까닭이 여기에 있다.",
    "no": "힘으로 누른 견훤이 무엇을 잃었는지 떠올려 보라. 다시 판단하라."
   },
-  "cat": "relic"
+  "contentId": "silla-surrender",
+  "cat": "event"
  },
  {
   "title": "일리천, 마지막 싸움",
@@ -563,14 +566,6 @@ export const RELICS_LATER = [
   "line": "그러하오."
  },
  {
-  "id": "r-lt-silla-surrender",
-  "icon": "📜",
-  "name": "신라의 항복",
-  "era": "later",
-  "from": "lt-silla-surrender",
-  "line": "그렇다."
- },
- {
   "id": "r-lt-hunyo",
   "icon": "📖",
   "name": "훈요 10조",
@@ -624,6 +619,14 @@ export const RELICS_LATER = [
   "name": "발해 유민을",
   "era": "later",
   "from": "lt-balhae",
+  "line": "그렇다."
+ },
+ {
+  "id": "r-lt-silla-surrender",
+  "icon": "📜",
+  "name": "신라의 항복",
+  "era": "later",
+  "from": "lt-silla-surrender",
   "line": "그렇다."
  },
  {

@@ -1,0 +1,246 @@
+<!-- © 2026 김용현 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미니게임 20형식 시험대 — 史뿐史뿐</title>
+<link rel="stylesheet" href="../vendor/font/pretendard.css">
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  body{ padding:24px; }
+  .wrap{ max-width:980px; margin:0 auto; display:grid; grid-template-columns:220px 1fr; gap:20px; }
+  .list{ display:flex; flex-direction:column; gap:6px; }
+  .list button{ text-align:left; min-height:40px; padding:8px 12px; border:1px solid var(--border);
+                background:var(--card); border-radius:var(--r-sm); font-size:14px; }
+  .list button.on{ background:var(--accent-soft); border-color:var(--accent-line); font-weight:700; }
+  .stagebox{ background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:22px; }
+  h1{ font-size:22px; margin-bottom:4px; }
+  .sub{ color:var(--text2); font-size:14px; margin-bottom:18px; }
+  #result{ margin-top:14px; font-size:14px; }
+  #auto{ margin-top:10px; font-size:13px; color:var(--text2); white-space:pre-line; }
+</style>
+</head>
+<body>
+<h1>미니게임 20형식 시험대</h1>
+<p class="sub">개발용입니다. 왼쪽에서 형식을 고르면 실제로 해 볼 수 있습니다. <code>?auto=1</code> 로 열면 20형식을 차례로 만들어 보고 오류를 콘솔에 남깁니다.</p>
+
+<div class="wrap">
+  <div class="list" id="list"></div>
+  <div>
+    <div class="stagebox" id="host"></div>
+    <p id="result"></p>
+    <p id="auto"></p>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/build/three.module.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+<script type="module">
+import { MINIGAME_STARTERS, MINIGAME_LABELS, runMinigame } from '../js/engine/minigames.js';
+
+const SAMPLES = {
+  aim:    { tag:'활쏘기', intro:'바늘이 가운데 칸에 들어올 때 누르시오.', ok:'명중이오.', retry:'빗나갔소.' },
+  spin:   { tag:'물레로 백자 빚기', laps:2, intro:'물레를 고르게 돌리시오.', ok:'백자가 둥글게 올라왔소.' },
+  knap:   { tag:'뗀석기 만들기', intro:'누르고 있다가 알맞은 때에 놓으시오.', ok:'날이 섰소.', retry:'다시 가늠해 보시오.' },
+  ember:  { tag:'불씨 지키기', holdMs:3000, intro:'불씨가 알맞은 세기를 지키도록 나뭇가지를 넣으시오.', ok:'밤을 견뎠소.', retry:'불씨가 사그라들었소.' },
+  stack:  { tag:'울타리 세우기', steps:['도랑을 판다','통나무를 박는다','끝을 뾰족하게 다듬는다','망대를 세운다'],
+            intro:'차례대로 누르시오.', ok:'마을을 둘렀소.', retry:'차례가 어긋났소.' },
+  grind:  { tag:'맷돌 돌리기', intro:'좌우 박자에 맞춰 미시오.', ok:'곱게 갈렸소.', retry:'헛돌았소.' },
+  lift:   { tag:'거중기로 성돌 올리기', intro:'힘을 모아 알맞은 때에 당기시오.', ok:'성돌이 올라갔소.', retry:'미끄러졌소.' },
+  sort:   { tag:'고구려에서 이어받은 것 가려내기',
+            binLeftIcon:'🏯', binLeftLabel:'고구려에서', binRightIcon:'🏙️', binRightLabel:'당에서',
+            items:[{icon:'♨️',label:'온돌',korean:true},{icon:'🛣️',label:'주작대로',korean:false},
+                   {icon:'🙏',label:'이불병좌상',korean:true},{icon:'🧱',label:'벽돌무덤',korean:false},
+                   {icon:'🌸',label:'연꽃무늬 기와',korean:true},{icon:'🏙️',label:'바둑판 도읍',korean:false},
+                   {icon:'🪦',label:'굴식 돌방무덤',korean:true},{icon:'📋',label:'3성 6부',korean:false},
+                   {icon:'🦁',label:'돌사자상',korean:true},{icon:'🏺',label:'삼채 그릇',korean:false}],
+            intro:'유물을 두 통에 가려 놓으시오.', ok:'잘 가렸소.', retry:'다시 보시오.' },
+  memory: { tag:'봉수 신호 외우기', rounds:2, icons:['🔥','🌊','🌿','⛰️','🌙','☀️'],
+            intro:'불빛의 차례를 외웠다가 그대로 누르시오.', ok:'신호가 이어졌소.', retry:'차례가 끊겼소.' },
+  blank:  { tag:'낱말 적기', question:'돌을 깨뜨려 만든 도구를 무엇이라 하오?', answer:['뗀석기'],
+            intro:'빈칸에 낱말을 적으시오.', ok:'맞소.', no:'다시 적어 보시오.' },
+
+  dig:    { tag:'전곡리 발굴', cols:6, rows:4, relics:['🪓','🏺','🦴'], digs:12,
+            intro:'흙을 파서 유물을 찾으시오.', ok:'유물을 다 찾았소.', retry:'오늘은 여기까지요.' },
+  trace:  { tag:'훈민정음 획순', nodes:[[22,74],[50,22],[78,74],[50,52],[30,52]],
+            intro:'점을 차례대로 이으시오.', ok:'획을 바르게 그었소.', retry:'차례가 어긋났소.' },
+  weigh:  { tag:'조세 저울질', target:12, weights:[1,2,3,5,8], targetLabel:'거둘 양',
+            intro:'저울이 평형이 되게 올리시오.', ok:'셈이 맞았소.', retry:'다시 달아 보시오.' },
+  route:  { tag:'조운로 찾기', cols:5, rows:5, blocked:[7,12,16,18], goal:4, goalIcon:'🚩', blockIcon:'⛰️',
+            intro:'막힌 길을 피해 깃발까지 가시오.', ok:'배가 닿았소.', blockedSay:'그 길은 막혔소.' },
+  order:  { tag:'삼국의 전성기 차례', cards:['백제 근초고왕','고구려 광개토대왕','신라 진흥왕'],
+            intro:'앞선 것부터 차례대로 누르시오.', ok:'차례가 맞았소.', retry:'다시 세워 보시오.' },
+  spot:   { tag:'두 그림 견주기', cols:4, rows:4, base:['🏺','🏺','🏺','🏺'], alt:['🪔','⚱️','🫖'], diffs:3,
+            intro:'오른쪽에서 다른 곳을 찾으시오.', ok:'눈이 밝구려.', retry:'다시 견주어 보시오.' },
+  rhythm: { tag:'판소리 장단', pattern:[1,0,1,0,1,1,0,1], bpm:88,
+            intro:'북이 울리는 자리에 맞춰 치시오.', ok:'장단이 맞았소.', retry:'박이 어긋났소.' },
+  steer:  { tag:'한산도 물길', lanes:5, length:8, allow:2, shipIcon:'⛵', rockIcon:'🪨',
+            intro:'좌우로 키를 잡아 바위를 피하시오.', ok:'물길을 지났소.', retry:'배가 부딪혔소.' },
+  cipher: { tag:'봉수 신호 읽기',
+            table:[{sign:'🔥',mean:'적이 나타났다'},{sign:'🔥🔥',mean:'적이 가까이 왔다'},
+                   {sign:'🔥🔥🔥',mean:'적이 국경을 넘었다'},{sign:'🌫️',mean:'아무 일 없다'}],
+            intro:'신호표를 보고 뜻을 고르시오.', ok:'바르게 읽었소.', retry:'다시 읽어 보시오.' },
+  pour:   { tag:'청자 유약 붓기', target:70, band:8, tries:3,
+            intro:'눈금에 닿으면 멈추시오.', ok:'알맞게 부었소.', retry:'넘쳤소.' }
+};
+
+const TYPES = Object.keys(MINIGAME_STARTERS);
+const list = document.getElementById('list');
+const host = document.getElementById('host');
+const result = document.getElementById('result');
+
+list.innerHTML = TYPES.map(t =>
+  `<button data-t="${t}" type="button">${t} <span style="color:#777">· ${MINIGAME_LABELS[t] || ''}</span></button>`).join('');
+
+function play(t){
+  list.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  result.textContent = '';
+  const mini = Object.assign({ type:t }, SAMPLES[t] || {});
+  runMinigame(mini, host, ok => {
+    result.innerHTML = ok
+      ? '<span style="color:#2C6558">성공으로 끝났습니다.</span>'
+      : '<span style="color:#8A3E3A">실패로 끝났습니다 (막다른 길이 아니어야 합니다).</span>';
+  });
+}
+list.querySelectorAll('button').forEach(b => b.addEventListener('click', () => play(b.dataset.t)));
+
+/* ── 자동 연기 검사 ─────────────────────────────────────────── */
+if (new URLSearchParams(location.search).get('auto')){
+  const out = [];
+  const box = document.createElement('div');
+  document.body.appendChild(box);
+  TYPES.forEach(t => {
+    const el = document.createElement('div');
+    box.appendChild(el);
+    try {
+      runMinigame(Object.assign({ type:t }, SAMPLES[t] || {}), el, () => {});
+      const has = !!el.querySelector('.mg-stage');
+      const btns = el.querySelectorAll('button').length;
+      out.push(`${t}: ${has ? '화면 생성 O' : '화면 생성 X'} · 버튼 ${btns}`);
+      if (!has) out.push('  ⚠ ' + t + ' 이 화면을 만들지 못했습니다');
+    } catch(e){
+      out.push(`${t}: 예외 — ${e && e.message}`);
+    }
+  });
+  document.getElementById('auto').textContent = out.join('\n');
+  console.log('[MINIGAMES] ' + JSON.stringify(out));
+}
+
+/* ── 자동 조작 검사 — 정해진 답이 있는 형식을 끝까지 눌러 본다 ── */
+if (new URLSearchParams(location.search).get('drive')){
+  const log = [];
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const box = document.createElement('div');
+  document.body.appendChild(box);
+
+  async function drive(t, steps){
+    const el = document.createElement('div');
+    box.appendChild(el);
+    let done = null;
+    runMinigame(Object.assign({ type:t }, SAMPLES[t] || {}), el, ok => { done = ok; });
+    await sleep(30);
+    try { await steps(el); } catch(e){ log.push(t + ': 조작 중 예외 — ' + e.message); return; }
+    await sleep(80);
+    // 끝난 뒤에는 '잘 하였소 →' 를 눌러야 다음으로 넘어간다
+    const label = (el.querySelector('#mgAction') || {}).textContent || '';
+    if (done === null){
+      const a = el.querySelector('#mgAction');
+      if (a) a.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+      await sleep(60);
+    }
+    log.push(t + ': ' + (done === true ? '성공으로 종료 O' : done === false ? '실패로 종료(정상 종료)' : '종료되지 않음 X') +
+             ' · 끝 버튼 "' + label.trim() + '"');
+  }
+  const click = (el, sel, i) => { const n = el.querySelectorAll(sel); if (n[i]) n[i].dispatchEvent(new PointerEvent('pointerdown', {bubbles:true})); };
+  const clickAll = (el, sel) => el.querySelectorAll(sel).forEach(n => n.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true})));
+
+  (async () => {
+    // stack — 차례대로
+    await drive('stack', async el => {
+      for (let i = 0; i < 4; i++){
+        const b = [...el.querySelectorAll('.mg-step')].find(x => +x.dataset.i === i);
+        b.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(10);
+      }
+    });
+    // order — 차례대로
+    await drive('order', async el => {
+      for (let i = 0; i < 3; i++){
+        const b = [...el.querySelectorAll('.mg-ocard')].find(x => +x.dataset.i === i);
+        b.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(10);
+      }
+    });
+    // blank — 정답 입력
+    await drive('blank', async el => {
+      el.querySelector('#mgBlank').value = '뗀석기';
+      el.querySelector('#mgAction').dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+    });
+    // weigh — 8 + 3 + 1 = 12
+    await drive('weigh', async el => {
+      const chips = [...el.querySelectorAll('.mg-chip')];
+      const pick = w => chips.find(c => c.dataset.w === String(w));
+      [8,3,1].forEach(w => pick(w).dispatchEvent(new PointerEvent('pointerdown', {bubbles:true})));
+      await sleep(20);
+      el.querySelector('#mgAction').dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+    });
+    // route — 20 → 4 (막힌 칸 7,12,16,18 피하기)
+    await drive('route', async el => {
+      const path = [15,10,5,0,1,2,3,4];
+      for (const i of path){
+        const c = el.querySelector('.mg-rcell[data-i="' + i + '"]');
+        c.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(10);
+      }
+    });
+    // cipher — 신호와 같은 차례의 뜻을 고른다
+    await drive('cipher', async el => {
+      for (let r = 0; r < 4; r++){
+        const sig = el.querySelector('#mgSig').textContent;
+        const idx = SAMPLES.cipher.table.findIndex(x => x.sign === sig);
+        const b = el.querySelector('.q-choice[data-i="' + idx + '"]');
+        if (!b) break;
+        b.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(500);
+      }
+    });
+    // sort — 라벨을 보고 올바른 통에
+    await drive('sort', async el => {
+      for (let i = 0; i < 10; i++){
+        const label = (el.querySelector('#mgPool .mg-chip') || {}).textContent || '';
+        const item = SAMPLES.sort.items.find(x => label.indexOf(x.label) >= 0);
+        if (!item) break;
+        el.querySelector(item.korean ? '#binL' : '#binR')
+          .dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(10);
+      }
+    });
+    // trace — 점을 차례대로
+    await drive('trace', async el => {
+      for (let i = 0; i < 5; i++){
+        const b = el.querySelector('.mg-tnode[data-i="' + i + '"]');
+        b.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(10);
+      }
+    });
+    // spin — 버튼 연타로도 돌아간다
+    await drive('spin', async el => {
+      for (let i = 0; i < 40; i++){
+        el.querySelector('#mgAction').dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+        await sleep(2);
+      }
+    });
+    // dig — 모든 칸을 판다
+    await drive('dig', async el => { clickAll(el, '.mg-cell'); });
+
+    console.log('[DRIVE] ' + JSON.stringify(log));
+    document.getElementById('auto').textContent += '\n\n' + log.join('\n');
+  })();
+}
+
+play(TYPES[0]);
+</script>
+</body>
+</html>

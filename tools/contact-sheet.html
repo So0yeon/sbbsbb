@@ -1,0 +1,38 @@
+<!-- © 2026 김용현 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>사진 눈으로 확인하기 — 史뿐史뿐</title>
+<link rel="stylesheet" href="../vendor/font/pretendard.css">
+<style>
+  body{ font-family:'Pretendard Variable',Pretendard,sans-serif; background:#F7F7F5; color:#191919;
+        margin:0; padding:16px; }
+  h1{ font-size:18px; margin:0 0 4px; }
+  p.sub{ font-size:13px; color:#777; margin:0 0 14px; }
+  .grid{ display:grid; grid-template-columns:repeat(8,1fr); gap:8px; }
+  figure{ margin:0; background:#fff; border:1px solid #EAEAEA; border-radius:8px; overflow:hidden; }
+  figure img{ width:100%; height:104px; object-fit:cover; display:block; background:#F1F1EC; }
+  figcaption{ font-size:10.5px; padding:4px 5px 6px; line-height:1.3; }
+  figcaption b{ display:block; font-size:11px; }
+  figcaption span{ color:#777; }
+</style>
+</head>
+<body>
+<h1>추가로 모은 사진 — 눈으로 확인</h1>
+<p class="sub">자동 검색만 믿지 않습니다. 항목 이름과 사진이 맞는지 봅니다. 어긋난 것은 지우고 검색어를 고칩니다.</p>
+<div class="grid" id="grid"></div>
+<script>
+fetch('photo-fetch-log.txt').then(r => r.text()).then(t => {
+  const rows = t.trim().split('\n').map(l => l.split('\t'));
+  document.getElementById('grid').innerHTML = rows.map(r => {
+    const [id, file, title] = r;
+    return `<figure>
+      <img src="../assets/photos/${file}" alt="">
+      <figcaption><b>${id}</b><span>${(title||'').replace('File:','').slice(0,42)}</span></figcaption>
+    </figure>`;
+  }).join('');
+});
+</script>
+</body>
+</html>

@@ -78,3 +78,56 @@
 | `suro.jpg` | suro | `hb_18964888` | HappyMidnight | CC BY-SA 4.0 |
 
 사진 68장.
+
+
+## 추가 수집 (개발 시작 이후)
+
+아래는 관찰 임무에 쓰려고 나중에 더 모은 사진입니다. 원본 문서 링크는 `tools/photo-fetch-log.txt` 에 있습니다.
+
+| 파일 | 학습 항목 | 원래 id | 저작자 | 라이선스 |
+|---|---|---|---|---|
+| `bi-gwanggaeto.jpg` | bi-gwanggaeto | — | Unknown authorUnknown author | Public domain |
+| `seokchon.jpg` | seokchon | — | Paulsbgo | CC BY-SA 4.0 |
+| `chiljido.jpg` | chiljido | — | Gary Todd from Xinzheng, China | CC0 |
+| `goryeong.jpg` | goryeong | — | Korea Heritage Service | CC BY-SA 4.0 |
+| `sillauisik.jpg` | sillauisik | — | bifyu (a flickr user) | CC BY-SA 2.0 |
+| `maekjeok.jpg` | maekjeok | — | Unknown authorUnknown author | Public domain |
+| `jumong.jpg` | jumong | — | The Australian National University | CC BY-SA 4.0 |
+| `jangsu.jpg` | jangsu | — | Prcshaw | CC BY-SA 4.0 |
+| `onjo.jpg` | onjo | — | en:User:Straitgate | CC BY-SA 3.0 |
+| `hyeokgeose.jpg` | hyeokgeose | — | Cultural Heritage Authority (of Korea) | KOGL Type 1 |
+| `icadon.jpg` | icadon | — | Love29son | CC BY-SA 4.0 |
+| `jinheung.jpg` | jinheung | — | National Museum of Korea | KOGL Type 1 |
+| `salsu.jpg` | salsu | — | Ebadollah | CC BY-SA 4.0 |
+| `ansiseong.jpg` | ansiseong | — | Rincewind42 [2] | CC BY-SA 3.0 |
+| `hwangsan.jpg` | hwangsan | — | War Memorial of Korea Open Archives | KOGL Type 1 |
+| `gwansanseong.jpg` | gwansanseong | — | 문화재청 | KOGL Type 1 |
+| `jinju.jpg` | jinju | — | Kang Byeong Kee | CC BY 3.0 |
+| `tongsinsa.jpg` | tongsinsa | — | Appleysj | CC BY-SA 4.0 |
+| `sangpyeongtongbo.jpg` | sangpyeongtongbo | — | Donald Trung Quoc Don (Chữ Hán: 徵國單) - Wikimedia Commons - © CC BY-SA 4.0 International.(Want to use this image?)Original publication 📤: --Donald Trung 『徵國單』 (No Fake News 💬) (WikiProject Numismatics 💴) (Articles 📚) 19:14, 28 November 2019 (UTC) | CC BY-SA 4.0 |
+| `hangeulsoseol.jpg` | hangeulsoseol | — | Anoymous | Public domain |
+| `uibyeong.jpg` | uibyeong | — | Unknown authorUnknown author | CC BY 4.0 |
+| `tangpyeong.jpg` | tangpyeong | — | Chae Yong-sin / Jo Seokjin | Public domain |
+| `cheonjugyo.jpg` | cheonjugyo | — | Matthew smith 254 | CC BY-SA 3.0 |
+| `donghak-changje.jpg` | donghak-changje | — | Unknown authorUnknown author | Public domain |
+| `cheokhwabi.jpg` | cheokhwabi | — | 문화재청 (공공누리 제1유형) | CC BY-SA 4.0 |
+| `dongnimmun.jpg` | dongnimmun | — | Unknown authorUnknown author | Public domain |
+| `gukgwon.jpg` | gukgwon | — | Willard D. Straight | Public domain |
+| `yugwansun.jpg` | yugwansun | — | Unknown authorUnknown author | Public domain |
+| `samil.jpg` | samil | — | Jo So-ang (1887–1958) | Public domain |
+| `joseoneo.jpg` | joseoneo | — | LERK | CC BY-SA 4.0 |
+| `ssalsutal.jpg` | ssalsutal | — | Korea Tourism Organiazation (한국관광공사) | KOGL Type 1 |
+| `sinheung.jpg` | sinheung | — | Unknown authorUnknown author | Public domain |
+| `chongseongeo.jpg` | chongseongeo | — | Unknown authorUnknown author | Public domain |
+| `hangang-gyo.jpg` | hangang-gyo | — | Unknown authorUnknown author | Public domain |
+| `heungnam.jpg` | heungnam | — | Unknown authorUnknown author | Public domain |
+| `boatman.jpg` | boatman | — | Unknown authorUnknown author | Public domain |
+| `pinanjip.jpg` | pinanjip | — | 한국저작권위원회 | CC BY 4.0 |
+| `muljigye.jpg` | muljigye | — | 국립민속박물관 | KOGL Type 1 |
+| `sijang.jpg` | sijang | — | Christophe95 | CC BY-SA 4.0 |
+| `chinain.jpg` | chinain | — | cezzie901 | CC BY 2.0 |
+| `milmyeon.jpg` | milmyeon | — | by shizu k (shezzz) at Flickr | CC BY-SA 2.0 |
+| `amnok.jpg` | amnok | — | Caitriana Nicholson from 北京 ~ Beijing, 中国 ~ China | CC BY-SA 2.0 |
+| `armistice.jpg` | armistice | — | United States Department of State | Public domain |
+| `isan.jpg` | isan | — | Rbtjd0201(talk / Contributions) at the Korean Wikipedia | Public domain |
+| `ireumdoro.jpg` | ireumdoro | — | JoshBerglund19 | CC BY 2.0 |

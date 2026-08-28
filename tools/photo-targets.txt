@@ -1,0 +1,130 @@
+학습 항목 166개 · 사진 있음 41개 · 없음 125개
+퀘스트가 참조하는 항목 72개 중 사진 있음 18개
+
+사진이 필요한 항목 (퀘스트가 쓰는 것 먼저)
+id	종류	시대	분류	이름
+samil	inspect	colonial	event	3·1 운동
+joseoneo	inspect	colonial	culture	우리말을 지킨 사람들
+jinju	inspect	joseon_l	event	진주 대첩
+tongsinsa	inspect	joseon_l	exchange	조선통신사
+yeonhaeng	inspect	joseon_l	exchange	청에 다녀온 사신
+sangpyeongtongbo	inspect	joseon_l	exchange	상평통보와 장시
+hangeulsoseol	inspect	joseon_l	culture	한글 소설과 민화
+chongseongeo	inspect	liberation	event	5·10 총선거
+bi-gwanggaeto	inspect	three	relic	광개토대왕릉비
+maekjeok	inspect	three	culture	고구려 귀족의 밥상, 맥적
+seokchon	inspect	three	relic	서울 석촌동 고분군
+sillauisik	inspect	three	culture	토우로 보는 신라 사람들의 옷차림
+goryeong	inspect	three	relic	고령 대가야 고분군
+chiljido	inspect	three	exchange	일본에 전한 문화
+heungnam	inspect	war	event	흥남 철수
+milmyeon	inspect	war	life	밀면 — 고향을 그리는 음식
+ireumdoro	inspect	war	culture	이름을 부르는 길
+dongnimmun	minigame	open	relic	독립문과 독립협회
+gukgwon	choice	colonial	event	국권을 빼앗기다
+yugwansun	choice	colonial	person	유관순과 아우내 만세
+sinheung	choice	colonial	relic	신흥무관학교
+kimgu	choice	colonial	person	김구와 한인애국단
+gangje	choice	colonial	event	강제로 끌려간 사람들
+ssalsutal	choice	colonial	life	쌀 수탈과 군산항
+uibyeong	role	joseon_l	person	곽재우와 의병
+tangpyeong	role	joseon_l	person	영조와 정조의 탕평
+sinbunje	choice	joseon_l	event	신분제의 동요
+cheonjugyo	choice	joseon_l	event	천주교의 전래
+donghak-changje	choice	joseon_l	person	동학의 창시
+sedo	choice	joseon_l	event	세도정치와 삼정의 문란
+gwangbok	choice	liberation	event	8·15 광복
+cheokhwabi	choice	open	relic	척화비
+jumong	choice	three	person	주몽과 고구려
+jangsu	choice	three	event	장수왕의 평양 천도
+salsu	role	three	event	살수 대첩
+ansiseong	choice	three	event	안시성 싸움
+onjo	choice	three	person	온조와 한성 백제
+geunchogo	role	three	person	근초고왕
+hyeokgeose	choice	three	person	박혁거세와 사로국
+gwansanseong	role	three	event	성왕과 관산성 전투
+icadon	choice	three	person	이차돈의 순교
+jinheung	role	three	event	진흥왕과 한강 차지
+hwangsan	role	three	event	황산벌 싸움
+amnok	choice	war	event	압록강까지 진격
+armistice	choice	war	event	정전 협정
+isan	choice	war	culture	헤어진 가족들
+warstart	choice	war	event	전쟁이 시작되던 날
+hangang-gyo	choice	war	event	한강 다리와 피란길
+pinanjip	choice	war	life	피란살이와 판잣집
+cheonmak	choice	war	culture	천막 학교
+muljigye	choice	war	life	물지게와 물 긷기
+sijang	choice	war	life	국제시장과 장사
+chinain	choice	war	exchange	피란지에 모인 사람들
+boatman	choice	war	event	흥남 철수와 뱃사람
+beop8		bronze	event	고조선의 8조법
+misongri		bronze	relic	미송리식 토기
+gochang-dolmen		bronze	relic	고창·화순 고인돌
+songgungni		bronze	life	부여 송국리 마을
+imsi		colonial	event	대한민국 임시정부
+bongodong		colonial	event	봉오동 전투
+cheongsanri		colonial	event	청산리 대첩
+mulsan		colonial	event	물산 장려 운동
+gwangbokgun		colonial	event	한국광복군
+taejo		goryeo	person	태조 왕건
+yungwan		goryeo	event	윤관과 별무반
+ganghwado		goryeo	event	강화도 천도
+byeokrando		goryeo	exchange	벽란도
+munikjeom		goryeo	person	문익점과 목화
+ilyeon		goryeo	culture	일연과 삼국유사
+choemuseon		goryeo	person	최무선과 진포 싸움
+wihwado		joseon_e	event	위화도 회군
+hanyang		joseon_e	event	한양 천도
+sagun		joseon_e	event	4군 6진
+waegwan		joseon_e	exchange	삼포와 왜관
+myeongnyang		joseon_l	event	명량 대첩
+noryang		joseon_l	event	노량 해전
+haengju		joseon_l	event	행주 대첩
+gyeonhwon		later	person	견훤과 후백제
+gungye		later	person	궁예와 후고구려
+wanggeon-founding		later	person	왕건의 고려 건국
+silla-surrender		later	event	신라의 항복
+unification936		later	event	후삼국 통일
+hb_later_hoju		later	life	지방에서 일어난 호족
+hb_later_poseokjeong		later	relic	경주 포석정
+hb_later_silla_end		later	event	기울어 가는 신라
+hb_later_gyeonhwonsanseong		later	relic	상주 견훤산성
+hb_later_naju		later	event	나주를 차지한 왕건
+hb_later_balhae_refugee		later	exchange	발해 유민을 받아들이다
+hb_later_gyeongsunwang		later	person	경순왕릉
+hb_later_naksandong		later	relic	선산 낙산동 삼층석탑
+line38		liberation	event	38도선
+election		liberation	event	5·10 총선거
+government		liberation	event	대한민국 정부 수립
+kimgu-return		liberation	person	통일 정부를 바란 사람들
+jeju43		liberation	event	제주 4·3 사건
+amsadong		neo	relic	서울 암사동
+dongsamdong		neo	relic	부산 동삼동 조개더미
+osanri		neo	relic	양양 오산리
+gosanri		neo	relic	제주 고산리
+nongsa		neo	life	농사와 가축 기르기
+ganseok		neo	life	갈아서 만든 도구
+byeongin		open	event	병인양요
+sinmi		open	event	신미양요
+gapsin		open	event	갑신정변
+donghak		open	event	동학 농민 운동
+eulmi		open	event	을미사변
+eulsa		open	event	을사늑약
+hague		open	event	헤이그 특사
+ahn		open	person	안중근 의거
+sindolseok		open	person	신돌석과 의병
+seokjangni		paleo	relic	공주 석장리
+suyanggae		paleo	relic	단양 수양개
+makjip		paleo	life	동굴과 막집
+tteon		paleo	life	돌을 깨서 만든 도구
+munmu		unified	person	문무왕과 삼국 통일
+kimyusin		unified	person	김유신
+gameunsa		unified	relic	감은사지 삼층석탑
+sanggyeong		unified	relic	발해 상경성
+haedong		unified	culture	해동성국 발해
+jangbogo		unified	person	장보고와 청해진
+uisang		unified	person	원효와 의상
+war-start		war	event	전쟁이 시작되다
+nakdong		war	event	낙동강 방어선
+incheon		war	event	인천 상륙 작전
+china-in		war	event	중국군 개입과 1·4 후퇴

@@ -245,6 +245,7 @@ function renderInspect(q, card){
     <p class="q-progress" id="qProg"></p>
     <div id="qCapHost"></div>
     <div class="q-fb" id="qFb"></div>
+    <div id="qMiniHost"></div>
     <button class="q-next" id="qNext" type="button"></button>`;
 
   const host = card.querySelector('#qHots');
@@ -271,25 +272,34 @@ function renderInspect(q, card){
   function openCap(){
     if (capOpen) return;
     capOpen = true;
-    if (!q.capstone){ complete(q, card); return; }
+
     const cap = q.capstone;
+    const hasQuiz = cap && Array.isArray(cap.choices) && cap.choices.length >= 2;
     const capHost = card.querySelector('#qCapHost');
+
+    // 마무리 문제가 없거나 선택지가 비어 있으면 놀이나 완료로 넘어간다
+    if (!hasQuiz){
+      if (cap && cap.text) capHost.innerHTML = `<p class="q-q">${esc(cap.text)}</p>`;
+      afterCap();
+      return;
+    }
+
     capHost.innerHTML = `<p class="q-q">${esc(cap.text)}</p><div id="capChoices"></div>`;
     const ch = capHost.querySelector('#capChoices');
-    ch.innerHTML = choicesHTML(cap.choices || []);
+    ch.innerHTML = choicesHTML(cap.choices);
     let tries = 0;
     ch.querySelectorAll('.q-choice').forEach(b => onPress(b, () => {
       const i = +b.dataset.i;
       tries++;
       const ok = i === cap.correct;
       logAnswer({ world: ST.WORLD_ID, questId: q.id, title: q.title,
-                  question: cap.text, answer: (cap.choices || [])[i], correct: ok, tries, kind:'capstone' });
+                  question: cap.text, answer: cap.choices[i], correct: ok, tries, kind:'capstone' });
       if (ok){
         b.classList.add('correct');
         ch.querySelectorAll('.q-choice').forEach(x => x.disabled = true);
         fb(card, 'ok', cap.ok || '그러하오.');
         setAnim('cheer');
-        complete(q, card);
+        afterCap();
       } else {
         b.classList.add('wrong');
         setTimeout(() => b.classList.remove('wrong'), 700);
@@ -297,6 +307,25 @@ function renderInspect(q, card){
         setAnim('tilt');
       }
     }));
+  }
+
+  /** 조사형에도 놀이가 붙을 수 있다 (빗살무늬토기의 낱말 적기 같은 것) */
+  function afterCap(){
+    if (!q.mini){ complete(q, card); return; }
+    const host = card.querySelector('#qMiniHost');
+    nextBtn(card, q.mini.startLabel || '해 보겠소 →', () => {
+      card.querySelector('#qNext').classList.remove('on');
+      runMinigame(q.mini, host, ok => {
+        host.innerHTML = '';
+        if (ok){
+          bumpAxis('challenge', 1);
+          fb(card, 'ok', q.mini.ok || '해내었소.');
+        } else {
+          fb(card, 'neutral', q.mini.retry || '괜찮소. 다음 길로 가도 되오.');
+        }
+        complete(q, card);
+      });
+    });
   }
   paint();
 }

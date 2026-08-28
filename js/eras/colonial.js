@@ -184,7 +184,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "epilogue": "실제 역사 속에서는 신분과 나이를 가리지 않은 수많은 사람이 이 함성에 나섰소. 3·1 운동은 전국, 나아가 나라 밖으로까지 퍼져 석 달 넘게 이어졌소. 일제는 이를 폭력으로 진압했는데, 경기도 화성 제암리에서는 사람들을 교회에 가두고 불을 질러 죽이기까지 하였소. 그런 희생 속에서도 3·1 운동은 우리 역사상 가장 큰 민족 운동으로 남았소.",
-  "cat": "event"
+  "cat": "event",
+  "img": [
+   "samil.jpg"
+  ]
  },
  {
   "title": "우리말을 지키는 교실",
@@ -214,7 +217,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "epilogue": "실제 역사 속에서는 조선어학회 학자들이 맞춤법을 정리하고 사전을 준비하다 여럿이 잡혀갔소. 원고를 잃었지만, 광복 뒤 되찾아 끝내 우리말 사전을 완성하였소.",
-  "cat": "culture"
+  "cat": "culture",
+  "img": [
+   "joseoneo.jpg"
+  ]
  },
  {
   "title": "헌병의 검문 앞에서",
@@ -244,7 +250,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "epilogue": "실제 역사 속에서는 헌병 경찰이 사람들의 말과 행동 하나하나를 감시하였소. 학교 선생님까지 칼을 차야 했던 시절, 이런 일상의 긴장은 누구에게나 있었소.",
-  "cat": "event"
+  "cat": "event",
+  "img": [
+   "gukgwon.jpg"
+  ]
  },
  {
   "title": "부두에 도착한 소집 통지",
@@ -304,7 +313,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "epilogue": "실제 역사 속에서는 신흥무관학교를 거친 이들이 훗날 봉오동과 청산리에서 일본군을 크게 무찔렀소. 지형을 잘 아는 사람들, 그리고 그들을 뒷받침한 이주민들이 함께 만든 승리였소.",
-  "cat": "relic"
+  "cat": "relic",
+  "img": [
+   "sinheung.jpg"
+  ]
  },
  {
   "title": "한인애국단의 결심",
@@ -364,7 +376,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "epilogue": "실제 역사 속에서는 이날 시위로 유관순의 부모를 포함해 여러 사람이 목숨을 잃었소. 유관순은 현장에서 체포되어 감옥에 갇힌 뒤에도 만세를 그치지 않았고, 결국 감옥에서 순국하였소. 열여덟 살, 짧지만 꺾이지 않은 삶이었소.",
-  "cat": "person"
+  "cat": "person",
+  "img": [
+   "yugwansun.jpg"
+  ]
  },
  {
   "title": "군산항, 떠나가는 쌀가마",
@@ -394,7 +409,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "epilogue": "실제 역사 속에서는 일제가 일본의 쌀 부족 문제를 우리나라에서 해결하려 하면서, 군산항 같은 곳에서 엄청난 양의 쌀이 일본으로 실려 나갔소. 정작 조선 농민들의 살림은 갈수록 어려워졌라오.",
-  "cat": "life"
+  "cat": "life",
+  "img": [
+   "ssalsutal.jpg"
+  ]
  },
  {
   "title": "봉오동 전투와 청산리 대첩",
@@ -524,7 +542,8 @@ export const QUESTS_COLONIAL_BASE = [
    "binLeftLabel": "왼쪽",
    "binRightLabel": "오른쪽"
   },
-  "cat": "life"
+  "contentId": "mulsan",
+  "cat": "event"
  },
  {
   "title": "비밀 신호 전달하기",
@@ -582,7 +601,10 @@ export const QUESTS_COLONIAL_BASE = [
     "note": "이 선언서는 사람들의 손을 거쳐 전국 곳곳, 나라 밖으로까지 은밀히 퍼져 나갔소."
    }
   ],
-  "cat": "event"
+  "cat": "event",
+  "img": [
+   "samil.jpg"
+  ]
  },
  {
   "title": "우리말 사전 원고",
@@ -591,8 +613,8 @@ export const QUESTS_COLONIAL_BASE = [
   "kind": "inspect",
   "area": "hub",
   "pos": {
-   "x": 18,
-   "z": 3
+   "x": 18.4,
+   "z": 3.7
   },
   "contentId": "joseoneo",
   "hotspots": [
@@ -617,10 +639,16 @@ export const QUESTS_COLONIAL_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "조선어학회 (허용: 조선어 학회)",
+   "answer": [
+    "조선어학회",
+    "조선어 학회"
+   ],
    "ok": "그러하오! 조선어학회 학자들은 우리말 표기법을 하나로 정리하고 사전을 만들다 여러 사람이 잡혀가고 원고를 빼앗기기도 하였소. 그렇게 지켜낸 원고로, 광복 뒤 마침내 우리말 사전이 완성됐라오."
   },
-  "cat": "culture"
+  "cat": "culture",
+  "img": [
+   "joseoneo.jpg"
+  ]
  },
  {
   "title": "1936년, 베를린의 마라토너",
@@ -678,7 +706,11 @@ export const QUESTS_COLONIAL_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "헌병 (허용: 헌병 경찰, 헌병경찰)",
+   "answer": [
+    "헌병",
+    "헌병 경찰",
+    "헌병경찰"
+   ],
    "ok": "그러하오! 헌병은 원래 군대에서 경찰의 역할을 하는 군인이오. 일제는 이 헌병에게 일반 경찰 임무까지 맡겨, 한국인의 말과 행동 하나하나를 감시하고 독립운동을 탄압했라오."
   },
   "cat": "event"
@@ -719,7 +751,9 @@ export const QUESTS_COLONIAL_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "안중근",
+   "answer": [
+    "안중근"
+   ],
    "ok": "그러하오! 안중근은 연해주에서 의병 활동을 하다, 우리나라 침략에 앞장선 이토 히로부미를 만주의 하얼빈역에서 처단하였소. 나라를 지키려는 의병들의 저항이 이렇게까지 이어졌라오."
   },
   "cat": "relic"
@@ -802,7 +836,11 @@ export const QUESTS_COLONIAL_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "광주 학생 항일 운동 (허용: 광주학생항일운동, 광주 학생 항일운동)",
+   "answer": [
+    "광주 학생 항일 운동",
+    "광주학생항일운동",
+    "광주 학생 항일운동"
+   ],
    "ok": "그러하오! 광주 학생 항일 운동은 한국 학생을 차별하고 우리말과 역사를 제대로 배우지 못하게 하는 현실에 항의하며 전국으로 퍼졌소. 6·10 만세 운동과 함께, 학생들이 앞장선 대표적인 저항이었라오."
   },
   "cat": "relic"
@@ -873,7 +911,9 @@ export const QUESTS_COLONIAL_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "윤봉길",
+   "answer": [
+    "윤봉길"
+   ],
    "ok": "그러하오! 윤봉길은 상하이 훙커우 공원에서 열린 일제의 기념행사에 폭탄을 던져 일본군에게 큰 피해를 주었소. 이 의거로 중국 정부가 대한민국 임시 정부를 돕기 시작했라오."
   },
   "cat": "relic"
@@ -885,7 +925,7 @@ export const QUESTS_COLONIAL_BASE = [
   "kind": "inspect",
   "area": "shanghai",
   "pos": {
-   "x": -7,
+   "x": -8.4,
    "z": 2
   },
   "hotspots": [
@@ -910,9 +950,13 @@ export const QUESTS_COLONIAL_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "한국광복군 (허용: 광복군)",
+   "answer": [
+    "한국광복군",
+    "광복군"
+   ],
    "ok": "그러하오! 한국광복군은 대한민국 임시 정부가 창설한 정규군으로, 미군과 협력해 국내 진입 작전을 준비하였소. 비록 일제의 항복으로 작전을 실현하지 못했지만, 스스로의 힘으로 나라를 되찾으려 한 의지를 보여 준 사례라오."
   },
+  "contentId": "gwangbokgun",
   "cat": "event"
  },
  {
@@ -1010,7 +1054,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "prompt": "탑골공원 곳곳에서 그날의 흔적 3가지를 찾아보시오",
-  "cat": "event"
+  "cat": "event",
+  "img": [
+   "samil.jpg"
+  ]
  },
  {
   "title": "아우내 장터 곳곳에서 그날의 흔적 3가지를 찾아보시오",
@@ -1051,7 +1098,10 @@ export const QUESTS_COLONIAL_BASE = [
    }
   ],
   "prompt": "아우내 장터 곳곳에서 그날의 흔적 3가지를 찾아보시오",
-  "cat": "person"
+  "cat": "person",
+  "img": [
+   "yugwansun.jpg"
+  ]
  }
 ];
 

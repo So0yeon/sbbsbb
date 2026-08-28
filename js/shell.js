@@ -415,6 +415,48 @@
                 var go = document.getElementById('exStoryGo');
                 if (go) go.click();
 
+                if (STOP === 'inspect') {
+                  // 조사형 + 놀이가 붙은 임무를 끝까지 눌러 본다 (빗살무늬토기)
+                  window.AtlasExplore.switchWorld('neolithic');
+                  setTimeout(function () {
+                    var go2 = document.getElementById('exStoryGo'); if (go2) go2.click();
+                    var W = window.AtlasExplore.WORLDS['neolithic'];
+                    var bq = W.quests.find(function (x) { return x.id === 'bitsal'; });
+                    say('빗살임무', bq ? bq.kind + '/' + (bq.mini && bq.mini.type) + '/사진 ' + (bq.img ? bq.img[0] : '없음') : '없음');
+                    var rail = document.querySelectorAll('#exRailList .rail-item');
+                    for (var k = 0; k < rail.length; k++) {
+                      if (rail[k].textContent.indexOf('빗살') >= 0) { rail[k].click(); break; }
+                    }
+                    setTimeout(function () {
+                      var hots = document.querySelectorAll('#questCard .q-hot');
+                      say('살펴볼것', hots.length);
+                      for (var h = 0; h < hots.length; h++) hots[h].dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+                      setTimeout(function () {
+                        var again = document.querySelectorAll('#questCard .q-hot');
+                        for (var h2 = 0; h2 < again.length; h2++) again[h2].dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+                        setTimeout(function () {
+                          var nx = document.querySelector('#questCard #qNext');
+                          say('다음버튼', nx ? nx.textContent : '없음');
+                          if (nx) nx.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+                          setTimeout(function () {
+                            say('놀이열림', document.querySelector('#questCard .mg') ? '열림' : '안열림');
+                            var inp = document.querySelector('#questCard #mgBlank');
+                            if (inp) {
+                              inp.value = '빗살무늬토기';
+                              document.querySelector('#questCard #mgAction').dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+                            }
+                            setTimeout(function () {
+                              say('낱말판정', (document.querySelector('#questCard #mgAction') || {}).textContent || '');
+                              console.log('[SELFTEST] ' + JSON.stringify(out));
+                            }, 300);
+                          }, 300);
+                        }, 300);
+                      }, 300);
+                    }, 500);
+                  }, 900);
+                  return;
+                }
+
                 if (STOP === 'quest') {
                   setTimeout(function () {
                     var first = document.querySelector('#exRailList .rail-item');

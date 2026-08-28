@@ -314,6 +314,7 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "그 결단이 새 나라의 문을 연다. 말머리를 돌려 개경으로 돌아온 당신은 권력을 손에 쥐고, 낡은 고려를 대신할 새 나라를 세울 채비를 시작한다. 1392년, 마침내 \"조선\"이라는 이름이 역사에 새겨진다.",
    "no": "그렇게는 무리한 싸움에 나라 전체가 흔들린다. 지금은 군대를 돌려야 할 때다. 다시 판단하라."
   },
+  "contentId": "wihwado",
   "cat": "event"
  },
  {
@@ -338,6 +339,7 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "현명한 선택이다. 한강을 따라 세곡과 물자가 오르내리고, 사방의 산이 도성을 든든히 감싼다. 유교의 가르침에 따라 궁궐과 종묘, 사대문을 짜임새 있게 앉히니, 이 도시의 구조 자체가 새 나라의 뜻을 담게 된다.",
    "no": "그런 자리로는 새 나라의 백년대계를 세울 수 없다. 물길과 산줄기를 함께 갖춘 한양이 답이다. 다시 판단하라."
   },
+  "contentId": "hanyang",
   "cat": "event"
  },
  {
@@ -391,6 +393,25 @@ export const QUESTS_JOSEONE_BASE = [
    "x": 16,
    "z": -8
   },
+  "kind": "inspect",
+  "hotspots": [
+   {
+    "label": "혼인의 규정",
+    "note": "\"남자는 15세, 여자는 14세부터 혼인을 할 수 있다.\" 나라가 백성의 혼인 나이까지 법으로 정해 두었소."
+   },
+   {
+    "label": "매매의 규정",
+    "note": "\"땅과 집을 사거나 팔면 100일 안에 관청에 보고해야 한다.\" 개인의 거래도 나라에 알려야 하였다오."
+   },
+   {
+    "label": "병역 면제 규정",
+    "note": "\"부모가 많이 아프거나 나이가 70세 이상이면 아들 중 한 명은 군대에 가지 않는다.\" 효를 중히 여기는 유교 정신이 법에도 담겼소."
+   },
+   {
+    "label": "형벌의 규정",
+    "note": "죄의 무거움에 따라 태형(볼기를 치는 가벼운 벌)·장형(태형보다 무거운 매질)·도형(옥에 가두는 벌)·유형(먼 곳으로 보내는 벌)·사형, 다섯 단계로 벌을 나누어 두었소."
+   }
+  ],
   "capstone": {
    "text": "저잣거리에서 다투던 두 사람이 관아에 왔다. 한 사람이 이웃의 밭을 몰래 갈아 곡식을 훔쳐 갔다는 사실이 밝혀졌다면, 『경국대전』의 형벌 체계에 따라 어떤 판단이 옳을까?",
    "choices": [
@@ -427,7 +448,11 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "뜻깊은 이름이다. \"큰 복을 누리라\"는 마음을 담은 경복궁, 그 안의 근정전과 경회루 하나하나에도 유교의 가르침이 스며든다. 이 궁궐은 임진왜란에 불타 없어졌다가도 다시 일어서며, 조선의 처음과 끝을 함께하는 상징으로 남는다.",
    "no": "그런 이름으로는 나라의 뜻을 담을 수 없다. 큰 복을 기린다는 \"경복궁\"이 이 궁궐에 어울리는 이름이다. 다시 판단하라."
   },
-  "cat": "event"
+  "contentId": "gyeongbok",
+  "cat": "relic",
+  "img": [
+   "gyeongbok.jpg"
+  ]
  },
  {
   "title": "종묘",
@@ -451,7 +476,11 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "단정한 선택이다. 꾸밈을 걷어 내고 길고 낮게 이어진 건물, 그 절제된 모습 자체가 유교의 정신을 고스란히 보여 준다. 제사 때 울리는 종묘제례악과 함께, 이 종묘는 훗날 유네스코 세계유산에 오르는 조선의 자랑이 된다.",
    "no": "그렇게 화려하게 꾸며서는 조상을 기리는 엄숙함을 담을 수 없다. 절제된 길고 낮은 모습이 종묘에 어울린다. 다시 판단하라."
   },
-  "cat": "event"
+  "contentId": "jongmyo",
+  "cat": "relic",
+  "img": [
+   "jongmyo.jpg"
+  ]
  },
  {
   "title": "삼강행실도 — 최루백 이야기",
@@ -559,7 +588,11 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "예를 높인다는 \"숭례문\", 그 이름 하나에도 나라가 소중히 여긴 가치가 새겨진다. 사대문과 사소문 하나하나에 유교의 다섯 덕목이 깃들며, 도성의 구조 자체가 조선이 지향한 세상을 보여 주게 된다.",
    "no": "그렇게는 이 문에 나라의 뜻을 담을 수 없다. 예를 높인다는 \"숭례문\"이 남쪽 정문에 어울리는 이름이다. 다시 판단하라."
   },
-  "cat": "event"
+  "contentId": "sungnyemun",
+  "cat": "relic",
+  "img": [
+   "sungnyemun.jpg"
+  ]
  },
  {
   "title": "피란 봇짐 — 임진왜란과 백성의 살림",
@@ -615,11 +648,18 @@ export const QUESTS_JOSEONE_BASE = [
   "story": "당신은 집현전 학자다. 세종께서 밤늦도록 손수 글자를 궁리하시는 모습을 가까이서 지켜봤다. 한자는 너무 어려워, 죄를 짓고도 억울함을 글로 다 풀지 못하는 백성이 여전히 많다. 마침내 새 글자가 완성되었지만, 신하들 사이에서는 반대의 목소리도 만만치 않다.",
   "mini": {
    "type": "blank",
-   "answer": "훈민정음 (허용: 한글)",
+   "answer": [
+    "훈민정음",
+    "한글"
+   ],
    "ok": "그러하오! 『훈민정음』 서문에는 \"백성을 어여삐 여기는\" 세종의 마음이 그대로 담겨 있소. 누구나 며칠이면 깨칠 수 있는 이 글자는, 훗날 온 겨레가 함께 쓰는 한글로 남았라오."
   },
   "kind": "minigame",
-  "cat": "life"
+  "contentId": "sejong",
+  "cat": "person",
+  "img": [
+   "sejong.jpg"
+  ]
  },
  {
   "title": "집현전의 밤 — 훈민정음 자음의 비밀",
@@ -747,7 +787,11 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "탁월한 결정이다. 전국 고을마다 같은 기준으로 빗물을 재는 측우기가 놓이고, 길가의 앙부일구는 지나는 백성 누구나 시각을 볼 수 있게 한다. 세계에서도 이른 시기에 만들어진 이 과학 기구들은, 백성의 삶을 실질적으로 보살핀 조선 과학의 증거로 남는다.",
    "no": "그래서는 가뭄과 홍수, 시각의 어려움을 풀 수 없다. 측우기와 앙부일구를 만들어야 한다. 다시 판단하라."
   },
-  "cat": "event"
+  "contentId": "gwahak",
+  "cat": "culture",
+  "img": [
+   "gwahak-2.jpg"
+  ]
  },
  {
   "title": "분청사기와 백자",
@@ -777,7 +821,11 @@ export const QUESTS_JOSEONE_BASE = [
    "intro": "물레 위 흙덩이에 두 손을 가만히 대고, 원을 그리듯 고르게 돌려 백자의 형태를 잡아 보자.",
    "ok": "물레가 고르게 돌아가며 흙이 매끈한 그릇 모양으로 차오른다. 가마에서 구워지고 나면, 티 없이 새하얀 백자 한 점이 완성될 것이다. 화려한 무늬 대신 은은한 흰빛 하나로, 이 그릇은 검소함을 귀히 여긴 선비의 마음을 닮았다."
   },
-  "cat": "relic"
+  "contentId": "baekja",
+  "cat": "culture",
+  "img": [
+   "baekja-2.jpg"
+  ]
  },
  {
   "title": "삼포와 왜관",
@@ -801,7 +849,8 @@ export const QUESTS_JOSEONE_BASE = [
    "ok": "균형 잡힌 판단이다. 세 항구에 왜관을 두어 일본은 구리와 향료를, 조선은 곡식과 옷감과 책을 주고받는다. 물길은 열려 있으되 노략질에는 강하게 대응하니, 교린이라는 이름 아래 문을 지키면서도 이웃과 오가는 길을 함께 얻어 낸다.",
    "no": "그렇게 문을 완전히 걸어 잠그거나 활짝 열어서는 나라의 이익도 안전도 지킬 수 없다. 세 항구를 정해 열고 단속하는 길이 필요하다. 다시 판단하라."
   },
-  "cat": "event"
+  "contentId": "waegwan",
+  "cat": "exchange"
  },
  {
   "title": "봉수 올리기 — 국경의 소식",
@@ -877,6 +926,7 @@ export const QUESTS_JOSEONE_BASE = [
     }
    }
   ],
+  "contentId": "sagun",
   "cat": "event"
  },
  {
@@ -1441,6 +1491,30 @@ export const RELICS_JOSEONE = [
   "line": "그러하오."
  },
  {
+  "id": "r-gyeonggukdaejeon",
+  "icon": "⚖️",
+  "name": "경국대전, 조선",
+  "era": "joseon-early",
+  "from": "gyeonggukdaejeon",
+  "line": "옳은 판단이다."
+ },
+ {
+  "id": "r-gyeongbok",
+  "icon": "🏯",
+  "name": "경복궁",
+  "era": "joseon-early",
+  "from": "gyeongbok",
+  "line": "뜻깊은 이름이다."
+ },
+ {
+  "id": "r-jongmyo",
+  "icon": "🙏",
+  "name": "종묘",
+  "era": "joseon-early",
+  "from": "jongmyo",
+  "line": "단정한 선택이다."
+ },
+ {
   "id": "r-samganghaengsil",
   "icon": "📖",
   "name": "삼강행실도 — 최루백 이야기",
@@ -1457,6 +1531,14 @@ export const RELICS_JOSEONE = [
   "line": "그러하오."
  },
  {
+  "id": "r-sungnyemun",
+  "icon": "🚪",
+  "name": "숭례문",
+  "era": "joseon-early",
+  "from": "sungnyemun",
+  "line": "예를 높인다는 \"숭례문\", 그 이름 하나에도 나라가 소중히 여긴 가치가 새겨진다."
+ },
+ {
   "id": "r-imjinpinan",
   "icon": "🎒",
   "name": "피란 봇짐 — 임진왜란",
@@ -1471,14 +1553,6 @@ export const RELICS_JOSEONE = [
   "era": "joseon-early",
   "from": "jiphyeonjeonja",
   "line": "그러하오."
- },
- {
-  "id": "r-baekja",
-  "icon": "🏺",
-  "name": "분청사기",
-  "era": "joseon-early",
-  "from": "baekja",
-  "line": "물레가 고르게 돌아가며 흙이 매끈한 그릇 모양으로 차오른다."
  },
  {
   "id": "r-seodangpungyeong",
@@ -1503,30 +1577,6 @@ export const RELICS_JOSEONE = [
   "era": "joseon-early",
   "from": "sejong",
   "line": "그러하오!"
- },
- {
-  "id": "r-hwalssogi",
-  "icon": "🏹",
-  "name": "활터",
-  "era": "joseon-early",
-  "from": "hwalssogi",
-  "line": "화살이 곧게 날아가 과녁 한가운데 꽂힌다."
- },
- {
-  "id": "r-tuho",
-  "icon": "🎯",
-  "name": "투호 놀",
-  "era": "joseon-early",
-  "from": "tuho",
-  "line": "화살이 경쾌한 소리를 내며 항아리 안으로 쏙 들어간다."
- },
- {
-  "id": "r-bongsu",
-  "icon": "🔥",
-  "name": "봉수 올리기 — 국경의 소식",
-  "era": "joseon-early",
-  "from": "bongsu",
-  "line": "불빛이 산줄기를 타고 이어지며 멀리 다음 봉수대에도 같은 불이 오른다."
  }
 ];
 

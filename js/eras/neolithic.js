@@ -86,10 +86,17 @@ export const QUESTS_NEO_BASE = [
   },
   "mini": {
    "type": "blank",
-   "answer": "빗살무늬토기 (허용: 빗살무늬 토기)",
+   "answer": [
+    "빗살무늬토기",
+    "빗살무늬 토기"
+   ],
    "ok": "그러하오! 무겁고 깨지기 쉬운 이런 토기를 만들어 썼다는 것은, 이제 이 자리를 쉽게 떠나지 않고 오래 머물렀다는 뜻이오. 농사와 정착 생활이 시작되면서, 곡식을 저장할 그릇이 꼭 필요해진 거라오."
   },
-  "cat": "relic"
+  "contentId": "bitsal",
+  "cat": "culture",
+  "img": [
+   "bitsal.jpg"
+  ]
  },
  {
   "title": "가락바퀴",
@@ -248,6 +255,7 @@ export const QUESTS_NEO_BASE = [
    "binLeftLabel": "왼쪽",
    "binRightLabel": "오른쪽"
   },
+  "contentId": "nongsa",
   "cat": "life"
  },
  {
