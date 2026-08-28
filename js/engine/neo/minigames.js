@@ -132,6 +132,8 @@ export function needleGame(ctx, cfg) {
   }
   if (cfg.onReady) cfg.onReady(ctx.mount);
   place(); paintDots(); label();
+  // 버튼에 초점을 둬야 스페이스바·엔터로도 '지금!' 을 누를 수 있다 (버튼의 기본 동작)
+  hit.focus({ preventScroll: true });
 
   ctx.loop(dt => {
     pos += dir * speed * dt * 100;
