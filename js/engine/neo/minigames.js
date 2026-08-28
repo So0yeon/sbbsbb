@@ -28,6 +28,12 @@ export function pressBind(el, fn) {
     if (performance.now() - lastPointer < 700) return;   // 방금 pointerdown 으로 처리했다
     fn(e);
   });
+  // 버튼의 기본 동작(초점 + 스페이스·엔터 → click)에만 기대지 않는다 —
+  // 3D 세계 쪽 전역 keydown 이 Space 를 가로채 preventDefault 할 수 있어서다.
+  // releaseBind 와 같은 방식으로 여기서 직접 처리한다.
+  el.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); fn(e); }
+  });
   return el;
 }
 
