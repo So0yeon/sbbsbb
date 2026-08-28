@@ -10,7 +10,11 @@
 <link rel="stylesheet" href="vendor/font/pretendard.css">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/map2.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B5347' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3.8 3.6 6.1v13.4L9 17.2l6 2.3 5.4-2.3V3.6L15 5.9 9 3.8Z'/><path d='M9 3.8v13.4'/><path d='M15 5.9v13.6'/></svg>">
+<!-- 파비콘은 파일로 둡니다.
+     data: URI 로만 두면 브라우저가 /favicon.ico 를 따로 한 번 더 찾아
+     콘솔에 404 가 남습니다. ico 는 그 자동 요청까지 받아 줍니다. -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.ico" sizes="any">
 <script type="importmap">
 { "imports": {
     "three": "./vendor/three/build/three.module.js",
