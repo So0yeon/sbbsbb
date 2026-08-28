@@ -18,8 +18,16 @@ import { MASCOT } from './constants.js';
 
 const SPEED = 9;              // 초당 이동 거리
 const CAM_DIST = 13.5;
-const CAM_HEIGHT = 8.2;
+const EYE_Y = 1.35;                        // 바라보는 높이 (아바타 가슴께)
 const FOLLOW_LIMIT = 25 * Math.PI / 180;   // 25도
+
+/* 카메라는 '높이'가 아니라 '올려다본 각'으로 다룬다.
+   예전에는 높이만 조절해서 늘 내려다보기만 됐고, 지평선도 하늘도 볼 수 없었다. */
+const PITCH_DEFAULT = 0.46;                // 약 26도 — 예전 화면과 비슷한 각
+const PITCH_MIN = 0.02;                    // 거의 눈높이 — 하늘과 지평선이 보인다
+const PITCH_MAX = 1.24;                    // 거의 바로 위에서 내려다보기
+const ZOOM_MIN = 0.42, ZOOM_MAX = 2.8;     // 가까이서 크게 ~ 멀리서 넓게
+const pitchOf = () => (ST.camPitch == null ? (ST.camPitch = PITCH_DEFAULT) : ST.camPitch);
 
 /* ══════════════════════════════════════════════════════════════
    아바타 — 두루 (어린 두루미)
@@ -181,18 +189,39 @@ export function bindInput(canvas, hooks){
     const dy = e.clientY - ST._orbitY;
     ST._orbitX = e.clientX; ST._orbitY = e.clientY;
     ST.camYaw -= dx * 0.006;
-    ST.camPitchOffset = Math.max(-2.6, Math.min(6.2, ST.camPitchOffset - dy * 0.02));
+    ST.camPitch = Math.max(PITCH_MIN, Math.min(PITCH_MAX, pitchOf() - dy * 0.005));
   });
   const endOrbit = e => { if (ST.orbitId === e.pointerId) ST.orbitId = null; };
   canvas.addEventListener('pointerup', endOrbit);
   canvas.addEventListener('pointercancel', endOrbit);
 
+  /* 두 손가락으로 벌리고 오므리기 — 태블릿에서는 휠이 없다 */
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) ST.pinchDist = touchGap(e);
+  }, { passive:true });
+  canvas.addEventListener('touchmove', e => {
+    if (e.touches.length !== 2 || !ST.pinchDist) return;
+    const gap = touchGap(e);
+    const k = ST.pinchDist / Math.max(1, gap);
+    ST.camZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, ST.camZoom * (1 + (k - 1) * .5)));
+    ST.pinchDist = gap;
+    ST.orbitId = null;                       // 확대 중에는 화면을 돌리지 않는다
+  }, { passive:true });
+  const endPinch = e => { if (e.touches.length < 2) ST.pinchDist = null; };
+  canvas.addEventListener('touchend', endPinch, { passive:true });
+  canvas.addEventListener('touchcancel', endPinch, { passive:true });
+
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
-    ST.camZoom = Math.max(.62, Math.min(1.9, ST.camZoom + (e.deltaY > 0 ? .09 : -.09)));
+    ST.camZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, ST.camZoom + (e.deltaY > 0 ? .12 : -.12)));
   }, { passive:false });
 
   bindJoystick(hooks);
+}
+
+function touchGap(e){
+  const a = e.touches[0], b = e.touches[1];
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
 }
 
 export function clearKeys(){ keys.clear(); joy.x = 0; joy.z = 0; joy.active = false; }
@@ -317,13 +346,14 @@ function updateCamera(dt, fwd, moving){
   }
 
   const d = CAM_DIST * ST.camZoom;
-  const h = CAM_HEIGHT * ST.camZoom + ST.camPitchOffset;
+  const pit = pitchOf();
+  const cp = Math.cos(pit), sp = Math.sin(pit);
   cam.position.set(
-    p.position.x + Math.sin(ST.camYaw) * d,
-    h,
-    p.position.z + Math.cos(ST.camYaw) * d
+    p.position.x + Math.sin(ST.camYaw) * d * cp,
+    Math.max(0.55, p.position.y + EYE_Y + sp * d),      // 바닥을 뚫고 들어가지 않게
+    p.position.z + Math.cos(ST.camYaw) * d * cp
   );
-  cam.lookAt(p.position.x, p.position.y + 1.3, p.position.z);
+  cam.lookAt(p.position.x, p.position.y + EYE_Y, p.position.z);
 }
 
 /* 시대·지역 전환 시 */

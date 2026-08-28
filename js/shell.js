@@ -438,6 +438,10 @@
                 say('임무목록', document.querySelectorAll('#exRailList .rail-item').length);
                 say('캔버스', document.getElementById('exCanvas').width + 'x' + document.getElementById('exCanvas').height);
                 var A3 = window.__atlas3d;
+                // 검사용 — 카메라 각도/거리를 정해 찍을 수 있게 (?pitch=0.05&zoom=1.6)
+                var qp = new URLSearchParams(location.search);
+                if (A3 && qp.get('pitch')) A3.ST.camPitch = parseFloat(qp.get('pitch'));
+                if (A3 && qp.get('zoom')) A3.ST.camZoom = parseFloat(qp.get('zoom'));
                 if (A3) {
                   var kinds = {};
                   A3.scene.children.forEach(function (o) {
@@ -448,6 +452,7 @@
                   say('배경', A3.scene.background ? '색' : '없음(돔)');
                   say('안개', A3.scene.fog ? (A3.scene.fog.near.toFixed(0) + '~' + A3.scene.fog.far.toFixed(0) + ' #' + A3.scene.fog.color.getHexString()) : '없음');
                   say('카메라높이', A3.camera.position.y.toFixed(1));
+                  say('카메라각', (A3.ST.camPitch * 57.3).toFixed(0) + '도 · 배율 ' + A3.ST.camZoom.toFixed(2));
                 }
                 var W = E.WORLDS;
                 var qn = 0, gn = 0, nn = 0, rn = 0;
