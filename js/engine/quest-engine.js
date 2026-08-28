@@ -25,6 +25,7 @@ import { icon } from './icons.js';
 import { onPress } from './minigames.js';
 import { runObserve } from './observe.js';
 import { runTemplate } from './mg-templates.js';
+import { runMinigame } from './minigames.js';
 import { pushPopup, popPopup } from './popups.js';
 
 const esc = s => String(s == null ? '' : s)
@@ -321,9 +322,24 @@ function renderDeduce(st, body){
   }));
 }
 
-/* ⑦ minigame — 템플릿 여섯 중 하나 (§7) */
+/* ⑦ minigame — 템플릿 여섯 중 하나 (§7),
+      또는 자료가 type 을 적어 준 놀이 (minigames.js 표에 등록된 것).
+      엔진은 어느 시대의 놀이인지 알지 못한다 — 자료가 정한다. */
 function renderMinigame(st, body){
-  runTemplate(st.game || {}, body, res => {
+  const g = st.game || {};
+
+  if (g.type){
+    // type 으로 부르는 놀이는 되고/안 되고만 알려 준다. 게임 오버는 없으므로
+    // 못 해낸 것도 '자국이 남았다' 로 적고 그대로 넘어간다.
+    runMinigame(g, body, ok => {
+      const set = {};
+      if (st.qualityFlag) set[st.qualityFlag] = ok ? 'clean' : 'rough';
+      complete({ setFlag: set });
+    });
+    return;
+  }
+
+  runTemplate(g, body, res => {
     const set = {};
     if (st.qualityFlag) set[st.qualityFlag] = res.quality;
     complete({ setFlag: set });

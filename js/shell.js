@@ -588,6 +588,40 @@
                   return;
                 }
 
+                if (STOP === 'neomini') {
+                  /* 이식해 온 신석기 놀이 — 미션 시퀀스의 '돌 갈기' 자리에서 확인한다 */
+                  try {
+                    localStorage.setItem('neolithicChain_v1', JSON.stringify({
+                      at: 8, flags: {}, inventory: ['stone', 'seed'], relations: {},
+                      kept: [], observed: [], done: false
+                    }));
+                  } catch (e) {}
+                  window.AtlasExplore.switchWorld('neolithic');
+                  setTimeout(function () {
+                    var g7 = document.getElementById('exStoryGo'); if (g7) g7.click();
+                    setTimeout(function () {
+                      say('걸음', (document.querySelector('.mq-goal') || {}).textContent || '없음');
+                      var host = document.querySelector('.neo-host');
+                      say('이식한놀이틀', host ? '있음' : '없음');
+                      say('놀이속', host ? host.querySelector('.mg') ? '그려짐' : '빔' : '없음');
+                      say('숫돌그림', document.querySelector('.neo-host .neo-svg') ? '있음' : '없음');
+                      say('안내문', (document.querySelector('.neo-host .mg-intro') || {}).textContent.slice(0, 28) || '');
+                      var EMO3 = /(?![©®™])\p{Extended_Pictographic}/u;
+                      var n = 0, w2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), nd2;
+                      while ((nd2 = w2.nextNode())) if (EMO3.test(nd2.nodeValue)) n++;
+                      say('놀이이모지', n);
+
+                      /* 임무 쪽 자료도 이식한 갈래를 쓰는지 */
+                      var W7 = window.AtlasExplore.WORLDS['neolithic'];
+                      var types = W7.quests.map(function (q) { return q.mini && q.mini.type; })
+                                           .filter(Boolean).join(' ');
+                      say('임무놀이갈래', types);
+                      console.log('[SELFTEST] ' + JSON.stringify(out));
+                    }, 900);
+                  }, 900);
+                  return;
+                }
+
                 if (STOP === 'mission') {
                   /* 신석기 미션 시퀀스 — 관찰 화면을 실제로 눌러 본다 */
                   var EMO2 = /(?![©®™])\p{Extended_Pictographic}/u;
@@ -858,6 +892,8 @@
                   setTimeout(function () {
                     /* 임무 목록은 자리만 알려 준다 (요구 3).
                        임무를 열려면 마커 앞으로 가서 조사하기를 눌러야 한다 */
+                    var mqx = document.getElementById('mqX');
+                    if (mqx && document.getElementById('mqModal').classList.contains('on')) mqx.click();
                     var STq = (window.__atlas3d || {}).ST;
                     var mg = STq && STq.markerGroups.filter(function (g) {
                       return g.userData && g.userData.quest.kind !== 'gate';

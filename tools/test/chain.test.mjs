@@ -139,19 +139,32 @@ test('큰 선택에는 반드시 잃는 것이 있다', () => {
   }));
 });
 
-test('놀이는 템플릿 6종으로만 만들고, 전체의 1/3을 넘지 않는다', () => {
-  const OK = ['restore','sequence','sort','compare','decode','timed'];
-  GAMES.forEach(g => assert.ok(OK.includes(g.game.tpl), '템플릿 밖의 놀이: ' + g.game.tpl));
+test('놀이는 템플릿 6종이거나 이식해 온 신석기 놀이여야 한다', () => {
+  // 템플릿 여섯은 우리가 만든 것, neo-* 는 예시 꾸러미에서 그대로 옮겨 온 것이다
+  const TPL  = ['restore','sequence','sort','compare','decode','timed'];
+  const NEO  = ['neo-grind','neo-winnow','neo-spindle','neo-umjip','neo-rite'];
+  GAMES.forEach(g => {
+    const k = g.game.tpl || g.game.type;
+    assert.ok(TPL.includes(k) || NEO.includes(k), '알 수 없는 놀이: ' + k);
+  });
   assert.ok(GAMES.length <= Math.floor(steps.length / 3),
     `놀이가 너무 많습니다 ${GAMES.length} / ${steps.length}`);
 });
 
-test('같은 템플릿을 연달아 놓지 않는다', () => {
+test('이식해 온 놀이는 실제로 등록된 다섯 가지만 쓴다', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'js/engine/neo-games.js'), 'utf8');
+  const listed = (src.match(/'neo-[a-z]+'/g) || []).map(s => s.replace(/'/g, ''));
+  GAMES.filter(g => g.game.type).forEach(g =>
+    assert.ok(listed.includes(g.game.type), '다리에 없는 놀이: ' + g.game.type));
+});
+
+test('같은 놀이를 연달아 놓지 않는다', () => {
   let prev = null;
   steps.forEach(s => {
     if (s.act !== 'minigame'){ prev = null; return; }
-    assert.notEqual(s.game.tpl, prev, '같은 템플릿이 연달아 나옵니다: ' + s.game.tpl);
-    prev = s.game.tpl;
+    const k = s.game.tpl || s.game.type;
+    assert.notEqual(k, prev, '같은 놀이가 연달아 나옵니다: ' + k);
+    prev = k;
   });
 });
 

@@ -1274,3 +1274,235 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 }
 .item-go{ margin-left:auto; color:var(--text3); display:inline-flex; align-items:center; flex:0 0 auto; }
 .item-list .item-row:hover .item-go{ color:var(--accent); }
+
+
+/* ══════════════════════════════════════════════════════════════
+   신석기 전용 미니게임 (js/engine/neo/)
+
+   예시 꾸러미에서 게임을 한 줄도 고치지 않고 옮겨 왔다.
+   그 게임들이 쓰는 .mg-* 이름이 우리 엔진의 것과 겹치므로
+   모든 규칙을 .neo-host 안으로 가둔다. 다른 시대의 놀이는 그대로다.
+   ══════════════════════════════════════════════════════════════ */
+/* ── 미니게임 ─────────────────────────────────────────────── */
+.neo-host .mg{ margin-top:4px; }
+.neo-host .mg-tag{ margin:0 0 6px; font-size:11.5px; color:var(--text2); letter-spacing:.03em; }
+.neo-host .mg-intro{ margin:0 0 16px; font-size:14px; line-height:1.72; color:#333; }
+.neo-host .mg-status{ margin:12px 0 0; font-size:13px; color:var(--text2); text-align:center; min-height:20px; }
+
+.neo-host .mg-bar{
+  position:relative; height:26px; border-radius:999px;
+  background:var(--bg); border:1px solid var(--border); overflow:hidden;
+.neo-host }
+.mg-bar.tall{ height:34px; }
+.neo-host .mg-zone{ position:absolute; top:0; bottom:0; background:rgba(92,143,92,.3); border-left:2px solid #5C8F5C; border-right:2px solid #5C8F5C; }
+.neo-host .mg-needle{ position:absolute; top:-2px; bottom:-2px; width:4px; margin-left:-2px; background:var(--text); border-radius:2px; }
+.neo-host .mg-fill{ position:absolute; left:0; top:0; bottom:0; background:var(--accent); opacity:.75; }
+.neo-host .mg-hit{
+  width:100%; margin-top:14px; border:0; border-radius:999px;
+  background:var(--accent); color:#fff; padding:16px; font-size:16px; font-weight:700;
+  min-height:56px; touch-action:manipulation; user-select:none;
+.neo-host }
+.mg-hit.good{ background:#5C8F5C; }
+.neo-host .mg-hit.miss{ background:#C4573F; }
+.neo-host .mg-dots{ display:flex; gap:5px; justify-content:center; margin-top:12px; }
+.neo-host .mg-dots i{ width:10px; height:10px; border-radius:50%; background:var(--border-strong); }
+.neo-host .mg-dots i.ok{ background:#5C8F5C; }
+.neo-host .mg-dots i.no{ background:#C4573F; }
+
+.neo-host .mg-lift{ position:relative; height:96px; margin-bottom:6px; }
+.neo-host .mg-lift-obj{ position:absolute; left:50%; bottom:0; transform:translateX(-50%); font-size:32px; transition:bottom var(--t) var(--ease); }
+
+.neo-host .mg-spin{
+  position:relative; width:190px; height:190px; margin:6px auto; border-radius:50%;
+  border:2px dashed var(--border-strong); background:var(--bg);
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+.neo-host }
+.mg-spin-core{
+  width:150px; height:150px; min-width:0; min-height:0; border-radius:50%;
+  background:var(--accent); opacity:.85; border:0; transform:scale(.28);
+  transition:transform var(--t) var(--ease);
+.neo-host }
+.mg-spin-mark{
+  position:absolute; left:50%; top:4px; width:4px; height:26px; margin-left:-2px;
+  background:var(--text); border-radius:2px; transform-origin:50% 91px;
+.neo-host }
+
+.mg-ember{ display:flex; align-items:flex-end; justify-content:center; gap:22px; height:170px; }
+.neo-host .mg-gauge{
+  position:relative; width:44px; height:150px; border-radius:14px;
+  background:var(--bg); border:1px solid var(--border); overflow:hidden;
+.neo-host }
+.mg-good{ position:absolute; left:0; right:0; bottom:40%; height:35%; background:rgba(92,143,92,.22);
+          border-top:1.5px solid #5C8F5C; border-bottom:1.5px solid #5C8F5C; }
+.neo-host .mg-level{ position:absolute; left:0; right:0; bottom:0; background:#5C8F5C; transition:height 60ms linear; }
+.neo-host .mg-flame{ font-size:52px; transition:transform 120ms var(--ease); }
+.neo-host .mg-progress{ height:8px; border-radius:999px; background:var(--border); margin-top:14px; overflow:hidden; }
+.neo-host .mg-progress i{ display:block; height:100%; background:var(--accent); width:0; }
+
+.neo-host .mg-stack{ display:grid; grid-template-columns:150px 1fr; gap:14px; align-items:start; }
+.neo-host .mg-stack-svg{ width:100%; height:auto; background:var(--bg); border-radius:var(--r-md); }
+.neo-host .mg-stack-svg .stack-part{ transition:opacity var(--t) var(--ease); }
+.neo-host .mg-steps{ display:grid; gap:7px; }
+.neo-host .mg-step{
+  text-align:left; border:1px solid var(--border); background:var(--card);
+  border-radius:var(--r-md); padding:11px 13px; font-size:13.5px; line-height:1.5;
+.neo-host }
+.mg-step.ok{ background:rgba(92,143,92,.12); border-color:#5C8F5C; color:var(--text2); }
+.neo-host .mg-step.no{ border-color:#C4573F; animation:shake .3s; }
+.neo-host .mg-step:disabled{ opacity:.7; }
+
+.neo-host .mg-sort{ display:grid; gap:14px; }
+.neo-host .mg-card{
+  min-height:120px; border-radius:var(--r-lg); border:1px solid var(--border);
+  background:var(--paper); display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:6px; transition:all var(--t-fast) var(--ease);
+.neo-host }
+.mg-card.ok{ border-color:#5C8F5C; background:rgba(92,143,92,.14); }
+.neo-host .mg-card.no{ border-color:#C4573F; background:rgba(196,87,63,.1); }
+.neo-host .mg-card-icon{ font-size:40px; }
+.neo-host .mg-card-label{ font-size:16px; font-weight:600; }
+.neo-host .mg-bins{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.neo-host .mg-bin{
+  border:1px solid var(--border-strong); background:var(--card);
+  border-radius:var(--r-md); padding:16px 10px; font-size:14px; font-weight:600;
+.neo-host }
+.mg-bin:hover{ background:var(--accent-soft); border-color:var(--accent); }
+
+.neo-host .mg-memory{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.neo-host .mg-pad{
+  height:88px; border:1px solid var(--border-strong); background:var(--card);
+  border-radius:var(--r-lg); font-size:34px;
+.neo-host }
+.mg-pad.lit{ background:var(--accent); transform:scale(1.03); }
+
+/* ── 신석기 전용 미니게임 (js/engine/minigames-neolithic.js) ──
+   조작은 아홉 종 그대로이고, 보이는 것만 신석기의 일로 바꿉니다. */
+.neo-host .mg-bar.ghost{ display:none; }              /* 그림이 곧 바늘일 때 */
+
+.neo-host .neo-stage{ position:relative; margin:0 0 14px; }
+.neo-host .neo-svg{ display:block; width:100%; height:auto; border-radius:var(--r-md); background:var(--bg); }
+.neo-host .neo-fly{
+  position:absolute; left:0; top:0; z-index:3; pointer-events:none;
+  transform:translate(-50%,-50%); font-size:30px; line-height:1;
+  display:flex; align-items:center; gap:4px;
+.neo-host }
+
+/* 1 · 간석기 만들기 ------------------------------------------- */
+.neo-grind .gn-dust{ animation:gnDust .62s var(--ease) forwards; }
+@keyframes gnDust{
+  0%{ transform:translate(0,0); opacity:.95; }
+  100%{ transform:translate(var(--dx),var(--dy)); opacity:0; }
+.neo-host }
+#gnPress.press{ animation:gnPress .26s var(--ease); }
+@keyframes gnPress{ 0%,100%{ transform:none; } 45%{ transform:translateY(5px) scaleY(.94); } }
+.neo-host #gnSlip.slip{ animation:gnSlip .3s var(--ease); }
+@keyframes gnSlip{
+  0%,100%{ transform:none; }
+  30%{ transform:translate(7px,-4px) rotate(7deg); }
+  65%{ transform:translate(-5px,2px) rotate(-4deg); }
+.neo-host }
+#gnBlade{ transition:fill var(--t) linear; }
+.neo-host #gnEdgeL, .neo-host #gnEdgeR{ transition:opacity var(--t-fast) var(--ease); }
+.neo-host .neo-meter{ display:flex; align-items:center; gap:9px; margin-top:9px; }
+.neo-host .neo-meter-cap{ font-size:11.5px; color:var(--text2); white-space:nowrap; }
+.neo-host .neo-meter-bar{ flex:1; height:7px; border-radius:999px; background:var(--border); overflow:hidden; }
+.neo-host .neo-meter-bar i{ display:block; height:100%; width:0; background:var(--accent);
+                  transition:width 120ms linear; }
+
+/* 2 · 낟알 골라 갈무리 ---------------------------------------- */
+.neo-host .neo-winnow{ display:grid; gap:14px; }
+.neo-host .wn-ear{ position:relative; }
+.neo-host .wn-card{
+  min-height:118px; border-radius:var(--r-lg); border:1px solid var(--border);
+  background:var(--paper); display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:6px; transition:all var(--t-fast) var(--ease);
+.neo-host }
+.wn-card.ok{ border-color:#5C8F5C; background:rgba(92,143,92,.14); }
+.neo-host .wn-card.no{ border-color:#C4573F; background:rgba(196,87,63,.1); }
+.neo-host .wn-card.done{ opacity:.55; }
+.neo-host .wn-card-icon{ font-size:40px; line-height:1; }
+.neo-host .wn-card-label{ font-size:16px; font-weight:600; text-align:center; padding:0 10px; }
+.neo-host .wn-bins{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.neo-host .wn-bin{
+  position:relative; display:flex; flex-direction:column; align-items:center; gap:4px;
+  border:1px solid var(--border-strong); background:var(--card);
+  border-radius:var(--r-md); padding:10px 8px 12px;
+  transition:border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+.neo-host }
+.wn-bin:hover{ background:var(--accent-soft); border-color:var(--accent); }
+.neo-host .wn-bin.take{ border-color:var(--accent); animation:wnTake .42s var(--ease); }
+@keyframes wnTake{ 0%,100%{ transform:none; } 40%{ transform:translateY(4px) scale(1.03); } }
+.neo-host .wn-art{ width:78px; height:auto; }
+.neo-host #wnFill{ transition:transform .42s var(--ease); }
+.neo-host #wnHeap{ transition:transform .42s var(--ease); }
+.neo-host .wn-bin-label{ font-size:13px; font-weight:600; }
+.neo-host .wn-bin-count{ font-size:11.5px; color:var(--text2); }
+.neo-host .wn-fly-icon{ font-size:30px; }
+.neo-host .wn-fly-mark{ font-size:16px; font-weight:700; }
+.neo-host .wn-fly-mark.ok{ color:#5C8F5C; }
+.neo-host .wn-fly-mark.no{ color:#C4573F; }
+
+/* 3 · 가락바퀴 ------------------------------------------------ */
+.neo-host .neo-spindle{ max-width:280px; margin:0 auto; }
+.neo-host .sp-pad{
+  position:absolute; left:50%; bottom:2%; width:56%; aspect-ratio:1;
+  transform:translateX(-50%); border-radius:50%; touch-action:none; cursor:grab;
+.neo-host }
+.sp-pad:active{ cursor:grabbing; }
+.neo-host .sp-coil{ opacity:0; transition:opacity var(--t) var(--ease); }
+.neo-host #spFiber{ transition:transform var(--t) var(--ease); }
+
+/* 4 · 움집 짓기 ----------------------------------------------- */
+.neo-host .mg-stack.neo-umjip{ grid-template-columns:186px 1fr; }
+.neo-host .neo-umjip .mg-stack-svg{ background:linear-gradient(#EEEDE4 62%, #E3E1D2); }
+.neo-host .neo-umjip .stack-part.on[data-step="0"]{ animation:umjipDig .5s var(--ease); }
+.neo-host .neo-umjip .stack-part.on[data-step="1"]{ animation:umjipRaise .55s var(--ease); }
+.neo-host .neo-umjip .stack-part.on[data-step="2"]{ animation:umjipRoof .55s var(--ease); }
+.neo-host .neo-umjip .stack-part.on[data-step="3"]{ animation:umjipFire .45s var(--ease); }
+.neo-host .neo-umjip .stack-part.on[data-step="3"] .umjip-flame{ animation:umjipFlick 1.05s ease-in-out infinite alternate; }
+@keyframes umjipDig{ from{ transform:scaleY(.12); } to{ transform:scaleY(1); } }
+@keyframes umjipRaise{
+  0%{ transform:scaleY(.06); } 70%{ transform:scaleY(1.05); } 100%{ transform:scaleY(1); }
+.neo-host }
+@keyframes umjipRoof{ from{ transform:translateY(-52px) scale(.88); } to{ transform:none; } }
+@keyframes umjipFire{ 0%{ transform:scale(.3); } 65%{ transform:scale(1.14); } 100%{ transform:scale(1); } }
+@keyframes umjipFlick{ from{ transform:scaleY(.86) scaleX(1.06); } to{ transform:scaleY(1.1) scaleX(.94); } }
+
+/* 5 · 기원제 -------------------------------------------------- */
+.neo-host .mg-mem-wrap{ position:relative; }
+.neo-host .neo-rite{ position:relative; }
+.neo-host .rt-altar{ background:none; }
+.neo-host .rt-slot-dish{ fill:#EFEBDD; stroke:#C9C2A8; stroke-width:2; transition:all var(--t) var(--ease); }
+.neo-host .rt-slot-mark{ font-family:var(--font); font-size:12px; font-weight:700; fill:#A3A3A0;
+               text-anchor:middle; transition:fill var(--t) var(--ease); }
+.neo-host .rt-slot.on .rt-slot-dish{ fill:var(--accent-soft); stroke:var(--accent); stroke-width:3; }
+.neo-host .rt-slot.on .rt-slot-mark{ fill:var(--accent); }
+.neo-host .rt-slot.bad .rt-slot-dish{ fill:rgba(196,87,63,.12); stroke:#C4573F; stroke-width:3; }
+.neo-host .rt-slot.bad .rt-slot-mark{ fill:#C4573F; }
+.neo-host #rtRays{ transition:opacity var(--t-slow) var(--ease); }
+.neo-host .neo-rite .mg-pad{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+.neo-host .mg-pad-icon{ font-size:30px; line-height:1.1; }
+.neo-host .mg-pad-name{ font-size:12.5px; font-weight:700; color:var(--text2); }
+.neo-host .mg-pad.lit .mg-pad-name{ color:#fff; }
+
+@media (max-width:860px){
+  .mg-stack.neo-umjip{ grid-template-columns:1fr; }
+  .neo-umjip .mg-stack-svg{ max-width:210px; margin:0 auto; }
+.neo-host }
+@media (prefers-reduced-motion: reduce){
+  .neo-umjip .stack-part.on{ animation:none !important; }
+  .neo-umjip .stack-part.on[data-step="3"] .umjip-flame{ animation:none; }
+  #gnPress.press, #gnSlip.slip, .wn-bin.take{ animation:none; }
+.neo-host }
+
+/* 시대 완료 */
+.era-complete-card{ text-align:center; }
+.neo-host .ecc-img{ display:none; }
+.neo-host .ecc-burst{ display:none; }
+.neo-host .ecc-medal{ font-size:54px; }
+.neo-host .ecc-eyebrow{ margin:6px 0 2px; font-size:12px; color:var(--text2); }
+.neo-host .ecc-title{ margin:0 0 10px; font-size:24px; letter-spacing:-.02em; }
+.neo-host .ecc-body{ margin:0 0 20px; font-size:14.5px; color:#333; }
+.neo-host .era-complete-card .intro-btn{ display:block; width:100%; text-align:center; }
+
+.neo-host #inspectPanel, .neo-host #eventSheet{ display:none; }

@@ -20,6 +20,8 @@ import { icon } from './icons.js';
 import { pushPopup, popPopup } from './popups.js';
 import { chainOf } from './chains.js';
 import { initQuestEngine, setChain, openChain, tickChain, hasChain, chainDone } from './quest-engine.js';
+import './neo-games.js';                      // 이식해 온 신석기 미니게임을 엔진 표에 올린다
+import { applyNeoMinis } from './neo-quest-minis.js';
 
 let canvas, renderer, scene, camera, clock;
 let running = false;
@@ -116,7 +118,7 @@ export function switchWorld(id){
 
   ST.WORLD_ID = id;
   ST.currentWorld = w;
-  ST.QUESTS = w.quests || [];
+  ST.QUESTS = applyNeoMinis(w.quests || []);   // 신석기는 이식해 온 놀이를 쓴다
   ST.NPCS = NPCS_BY_WORLD[id] || [];
   ST.RELICS = RELICS_BY_WORLD[id] || [];
   ST.AREAS = AREAS_BY_WORLD[id] || {};
