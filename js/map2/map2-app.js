@@ -19,18 +19,9 @@
   var queue = [];         // 남은 장면 (시대를 넘어 이어집니다)
   var playing = false;
 
-  /* ── 움직임 ──────────────────────────────────────────────── */
-  /* 윈도우에서 「애니메이션 효과」를 끄면 브라우저가 prefers-reduced-motion 으로 알려 줍니다.
-     그때는 모핑 없이 바로 바꿉니다. 머리말 단추로 되돌릴 수 있습니다. */
-  var systemReduced = !!(window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  /* 기본은 모핑 켜짐입니다. 모핑은 「영토가 어떻게 바뀌었나」를 보여 주는 내용 자체라
-     시스템의 움직임 줄이기 설정이 있어도 켜 두고, 대신 단추와 ?motion=off 로 끌 수 있습니다. */
-  var motion = {
-    force: true,
-    on: function () { return motion.force === null ? !systemReduced : motion.force; },
-    dur: function () { return motion.on() ? 1600 : 0; }
-  };
+  /* 장면이 바뀔 때는 언제나 모핑합니다 — 영토가 어떻게 바뀌었는지가 내용 자체이므로
+     끄는 길을 두지 않습니다. 같은 장면을 나눠 쓰는 시대끼리 오갈 때만 0 입니다(still). */
+  var MORPH_MS = 1600;
 
   /* ── 좌표 ────────────────────────────────────────────────── */
   var M = T.meta;
@@ -229,7 +220,7 @@
   function fitTo(b, animate) {
     var to = fitBox(b);
     if (viewAnim) { cancelAnimationFrame(viewAnim); viewAnim = 0; }
-    if (!view || !animate || !motion.on()) { setView(to); return; }
+    if (!view || !animate) { setView(to); return; }
     var from = view.slice(), t0 = 0;
     (function f(ts) {
       if (!t0) t0 = ts;
@@ -327,7 +318,7 @@
        조선 전기 ↔ 후기 ↔ 개항 ↔ 일제 ↔ 광복 ↔ 6·25 는 그대로 있고,
        고려 → 조선처럼 장면이 실제로 바뀔 때는 모핑합니다. */
     var sameFrame = !!(prev && prev.key === f.key);
-    var dur = (!animate || !motion.on() || (f.still && sameFrame)) ? 0 : motion.dur();
+    var dur = (!animate || (f.still && sameFrame)) ? 0 : MORPH_MS;
 
     var prevD = {};
     if (prev && !fresh) prev.nations.forEach(function (n) { prevD[n.id] = n.d; });
@@ -455,9 +446,8 @@
       Object.keys(live).forEach(function (nid) {
         var o = live[nid];
         o.g.classList.add('going');
-        if (!motion.on()) { dropNation(nid); return; }
         anims.push(window.Morph.run({
-          from: o.d, to: '', duration: motion.dur(),
+          from: o.d, to: '', duration: MORPH_MS,
           onFrame: function (d, u) {
             o.fill.setAttribute('d', d);
             o.label.setAttribute('opacity', (1 - u).toFixed(2));
@@ -680,23 +670,6 @@
     });
 
     var q = new URLSearchParams(location.search);
-    var m = q.get('motion');
-    if (m === 'on') motion.force = true;
-    else if (m === 'off') motion.force = false;
-    console.log('[map2] 모핑 ' + (motion.on() ? '켜짐' : '꺼짐') +
-                ' · 시스템 prefers-reduced-motion=' + systemReduced);
-
-    var mb = $('motion');
-    function paintMotion() {
-      mb.textContent = motion.on() ? '모핑 끄기' : '모핑 켜기';
-      mb.classList.toggle('on', motion.on());
-    }
-    mb.addEventListener('click', function () {
-      motion.force = !motion.on();
-      paintMotion();
-      playEra(eraId, true);
-    });
-    paintMotion();
 
     if (window.Map2Panel) {
       window.Map2Panel.init(
