@@ -146,10 +146,12 @@
                          fill: col, 'fill-opacity': got ? 1 : 0.4,
                          stroke: col, 'stroke-width': 1.6 * upp });
 
-      /* 실험: 모든 시대의 유물·인물, 사진이 있으면 글자 대신 작은 사진으로 —
+      /* 실험: 모든 시대의 유물·인물·문화유산, 사진이 있으면 글자 대신 작은 사진으로 —
+         사건·교류는 그대로 글씨. 사진이 실제로 있을 때만 뜨니(photoFor 가 null 이면
+         안 뜸) 카테고리를 넓혀도 없는 사진이 생기진 않는다.
          별로면 TEST_PHOTO_DOTS 를 false 로 바꾸거나 이 커밋을 되돌리면 그만이다 */
       var ph = TEST_PHOTO_DOTS &&
-               ['relic', 'person'].indexOf((c.cat || [])[0]) >= 0 &&
+               ['relic', 'person', 'culture', 'life'].indexOf((c.cat || [])[0]) >= 0 &&
                window.AtlasPhotos && window.AtlasPhotos.photoFor(c.id);
 
       if (ph) {

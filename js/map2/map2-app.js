@@ -419,6 +419,23 @@
     }
   }
 
+  /* 나라 칠이 하나도 없던 시대(구석기·신석기)로 갈 때 — 앞선 나라 칠을 지웁니다 */
+  function clearNations(animate) {
+    Object.keys(live).forEach(function (nid) {
+      var o = live[nid];
+      o.g.classList.add('going');
+      if (!animate) { dropNation(nid); return; }
+      anims.push(window.Morph.run({
+        from: o.d, to: '', duration: MORPH_MS,
+        onFrame: function (d, u) {
+          o.fill.setAttribute('d', d);
+          o.label.setAttribute('opacity', (1 - u).toFixed(2));
+        },
+        onDone: function () { dropNation(nid); }
+      }));
+    });
+  }
+
   /* 다른 시대의 이야기로 건너뛸 때 — 재생하지 않고 그 장면만 보여 줍니다 */
   function showEra(id) {
     var list = framesOfEra(id);
@@ -426,7 +443,7 @@
     eraId = id;
     fitTo(boxOfEra(id), !!view);
     if (list.length) showFrame(list[0], true);
-    else { frameIdx = -1; paintChrome(null); }
+    else { clearNations(true); frameIdx = -1; paintChrome(null); }
   }
 
   function stopPlay() {
@@ -443,18 +460,7 @@
     if (!list.length) {              // 구석기·신석기 — 나라가 없던 때
       stopPlay();
       fitTo(boxOfEra(id), had);
-      Object.keys(live).forEach(function (nid) {
-        var o = live[nid];
-        o.g.classList.add('going');
-        anims.push(window.Morph.run({
-          from: o.d, to: '', duration: MORPH_MS,
-          onFrame: function (d, u) {
-            o.fill.setAttribute('d', d);
-            o.label.setAttribute('opacity', (1 - u).toFixed(2));
-          },
-          onDone: function () { dropNation(nid); }
-        }));
-      });
+      clearNations(true);
       frameIdx = -1;
       paintChrome(null);
       return;
