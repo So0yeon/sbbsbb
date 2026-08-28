@@ -196,7 +196,11 @@
 .item-txt span{ display:block; font-size:13px; color:var(--text2); margin-top:2px; }
 
 /* 지도 위 — 글자 크기와 외곽선 두께는 js 가 배율에 맞춰 넣습니다 */
-.rel-line{ fill:none; stroke-dasharray:5 4; opacity:.75; }
+.rel-line{ fill:none; stroke-dasharray:5 4; opacity:.75; animation:relFlow 900ms linear infinite; }
+@keyframes relFlow{ to{ stroke-dashoffset:-18; } }
+@media (prefers-reduced-motion: reduce){
+  .rel-line{ animation:none; }
+}
 .rel-hit{ fill:none; stroke:transparent; pointer-events:stroke; cursor:pointer; }
 .mk{ cursor:pointer; }
 .mk circle.hit{ fill:transparent; }
