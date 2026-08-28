@@ -626,13 +626,28 @@ export function renderBag(){
     return;
   }
   const items = ids.map(id => CONTENT.find(c => c.id === id)).filter(Boolean);
-  body.innerHTML = `<div class="item-list">${items.map(c => {
-    const col = catColor((c.cat || [])[0]);
-    return `<div class="item-row got">
-      <span class="item-bar" style="background:${col}"></span>
-      <span class="item-txt"><b>${esc(c.t)}</b><span>${esc(c.d || '')}</span></span>
-    </div>`;
-  }).join('')}</div>`;
+  body.innerHTML = `
+    <p class="bag-lead">담은 것을 누르면 지도에서 그 자리를 펼쳐 보여 주오.</p>
+    <div class="item-list">${items.map(c => {
+      const col = catColor((c.cat || [])[0]);
+      return `<button class="item-row got" data-id="${esc(c.id)}" type="button">
+        <span class="item-bar" style="background:${col}"></span>
+        <span class="item-txt"><b>${esc(c.t)}</b><span>${esc(c.d || '')}</span></span>
+        <span class="item-go">${icon('map', { size:15 })}</span>
+      </button>`;
+    }).join('')}</div>`;
+
+  /* 누르면 지도 모드로 건너가 그 항목을 펼친다 (요구 4) */
+  body.querySelectorAll('.item-row').forEach(b => onPress(b, () => {
+    const c = items.find(x => x.id === b.dataset.id);
+    if (!c) return;
+    closeBag();
+    if (window.AtlasShell) window.AtlasShell.toMap(c.era);
+    // 지도가 그려진 뒤에 카드를 연다
+    setTimeout(() => {
+      if (window.AtlasMap && window.AtlasMap.showItemById) window.AtlasMap.showItemById(c.id);
+    }, 60);
+  }));
 }
 
 export function openBag(){

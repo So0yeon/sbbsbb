@@ -383,7 +383,7 @@ b{ font-weight:700; }
 #exMiniRadar{ width:88px; height:88px; }
 #exMiniLabel{ font-size:11px; color:var(--text2); }
 
-#exQuestRail{ position:absolute; right:0; top:180px; bottom:120px; z-index:5; display:flex; align-items:flex-start; }
+#exQuestRail{ position:absolute; right:0; top:180px; bottom:120px; z-index:5; display:flex; align-items:center; }
 #exRailToggle{
   min-width:28px; min-height:44px; border:1px solid var(--border); border-right:0;
   border-radius:var(--r-sm) 0 0 var(--r-sm); background:rgba(255,255,255,.92); font-size:14px;
@@ -1254,3 +1254,23 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   .mq-goal{ font-size:20px; }
   .mq-case-row{ grid-template-columns:1fr; gap:3px; }
 }
+
+
+/* ══════════════════════════════════════════════════════════════
+   임무 목록은 자리를 알려 주는 곳 (요구 3)
+   역사 가방의 항목은 눌러 지도로 건너간다 (요구 4)
+   ══════════════════════════════════════════════════════════════ */
+.rail-item{ transition:background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease); }
+.rail-item:hover{ transform:translateX(-2px); }
+
+.bag-lead{ font-size:13px; color:var(--text3); margin-bottom:10px; }
+.item-list .item-row{
+  width:100%; text-align:left; border:1px solid var(--border); background:var(--card);
+  transition:background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+             transform var(--t-fast) var(--ease);
+}
+.item-list .item-row:hover{
+  background:var(--accent-soft); border-color:var(--accent-line); transform:translateY(-1px);
+}
+.item-go{ margin-left:auto; color:var(--text3); display:inline-flex; align-items:center; flex:0 0 auto; }
+.item-list .item-row:hover .item-go{ color:var(--accent); }

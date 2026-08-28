@@ -98,6 +98,27 @@
   /* ══════════════════════════════════════════════════════════
      모드 전환 (§4-4 연결 지점)
      ══════════════════════════════════════════════════════════ */
+  /* 전체화면 — 탐험·지도에서는 켜고, 홈으로 나오면 끈다.
+     브라우저는 사람이 누른 동작에서만 전체화면을 허용하므로
+     모드 전환(단추 클릭)에서만 부른다. 거절당해도 앱은 그대로 돈다. */
+  function setFullscreen(on) {
+    // 자가 검사(헤드리스)에서는 건드리지 않는다 — 창 관리자가 없어 렌더러가 죽는다
+    if (new URLSearchParams(location.search).get('selftest')) return;
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    var out = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    var now = document.fullscreenElement || document.webkitFullscreenElement || null;
+    try {
+      if (on && !now && req) {
+        var p = req.call(el);
+        if (p && p.catch) p.catch(function () { /* 사용자가 막았거나 기기가 지원하지 않음 */ });
+      } else if (!on && now && out) {
+        var q = out.call(document);
+        if (q && q.catch) q.catch(function () {});
+      }
+    } catch (e) { /* 전체화면은 있으면 좋은 것이지 없으면 안 되는 것이 아니다 */ }
+  }
+
   function showOnly(which) {
     var intro = $('intro'), app = $('app'), ex = $('explore');
     intro.classList.toggle('off', which !== 'intro');
@@ -106,6 +127,7 @@
     ex.classList.toggle('on', which === 'explore');
     ex.setAttribute('aria-hidden', which === 'explore' ? 'false' : 'true');
     if (window.AtlasExplore) window.AtlasExplore.pause(which !== 'explore');
+    setFullscreen(which !== 'intro');
   }
 
   function toExplore(eraId) {
@@ -688,9 +710,33 @@
                     say('마친마법진', after.toFixed(2) + ' (아직인 것 ' + before.toFixed(2) + ')');
                     say('회색으로', after < before ? 'O' : 'X');
 
+                    /* ③-b 임무 목록은 임무를 열지 않고 자리만 알려 준다 (요구 3) */
+                    var rail1 = document.querySelector('#exRailList .rail-item');
+                    if (rail1) rail1.click();
+                    say('목록이임무를엶',
+                        document.getElementById('questModal').classList.contains('on') ? '엶(틀림)' : '안 엶');
+                    say('미니맵반짝임',
+                        (document.getElementById('exMiniRadar') || {}).innerHTML &&
+                        document.getElementById('exMiniRadar').innerHTML.indexOf('stroke-width="2.4"') >= 0 ? 'O' : 'X');
+                    say('접기단추자리',
+                        getComputedStyle(document.getElementById('exQuestRail')).alignItems);
+
+                    /* ① 성취기준은 학생 화면에 없어야 한다 (요구 1) */
+                    say('성취기준노출', document.getElementById('exStoryStandard') ? '있음(틀림)' : '없음');
+
+
+                    /* 임무는 걸어가서 연다 — 마커 앞에 세우고 조사하기를 누른다 */
+                    var openAQuest = function () {
+                      var mg = STx.markerGroups.filter(function (g) { return g.userData && g.userData.quest.kind !== 'gate'; })[0];
+                      if (!mg || !STx.player) return;
+                      STx.player.position.set(mg.position.x, 0, mg.position.z);
+                      STx.activeNear = mg;
+                      var b = document.getElementById('exInteract');
+                      if (b) b.click();
+                    };
+
                     // ④ 임무 창의 닫기 단추 + ⑧ 사진 비율
-                    var first = document.querySelector('#exRailList .rail-item');
-                    if (first) first.click();
+                    openAQuest();
                     setTimeout(function () {
                       say('임무닫기단추', document.querySelector('#questCard .q-x') ? '있음' : '없음');
                       var ph = document.querySelector('#questCard .q-photo');
@@ -699,8 +745,7 @@
 
                       // Esc · Enter · E 세 키가 모두 닫는가 (요구 4)
                       var keyCloses = function (key) {
-                        var first2 = document.querySelector('#exRailList .rail-item');
-                        if (first2) first2.click();
+                        openAQuest();
                         var wasOpen = document.getElementById('questModal').classList.contains('on');
                         document.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
                         var nowOpen = document.getElementById('questModal').classList.contains('on');
@@ -743,7 +788,22 @@
                           document.getElementById('toMapBtn').click();
                           setTimeout(function () {
                             say('지도이동', document.getElementById('app').classList.contains('on') ? 'O' : 'X');
-                            console.log('[SELFTEST] ' + JSON.stringify(out));
+
+                            /* ④ 역사 가방의 항목을 누르면 지도로 건너가 그 항목이 펼쳐진다 (요구 4) */
+                            toExplore(ERA);
+                            setTimeout(function () {
+                              var g6 = document.getElementById('exStoryGo'); if (g6) g6.click();
+                              S.bagAdd('bitsal');
+                              document.getElementById('bagBtn').click();
+                              var bagRow = document.querySelector('#bagBody .item-row');
+                              say('가방항목단추', bagRow ? bagRow.tagName : '없음');
+                              if (bagRow) bagRow.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                              setTimeout(function () {
+                                say('가방에서지도로', document.getElementById('app').classList.contains('on') ? 'O' : 'X');
+                                say('펼쳐진항목', (document.querySelector('#mapCard .mc-title') || {}).textContent || '안열림');
+                                console.log('[SELFTEST] ' + JSON.stringify(out));
+                              }, 300);
+                            }, 700);
                           }, 400);
                         }, 400);
                       }, 250);
@@ -796,8 +856,18 @@
 
                 if (STOP === 'quest') {
                   setTimeout(function () {
-                    var first = document.querySelector('#exRailList .rail-item');
-                    if (first) first.click();
+                    /* 임무 목록은 자리만 알려 준다 (요구 3).
+                       임무를 열려면 마커 앞으로 가서 조사하기를 눌러야 한다 */
+                    var STq = (window.__atlas3d || {}).ST;
+                    var mg = STq && STq.markerGroups.filter(function (g) {
+                      return g.userData && g.userData.quest.kind !== 'gate';
+                    })[0];
+                    if (mg && STq.player) {
+                      STq.player.position.set(mg.position.x, 0, mg.position.z);
+                      STq.activeNear = mg;
+                      var ib = document.getElementById('exInteract');
+                      if (ib) ib.click();
+                    }
                     setTimeout(function () {
                       // 가상 시간에서는 CSS 전이가 끝나지 않으므로 강제로 보이게 한다
                       ['exScrim', 'questModal'].forEach(function (id) {

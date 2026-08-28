@@ -168,6 +168,40 @@ export function findItemUnderPlayer(){
   return null;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   임무 자리 알려 주기 (요구 3)
+
+   오른쪽 임무 목록은 임무를 여는 창이 아니라 '어디 있는지' 를
+   알려 주는 곳이다. 누르면 미니맵의 그 자리가 잠시 반짝인다.
+   임무는 걸어가서 직접 열어야 한다.
+   ══════════════════════════════════════════════════════════════ */
+const FLASH_SEC = 6;
+let flash = null;      // { pts:[{x,z}], color, until }
+
+/* 시간은 렌더 시계로 잰다.
+   performance.now() 로 재면 헤드리스의 가상 시간과 어긋나 레이더를
+   끝없이 다시 그리게 되고, 그 바람에 렌더러가 죽는다. */
+function nowSec(){
+  return ST.clock ? ST.clock.elapsedTime : (performance.now() / 1000);
+}
+
+/** 그 임무가 있는 자리를 미니맵에 반짝여 준다. 자리가 없으면 false */
+export function flashQuest(q){
+  if (!q) return false;
+  const pts = [];
+  if (q.kind === 'find' && q.items) q.items.forEach(it => { if (it.pos) pts.push(it.pos); });
+  else if (q.pos) pts.push(q.pos);
+  if (!pts.length){ flash = null; return false; }
+  flash = {
+    pts,
+    color: q.kind === 'gate' ? '#6E9B94' : catColor(q.cat),
+    until: nowSec() + FLASH_SEC
+  };
+  return true;
+}
+export function flashActive(){ return !!(flash && nowSec() < flash.until); }
+export function clearFlash(){ flash = null; }
+
 /* ── 미니맵 레이더 ───────────────────────────────────────────── */
 export function drawRadar(){
   const svg = document.getElementById('exMiniRadar');
@@ -188,6 +222,23 @@ export function drawRadar(){
     const op = g.userData.done ? .3 : 1;
     s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${q.kind==='gate'?3.4:2.6}" fill="${col}" opacity="${op}"/>`;
   });
+
+  /* 임무 목록에서 고른 자리 — 숨을 쉬듯 커졌다 작아진다 (요구 3) */
+  if (flashActive()){
+    const t = nowSec();
+    const life = (flash.until - t) / FLASH_SEC;           // 1 → 0
+    const beat = (Math.sin(t * 6.6) + 1) / 2;             // 0 ↔ 1
+    flash.pts.forEach(p => {
+      const fx = C + (p.x / lim) * R;
+      const fy = C + (p.z / lim) * R;
+      const rr = 5 + beat * 7;
+      s += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${rr.toFixed(1)}"
+              fill="none" stroke="${flash.color}" stroke-width="2.4"
+              opacity="${(life * (0.35 + beat * 0.65)).toFixed(2)}"/>`;
+      s += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="3.4"
+              fill="${flash.color}" opacity="${(0.5 + beat * 0.5).toFixed(2)}"/>`;
+    });
+  }
 
   const px = C + (ST.player.position.x / lim) * R;
   const py = C + (ST.player.position.z / lim) * R;

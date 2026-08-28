@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { ST, loadQuestState, questState, isDone, foundCount, totalCount, Store } from './state.js';
 import { SAY, WORLD_TO_ERA } from './constants.js';
 import { buildPlayer, bindInput, updatePlayer, placePlayerAt, clearKeys } from './player.js';
-import { buildMarkers, clearMarkers, updateMarkers, drawRadar, findItemUnderPlayer, refreshMarkerStates, NEAR } from './markers.js';
+import { buildMarkers, clearMarkers, updateMarkers, drawRadar, findItemUnderPlayer,
+         refreshMarkerStates, NEAR, flashQuest, flashActive, clearFlash } from './markers.js';
 import { initUI, openQuest, closeQuest, showToast, showHint, updateCounter, renderRail,
          talkToNPC, positionBubble, hideNpcBubble, openBag, closeBag,
          showEraComplete, hideEraComplete, pickFindItem, primeRank } from './ui.js';
@@ -58,7 +59,7 @@ export function bootExplore(startWorldId){
   initUI({
     onGate: goArea,
     onEraComplete: () => showEraComplete(ST.currentWorld),
-    refreshRail: () => renderRail(q => openQuest(q))
+    refreshRail: () => renderRail(pointToQuest)
   });
   initCollect({ toast: showToast, onChange: refreshCollectViews });
 
@@ -169,7 +170,9 @@ function showStory(w){
 
   set('exStoryBody', (w.body || '').replace(/\{이름\}이여, /g, vocative()).replace(/\{이름\}/g, ''));
   set('exStoryHint', w.hint);
-  set('exStoryStandard', w.standard);      // 교사가 보는 성취기준
+  /* 성취기준(w.standard)은 화면에 내보내지 않는다.
+     학생이 '무엇을 평가받는지' 를 먼저 읽으면 탐구가 답 맞히기로 바뀐다.
+     자료(era-briefs.js)에는 그대로 남겨 콘텐츠를 고칠 때의 근거로 쓴다. */
 
   wrap.classList.add('on');
   ST.paused = true;
@@ -185,6 +188,7 @@ export function goArea(areaId, gate, silent){
   const a = areaId && areas[areaId] ? areas[areaId] : null;
 
   areaEpoch++;                       // 앞선 지역의 늦은 비동기 작업을 무효로 만든다
+  clearFlash();                      // 지역이 바뀌면 가리키던 자리는 뜻이 없다
   if (!silent) loading((a && a.loading) || '길을 옮기는 중…');
 
   // 씬 비우기 — 조명·아바타만 남긴다
@@ -219,7 +223,7 @@ export function goArea(areaId, gate, silent){
   placePlayerAt(ST.spawnPos.x, ST.spawnPos.z);
 
   updateCounter();
-  renderRail(q => openQuest(q));
+  renderRail(pointToQuest);
   const label = document.getElementById('exMiniLabel');
   if (label) label.textContent = (a && a.name) || (w.name || '');
 
@@ -284,6 +288,18 @@ function buildTimeline(){
 /* ══════════════════════════════════════════════════════════════
    조작
    ══════════════════════════════════════════════════════════════ */
+/* 오른쪽 임무 목록은 임무를 여는 창이 아니라 자리를 알려 주는 곳이다 (요구 3).
+   누르면 미니맵에서 그 자리가 반짝이고, 임무는 걸어가서 직접 연다. */
+function pointToQuest(q){
+  if (!q) return;
+  const ok = flashQuest(q);
+  drawRadar();
+  if (!ok){ showToast('이 임무는 자리가 정해져 있지 않소'); return; }
+  showToast(isDone(q.id)
+    ? `이미 마친 곳이오 — 미니맵에서 반짝이는 자리요`
+    : `${q.title} — 미니맵에서 반짝이는 자리로 가 보시오`);
+}
+
 const NPC_NEAR = 3.2;
 
 /** 손이 닿는 곳에 있는 NPC 중 가장 가까운 것 */
@@ -461,8 +477,9 @@ function tick(){
   // NPC 말풍선 따라가기
   if (ST.npcDialogueFor) positionBubble(ST.npcDialogueFor, camera, canvas);
 
+  // 반짝이는 동안에는 더 자주 다시 그린다 (요구 3)
   radarT += dt;
-  if (radarT > .25){ radarT = 0; drawRadar(); }
+  if (radarT > (flashActive() ? .09 : .25)){ radarT = 0; drawRadar(); }
 
   secTimer += dt;
   if (secTimer >= 10){ secTimer = 0; if (Store) Store.addSeconds(10); }

@@ -515,8 +515,18 @@
     }
   }
 
+  /** 학습 항목 하나를 그 시대로 옮겨 가 펼친다 (탐험 모드의 역사 가방에서 부른다) */
+  function showItemById(id) {
+    var c = (window.CONTENT || []).find(function (x) { return x.id === id; });
+    if (!c) return false;
+    var idx = window.ERAS.findIndex(function (e) { return e.id === c.era; });
+    if (idx >= 0 && idx !== eraIdx) { eraIdx = idx; drawEra(); }
+    openItem(c);
+    return true;
+  }
+
   window.AtlasMap = {
-    open: open, setEra: setEra, setEraById: setEraById,
+    open: open, setEra: setEra, setEraById: setEraById, showItemById: showItemById,
     refreshMode: refreshMode, updateBagCount: updateBagCount,
     currentEra: function () { return window.ERAS[eraIdx]; },
     itemsOfEra: itemsOfEra
