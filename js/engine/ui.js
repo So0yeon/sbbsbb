@@ -576,8 +576,15 @@ export function updateCounter(){
 export function talkToNPC(group, camera, canvas){
   const lines = group.userData.npcLines || [];
   if (!lines.length) return;
-  if (ST.npcDialogueFor !== group){ ST.npcDialogueFor = group; ST.npcLineIdx = 0; }
-  else ST.npcLineIdx = (ST.npcLineIdx + 1) % lines.length;
+  if (ST.npcDialogueFor !== group){
+    ST.npcDialogueFor = group; ST.npcLineIdx = 0;
+  } else if (ST.npcLineIdx >= lines.length - 1){
+    // 할 말을 다 들었다 — 다시 걸면 처음부터 반복하지 않고 그냥 닫는다
+    hideNpcBubble();
+    return;
+  } else {
+    ST.npcLineIdx += 1;
+  }
 
   const el = document.getElementById('npcBubble');
   if (!el) return;
