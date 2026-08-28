@@ -153,7 +153,7 @@ export function needleGame(ctx, cfg) {
 
   function inZone(p) { return p >= zone && p <= zone + width; }
 
-  pressBind(hit, () => {
+  function doHit() {
     if (tries >= cfg.tries) return;
     const justSide = side;          // 방금 간 쪽 — side 는 아래에서 뒤집힙니다
     tries++;
@@ -179,7 +179,26 @@ export function needleGame(ctx, cfg) {
 
     if (hits >= cfg.need) { status.textContent = '해냈다!'; ctx.later(ctx.win, 420); }
     else if (tries >= cfg.tries) { status.textContent = '아쉽다…'; ctx.later(ctx.lose, 520); }
-  });
+  }
+
+  pressBind(hit, doHit);
+
+  /* 초점이 실제로 버튼에 가 있지 않은 환경(찾지 못한 이유가 있다)에서도
+     스페이스·엔터가 먹게, 문서 전체에서 한 번 더 잡는다. 버튼이 이미
+     처리했으면(preventDefault 가 이미 걸렸으면) 두 번 치지 않는다. */
+  function spaceFallback(e) {
+    if (ctx.dead || !document.body.contains(hit)) {
+      document.removeEventListener('keydown', spaceFallback);
+      return;
+    }
+    if (e.defaultPrevented) return;
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const t = document.activeElement;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    e.preventDefault();
+    doHit();
+  }
+  document.addEventListener('keydown', spaceFallback);
 }
 
 /* ── 1. spin — 돌리기. 실패 없음 ───────────────────────────── */
