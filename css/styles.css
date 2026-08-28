@@ -146,23 +146,26 @@ b{ font-weight:700; }
 }
 #nameInput:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
 
-/* 꾸러미 지급 */
-.kit-row{ margin-top:24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+/* 꾸러미 지급 — 가로로 긴 칸 두 개를 세로로 쌓는다. 뒤에 나오는
+   탐험/지도 모드 카드(.mode-card, 세로형·흰 배경)와 헷갈리지 않게
+   양피지 톤 + 가로 목록 모양으로 확실히 다르게 만든다. */
+.kit-row{ margin-top:24px; display:flex; flex-direction:column; gap:14px; }
 .kit-item{
-  display:block; width:100%; font:inherit; color:inherit; text-align:center;
-  background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg);
-  padding:24px 20px; box-shadow:var(--sh-1); opacity:0; transform:translateY(14px) scale(.97);
+  display:flex; align-items:center; gap:18px; width:100%; font:inherit; color:inherit; text-align:left;
+  background:var(--paper); border:1px solid var(--paper-line); border-radius:var(--r-lg);
+  padding:18px 22px; box-shadow:var(--sh-1); opacity:0; transform:translateY(14px) scale(.97);
   animation:kitIn var(--t-slow) var(--ease) forwards;
   cursor:pointer; transition:background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
               transform var(--t-fast) var(--ease-spring), box-shadow var(--t-fast) var(--ease);
 }
-.kit-item:hover{ border-color:var(--accent-line); }
-.kit-item:active{ transform:scale(.97); }
-.kit-item.got{
-  background:var(--accent-soft); border-color:var(--accent-line); cursor:default;
-  box-shadow:0 0 0 3px var(--accent-soft), var(--sh-1);
-  animation:kitGot 420ms var(--ease-spring);
-}
+.kit-item:hover{ border-color:#C9BB94; }
+.kit-item:active{ transform:scale(.99); }
+.kit-item.got{ cursor:default; animation:kitGot 420ms var(--ease-spring); }
+/* 두 칸이 저마다 다른 물건이니 받았을 때 색도 다르게 — 유물은 흙빛, 수첩은 도장 빛 */
+#kitBag.got{ background:rgba(123,106,85,.14); border-color:rgba(123,106,85,.45);
+             box-shadow:0 0 0 3px rgba(123,106,85,.14), var(--sh-1); }
+#kitBook.got{ background:rgba(194,91,79,.12); border-color:rgba(194,91,79,.45);
+              box-shadow:0 0 0 3px rgba(194,91,79,.12), var(--sh-1); }
 #kitBook{ animation-delay:260ms; }
 @keyframes kitIn{ to{ opacity:1; transform:none; } }
 @keyframes kitGot{
@@ -171,11 +174,12 @@ b{ font-weight:700; }
   70%{ transform:scale(1.05); }
   100%{ transform:scale(1); }
 }
-.kit-icon{ font-size:45px; line-height:1; }
-.kit-item h3{ margin-top:10px; font-size:20px; }
-.kit-item .kit-hint{ margin-top:8px; font-size:13px; color:var(--text3); text-align:center; }
+.kit-icon{ flex:0 0 auto; font-size:38px; line-height:1; color:var(--ink); }
+.kit-body{ flex:1 1 auto; min-width:0; }
+.kit-item h3{ font-size:19px; }
+.kit-item .kit-hint{ margin-top:4px; font-size:13px; color:var(--text3); text-align:left; }
 .kit-item.got .kit-hint{ display:none; }
-.kit-item .kit-desc{ margin-top:8px; font-size:15px; color:var(--text2); text-align:center; }
+.kit-item .kit-desc{ margin-top:6px; font-size:14.5px; color:var(--text2); text-align:left; }
 
 /* 모드 선택 */
 .mode-row{ margin-top:26px; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
