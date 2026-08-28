@@ -4,7 +4,7 @@
    engine/boot.js 만 부른다 (MASTER.md §2-4).
    지도 모드(전역 스크립트)와는 window.AtlasExplore 로만 이어진다.
    ══════════════════════════════════════════════════════════════════════ */
-import { bootExplore, switchWorld, pauseExplore, worldNames, worldList, refreshCollectViews } from './engine/boot.js';
+import { bootExplore, switchWorld, pauseExplore, worldNames, worldList, refreshCollectViews, openEraComplete } from './engine/boot.js';
 import { WORLDS, RELICS_BY_WORLD, AREAS_BY_WORLD } from './engine/worlds-registry.js';
 import { renderRelicBag, renderStampBook } from './engine/collect.js';
 import { ST } from './engine/state.js';
@@ -18,6 +18,8 @@ window.AtlasExplore = {
   },
   switchWorld,
   pause: pauseExplore,
+  /** 시대 마무리 화면(핵심 탐구질문 포함)을 연다 */
+  showEraComplete: openEraComplete,
   currentWorld(){ return ST.WORLD_ID; },
   worldNames, worldList,
   refreshCollectViews,

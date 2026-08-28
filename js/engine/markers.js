@@ -5,9 +5,13 @@
 import * as THREE from 'three';
 import { ST, questState, isDone } from './state.js';
 import { catColor } from './constants.js';
-import { mat, iconSprite } from './scene-helpers.js';
+import { mat, iconSprite, makeAura, setAuraDone, DONE_COLOR } from './scene-helpers.js';
+import { iconForQuest } from './icons.js';
 
-const NEAR = 3.4;      // 이 거리 안이면 '조사하기'가 뜬다
+/** 이 거리 안이면 '조사하기'가 뜨고, 그 버튼이 실제로 동작한다.
+ *  boot.js 의 interact() 도 이 값을 쓴다 — 두 곳이 어긋나면
+ *  버튼은 떴는데 눌리지 않는 자리가 생긴다. */
+export const NEAR = 3.4;
 
 /* ── 마커 하나 ───────────────────────────────────────────────── */
 function makeMarker(q){
@@ -16,31 +20,27 @@ function makeMarker(q){
   const isGate = q.kind === 'gate';
   const color = isGate ? '#6E9B94' : catColor(q.cat);
 
-  // 바닥 고리
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(1.0, .09, 6, 20),
-    mat(color, { transparent:true, opacity: done ? .35 : .85 })
-  );
-  ring.rotation.x = -Math.PI / 2;
-  ring.position.y = .06;
-  g.add(ring);
+  // 마법진 — 상호작용할 수 있다는 표시 (요구 3)
+  const aura = makeAura(color, 1.95);
+  g.add(aura);
+  setAuraDone(aura, done);
 
-  // 기둥
+  // 기둥 — 멀리서도 자리를 알아보게
   const post = new THREE.Mesh(
-    new THREE.CylinderGeometry(.07, .07, 1.5, 6),
-    mat(color, { transparent:true, opacity: done ? .3 : .8 })
+    new THREE.CylinderGeometry(.06, .06, 1.5, 6),
+    mat(done ? DONE_COLOR : color, { transparent:true, opacity: done ? .3 : .8 })
   );
   post.position.y = .75;
   g.add(post);
 
-  // 아이콘
-  const icon = iconSprite(q.icon || '📌', 1.05);
+  // 아이콘 — 이모지가 아니라 선 아이콘 (요구 2)
+  const icon = iconSprite(iconForQuest(q), 1.05, done ? DONE_COLOR : color);
   icon.position.y = 2.05;
-  icon.material.opacity = done ? .42 : 1;
+  icon.material.opacity = done ? .5 : 1;
   g.add(icon);
 
   g.position.set(q.pos.x, 0, q.pos.z);
-  g.userData = { quest: q, ring, post, icon, base: 2.05, done };
+  g.userData = { quest: q, aura, post, icon, color, base: 2.05, done };
   return g;
 }
 
@@ -63,22 +63,23 @@ function buildFindItems(){
   (ST.QUESTS || []).forEach(q => {
     if (q.kind !== 'find' || !q.items) return;
     if (q.area && ST.currentArea && q.area !== ST.currentArea) return;
+    const color = catColor(q.cat) || '#7C6BA8';
     q.items.forEach(it => {
       if (!it.pos) return;
       const g = new THREE.Group();
       const got = questState['find:' + q.id + ':' + it.id] === 'done';
-      const sp = iconSprite(it.icon || '✨', .85);
+
+      const aura = makeAura(color, 1.15);
+      g.add(aura);
+      setAuraDone(aura, got);
+
+      const sp = iconSprite('find', .85, got ? DONE_COLOR : color);
       sp.position.y = 1.2;
-      sp.material.opacity = got ? .3 : 1;
+      sp.material.opacity = got ? .4 : 1;
       g.add(sp);
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(.6, .06, 5, 14),
-        mat('#7C6BA8', { transparent:true, opacity: got ? .25 : .7 })
-      );
-      ring.rotation.x = -Math.PI/2; ring.position.y = .05;
-      g.add(ring);
+
       g.position.set(it.pos.x, 0, it.pos.z);
-      g.userData = { findOf: q, item: it, sprite: sp, ring, base: 1.2, got };
+      g.userData = { findOf: q, item: it, sprite: sp, aura, color, base: 1.2, got };
       ST.scene.add(g);
       ST.findGroups.push(g);
     });
@@ -94,21 +95,27 @@ export function clearMarkers(){
 
 export function refreshMarkerStates(){
   ST.markerGroups.forEach(g => {
-    const done = isDone(g.userData.quest.id);
-    if (done === g.userData.done) return;
-    g.userData.done = done;
-    g.userData.ring.material = mat(
-      g.userData.quest.kind === 'gate' ? '#6E9B94' : catColor(g.userData.quest.cat),
-      { transparent:true, opacity: done ? .35 : .85 }
-    );
-    g.userData.icon.material.opacity = done ? .42 : 1;
+    const d = g.userData;
+    const done = isDone(d.quest.id);
+    if (done === d.done) return;
+    d.done = done;
+    setAuraDone(d.aura, done);                       // 색 → 회색 (요구 3)
+    d.post.material = mat(done ? DONE_COLOR : d.color,
+      { transparent:true, opacity: done ? .3 : .8 });
+    d.icon.material.map = iconSprite(iconForQuest(d.quest), 1,
+      done ? DONE_COLOR : d.color).material.map;
+    d.icon.material.opacity = done ? .5 : 1;
+    d.icon.material.needsUpdate = true;
   });
   ST.findGroups.forEach(g => {
-    const key = 'find:' + g.userData.findOf.id + ':' + g.userData.item.id;
-    const got = questState[key] === 'done';
-    if (got === g.userData.got) return;
-    g.userData.got = got;
-    g.userData.sprite.material.opacity = got ? .3 : 1;
+    const d = g.userData;
+    const got = questState['find:' + d.findOf.id + ':' + d.item.id] === 'done';
+    if (got === d.got) return;
+    d.got = got;
+    setAuraDone(d.aura, got);
+    d.sprite.material.map = iconSprite('find', 1, got ? DONE_COLOR : d.color).material.map;
+    d.sprite.material.opacity = got ? .4 : 1;
+    d.sprite.material.needsUpdate = true;
   });
 }
 
@@ -120,13 +127,13 @@ export function updateMarkers(t){
   let best = null, bestD = NEAR;
 
   ST.markerGroups.forEach((g, i) => {
-    g.userData.icon.position.y = g.userData.base + Math.sin(t * 1.7 + i) * .13;
-    g.userData.ring.rotation.z += 0.004;
+    const u = g.userData;
+    u.icon.position.y = u.base + Math.sin(t * 1.7 + i) * .13;
+    u.aura.rotation.z += u.done ? 0.0012 : 0.004;    // 마친 자리는 천천히 돈다
     const d = Math.hypot(p.position.x - g.position.x, p.position.z - g.position.z);
-    const done = g.userData.done;
     const scale = d < NEAR ? 1.14 : 1;
     g.scale.setScalar(scale);
-    if (!done && d < bestD){ bestD = d; best = g; }
+    if (!u.done && d < bestD){ bestD = d; best = g; }
   });
 
   // 완료된 것도 다시 볼 수 있게: 가까운 게 없으면 완료된 것 중 가장 가까운 것
@@ -140,8 +147,9 @@ export function updateMarkers(t){
 
   // 수집형 아이템
   ST.findGroups.forEach((g, i) => {
-    g.userData.sprite.position.y = g.userData.base + Math.sin(t * 2.1 + i) * .1;
-    g.userData.ring.rotation.z -= 0.005;
+    const u = g.userData;
+    u.sprite.position.y = u.base + Math.sin(t * 2.1 + i) * .1;
+    u.aura.rotation.z -= u.got ? 0.0015 : 0.005;
   });
 
   ST.activeNear = best;
@@ -159,6 +167,40 @@ export function findItemUnderPlayer(){
   }
   return null;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   임무 자리 알려 주기 (요구 3)
+
+   오른쪽 임무 목록은 임무를 여는 창이 아니라 '어디 있는지' 를
+   알려 주는 곳이다. 누르면 미니맵의 그 자리가 잠시 반짝인다.
+   임무는 걸어가서 직접 열어야 한다.
+   ══════════════════════════════════════════════════════════════ */
+const FLASH_SEC = 6;
+let flash = null;      // { pts:[{x,z}], color, until }
+
+/* 시간은 렌더 시계로 잰다.
+   performance.now() 로 재면 헤드리스의 가상 시간과 어긋나 레이더를
+   끝없이 다시 그리게 되고, 그 바람에 렌더러가 죽는다. */
+function nowSec(){
+  return ST.clock ? ST.clock.elapsedTime : (performance.now() / 1000);
+}
+
+/** 그 임무가 있는 자리를 미니맵에 반짝여 준다. 자리가 없으면 false */
+export function flashQuest(q){
+  if (!q) return false;
+  const pts = [];
+  if (q.kind === 'find' && q.items) q.items.forEach(it => { if (it.pos) pts.push(it.pos); });
+  else if (q.pos) pts.push(q.pos);
+  if (!pts.length){ flash = null; return false; }
+  flash = {
+    pts,
+    color: q.kind === 'gate' ? '#6E9B94' : catColor(q.cat),
+    until: nowSec() + FLASH_SEC
+  };
+  return true;
+}
+export function flashActive(){ return !!(flash && nowSec() < flash.until); }
+export function clearFlash(){ flash = null; }
 
 /* ── 미니맵 레이더 ───────────────────────────────────────────── */
 export function drawRadar(){
@@ -180,6 +222,23 @@ export function drawRadar(){
     const op = g.userData.done ? .3 : 1;
     s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${q.kind==='gate'?3.4:2.6}" fill="${col}" opacity="${op}"/>`;
   });
+
+  /* 임무 목록에서 고른 자리 — 숨을 쉬듯 커졌다 작아진다 (요구 3) */
+  if (flashActive()){
+    const t = nowSec();
+    const life = (flash.until - t) / FLASH_SEC;           // 1 → 0
+    const beat = (Math.sin(t * 6.6) + 1) / 2;             // 0 ↔ 1
+    flash.pts.forEach(p => {
+      const fx = C + (p.x / lim) * R;
+      const fy = C + (p.z / lim) * R;
+      const rr = 5 + beat * 7;
+      s += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${rr.toFixed(1)}"
+              fill="none" stroke="${flash.color}" stroke-width="2.4"
+              opacity="${(life * (0.35 + beat * 0.65)).toFixed(2)}"/>`;
+      s += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="3.4"
+              fill="${flash.color}" opacity="${(0.5 + beat * 0.5).toFixed(2)}"/>`;
+    });
+  }
 
   const px = C + (ST.player.position.x / lim) * R;
   const py = C + (ST.player.position.z / lim) * R;

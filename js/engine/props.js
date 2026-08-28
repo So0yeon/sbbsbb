@@ -10,6 +10,8 @@
    ══════════════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { ST } from './state.js';
+import { preloadBricks } from './bricks.js';
+import { NEO_PROPS } from './props-neolithic.js';
 import {
   mat, box, cyl, cone, sph, place, add,
   buildGround, buildWater, buildMountains, buildMountainsWide,
@@ -360,13 +362,83 @@ export function buildMammothGround(x, z){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   시대 전용 표 — 이름의 낱말로 고르기 전에 여기부터 본다.
+   낱말 규칙은 buildVillageNeo 를 '판잣집 다섯 채'로 보냈다. 신석기 마을은 움집이다.
+   ══════════════════════════════════════════════════════════════ */
+// 되돌이 import 라서 표를 미리 만들어 두면 아직 안 실린 것을 건드린다.
+// 부를 때 찾도록 미룬다.
+function eraTable(id){
+  if (id === 'neolithic') return NEO_PROPS;
+  return null;
+}
+
+preloadBricks();          // 브릭은 미리 받아 둔다 (없어도 앱은 돈다)
+
+/* ══════════════════════════════════════════════════════════════
+   물 — 한 지역에 큰 물은 한 번만
+   ══════════════════════════════════════════════════════════════ */
+let bigWaterArea = null;      // 큰 물을 이미 놓은 지역
+
+function claimBigWater(){
+  const key = ST.WORLD_ID + ':' + ST.currentArea;
+  if (bigWaterArea === key) return false;
+  bigWaterArea = key;
+  return true;
+}
+
+/** 강 — 마을을 가로지르지 않게 한쪽으로 비켜서 비스듬히 흐른다 */
+export function buildRiverBand(x, z){
+  if (!claimBigWater()) return null;
+  const b = ST.BOUND || 40;
+  const px = (x === undefined || x === 0) ? -b * 0.72 : x;
+  const pz = (z === undefined) ? 0 : z;
+  return buildWater(px, pz, b * 0.42, b * 3.0, 0.22);
+}
+
+/** 바다·나루 — 한쪽 바깥을 넓게 채운다 */
+export function buildSeaSide(x, z){
+  if (!claimBigWater()) return null;
+  const b = ST.BOUND || 40;
+  const px = (x === undefined || x === 0) ? 0 : x;
+  const pz = (z === undefined || z === 0) ? -b * 1.15 : z;
+  return buildWater(px, pz, b * 3.4, b * 1.6, 0);
+}
+
+/** 물이 들었던 자리 — 큰 판이 아니라 얕고 작은 웅덩이 몇 개 */
+export function buildWetPatch(x, z){
+  const b = ST.BOUND || 40;
+  const g = new THREE.Group();
+  const cx = (x === undefined || x === 0) ? b * 0.5 : x;
+  const cz = (z === undefined || z === 0) ? b * 0.45 : z;
+  for (let i = 0; i < 4; i++){
+    const a = i * 1.7;
+    const r = 2.2 + (i % 3) * 1.6;
+    const m = new THREE.Mesh(
+      new THREE.CircleGeometry(r, 12),
+      new THREE.MeshStandardMaterial({ color:'#9BC3C0', transparent:true, opacity:.5,
+                                       flatShading:true, polygonOffset:true, polygonOffsetFactor:-3 })
+    );
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(Math.cos(a) * r * 1.6, 0.03, Math.sin(a) * r * 1.4);
+    m.scale.z = .6 + (i % 2) * .5;
+    g.add(m);
+  }
+  return place(g, cx, cz);
+}
+
+/* ══════════════════════════════════════════════════════════════
    이름의 낱말로 무엇을 놓을지 정한다
    ══════════════════════════════════════════════════════════════ */
 const RULES = [
   [/GroundWide/i,                (x,z)=>{ buildGround(); buildMountainsWide(); }],
   [/Ground|Haze/i,               ()=>{ buildGround(); }],
   [/Hills|Mountain/i,            ()=>{ buildMountains(); }],
-  [/River|Water|Coast|Harbor|Flood|Sea/i, (x,z)=>buildWater(x||0, z||0, 34, 120)],
+  /* 물은 조심해서 놓는다. 예전에는 River·Flood·Coast 가 모두 원점에 34×120 짜리
+     거대한 평면을 깔아, 마을 한가운데를 하늘색 판이 가로지르고 있었다(신석기가 그랬다).
+     이제 한 지역에 큰 물은 한 번만, 그것도 한쪽으로 비켜서 놓는다. */
+  [/Flood/i,                     (x,z)=>buildWetPatch(x, z)],
+  [/River/i,                     (x,z)=>buildRiverBand(x, z)],
+  [/Coast|Sea|Harbor|Water/i,    (x,z)=>buildSeaSide(x, z)],
   [/Reeds|Bushes/i,              (x,z)=>{ for(let i=0;i<7;i++) buildStack((x||0)+(i%3-1)*2.2, (z||0)+Math.floor(i/3)*2.0, 'shell'); }],
   [/Trees|Forest/i,              ()=>scatterTreesArea(24, [-32,32], [-32,28], 6, 'mix')],
   [/Rocks|Rubble/i,              (x,z)=>buildRubble(x||0, z||0, 8)],
@@ -429,7 +501,24 @@ function sandbag(x, z, i){
 }
 
 /** 이름으로 시대 소품을 놓는다. 맞는 낱말이 없으면 바위 무더기를 놓는다 */
+/** 지역이 바뀌면 '큰 물을 이미 놓았다' 표시를 지운다 (boot.js 가 부르지 않아도
+    지역 키가 달라지면 저절로 풀린다 — claimBigWater 가 지역 키로 판단한다) */
+export function resetWaterClaim(){ bigWaterArea = null; }
+
+let lastAreaKey = null;
+
 export function eraProp(name, x, z){
+  // 지역이 바뀌면 '이미 놓은 자리' 기록을 비운다
+  const key = ST.WORLD_ID + ':' + ST.currentArea;
+  if (key !== lastAreaKey){ lastAreaKey = key; ST.propSpots = []; resetWaterClaim(); }
+
+  // 그 시대만의 것이 있으면 그것부터
+  const table = eraTable(ST.WORLD_ID);
+  if (table && table[name]){
+    try { return table[name](x, z); }
+    catch(e){ console.warn('[eraProp:' + ST.WORLD_ID + ']', name, e); }
+  }
+
   const n = String(name || '').replace(/^build/, '');
   for (const [re, fn] of RULES){
     if (re.test(n)){

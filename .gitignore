@@ -3,5 +3,5 @@ node_modules/
 Thumbs.db
 *.log
 tools/.cache/
-.superpowers/
 tools/.out/
+.superpowers/

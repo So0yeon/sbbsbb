@@ -1,0 +1,405 @@
+<!-- © 2026 김용현 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>에셋 비교 시험 — 지금 방식 vs Kenney 브릭</title>
+<link rel="stylesheet" href="../vendor/font/pretendard.css">
+<style>
+  body{ margin:0; font-family:'Pretendard Variable',Pretendard,sans-serif; background:#E9E4D3; }
+  #c{ display:block; width:100vw; height:100vh; }
+  .hud{ position:fixed; left:0; right:0; top:0; display:flex; pointer-events:none; }
+  .hud div{ flex:1; text-align:center; padding:14px; font-size:15px; font-weight:700; color:#3A3126; }
+  .hud small{ display:block; font-weight:500; font-size:12.5px; color:#6E6A5E; margin-top:2px; }
+  #stat{ position:fixed; left:12px; bottom:12px; font-size:12px; color:#4A463C;
+         background:rgba(255,255,255,.8); padding:8px 12px; border-radius:10px; white-space:pre; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <div>지금 방식 — 기본 도형<small>상자·원뿔·구를 조합</small></div>
+  <div>Kenney 브릭 + 미니 캐릭터<small>브릭 37종을 쌓아 만듦</small></div>
+</div>
+<div id="stat">불러오는 중…</div>
+
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/build/three.module.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* ══════════════════════════════════════════════════════════════
+   무대
+   ══════════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#E4E1CB');
+scene.fog = new THREE.Fog('#E4E1CB', 40, 110);
+
+const CHAR_MODE = new URLSearchParams(location.search).has('char');
+const camera = new THREE.PerspectiveCamera(CHAR_MODE ? 34 : 46, 1, .1, 400);
+if (CHAR_MODE){ camera.position.set(4.2, 2.3, 8.2); camera.lookAt(4.2, 1.1, 0); }
+else { camera.position.set(0, 7.5, 15); camera.lookAt(0, 2.2, 0); }
+
+scene.add(new THREE.HemisphereLight('#EAF2EF', '#B9A98A', 1.15));
+const sun = new THREE.DirectionalLight('#FFF3DD', 1.3); sun.position.set(28, 42, 14); scene.add(sun);
+const fill = new THREE.DirectionalLight('#CFE3FF', .5); fill.position.set(-22, 20, -12); scene.add(fill);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color:'#E9E4D3', flatShading:true }));
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.02;
+scene.add(ground);
+
+const matCache = new Map();
+const mat = (c) => {
+  if (!matCache.has(c)) matCache.set(c, new THREE.MeshStandardMaterial({ color:c, flatShading:true, roughness:.92, metalness:0 }));
+  return matCache.get(c);
+};
+const box = (w,h,d,c,x,y,z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c)); m.position.set(x,y,z); return m; };
+const cyl = (rt,rb,h,s,c,x,y,z) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s), mat(c)); m.position.set(x,y,z); return m; };
+
+/* ══════════════════════════════════════════════════════════════
+   왼쪽 — 지금 방식 (js/engine/scene-helpers.js 와 같은 코드)
+   ══════════════════════════════════════════════════════════════ */
+const LEFT = new THREE.Group(); LEFT.position.x = -7.5; scene.add(LEFT);
+
+function oldHanok(g, x, z, w, d, h, bodyColor, roofColor){
+  const o = new THREE.Group();
+  o.add(box(w, h, d, bodyColor, 0, h/2, 0));
+  o.add(box(w+.7, .34, d+.7, '#BDB6A4', 0, .17, 0));
+  const roofH = Math.max(1.0, h*.52);
+  const r1 = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*.82, roofH, 4), mat(roofColor));
+  r1.rotation.y = Math.PI/4; r1.position.y = h + roofH/2 - .06; r1.scale.set(1,1,d/w);
+  o.add(r1);
+  o.add(box(w+1.5, .18, d+1.5, roofColor, 0, h+.1, 0));
+  const px2 = w/2-.25, pz = d/2-.2;
+  [[-px2,-pz],[px2,-pz],[-px2,pz],[px2,pz]].forEach(p => o.add(cyl(.13,.13,h,6,'#8A6E52', p[0], h/2, p[1])));
+  o.position.set(x, 0, z); g.add(o);
+}
+function oldPagoda(g, x, z){
+  const o = new THREE.Group();
+  let y = 0;
+  o.add(box(2.2,.4,2.2,'#B9B4A6',0,.2,0)); y = .4;
+  for (let i=0;i<5;i++){
+    const w = 1.7 - i*.2;
+    o.add(box(w,.52,w,'#C3BEAF',0,y+.26,0));
+    o.add(box(w+.55,.16,w+.55,'#ADA898',0,y+.58,0));
+    y += .72;
+  }
+  const t = new THREE.Mesh(new THREE.ConeGeometry(.3,.7,6), mat('#B0AA98')); t.position.y = y+.35; o.add(t);
+  o.position.set(x,0,z); g.add(o);
+}
+function oldDolmen(g, x, z){
+  const o = new THREE.Group();
+  o.add(box(.9,2.0,.8,'#A9A69A',-1.2,1.0,0));
+  o.add(box(.9,2.0,.8,'#A9A69A', 1.2,1.0,0));
+  const cap = box(4.2,.6,2.8,'#9C9A8E',0,2.3,0); cap.rotation.z = .04; o.add(cap);
+  o.position.set(x,0,z); g.add(o);
+}
+function oldDuru(g, x, z){
+  const o = new THREE.Group();
+  const rig = new THREE.Group(); o.add(rig);
+  rig.add(cyl(.34,.42,1.05,9,'#F4F1E6',0,1.02,0));
+  const armGeo = new THREE.BoxGeometry(.16,.74,.34);
+  const la = new THREE.Mesh(armGeo, mat('#D8D2C0')); la.position.set(-.46,1.16,0); rig.add(la);
+  const ra = la.clone(); ra.position.set(.46,1.16,0); rig.add(ra);
+  const head = new THREE.Group(); head.position.set(0,1.58,0); rig.add(head);
+  head.add(cyl(.13,.17,.42,8,'#F4F1E6',0,.1,0));
+  const skull = new THREE.Mesh(new THREE.IcosahedronGeometry(.3,0), mat('#F4F1E6')); skull.position.y=.5; head.add(skull);
+  const beak = new THREE.Mesh(new THREE.ConeGeometry(.1,.46,5), mat('#E0A64B'));
+  beak.rotation.x = Math.PI/2; beak.position.set(0,.48,.34); head.add(beak);
+  const f = new THREE.Mesh(new THREE.ConeGeometry(.075,.62,5), mat('#C25B4F'));
+  f.geometry.translate(0,.31,0); f.position.set(0,.70,-.06); f.rotation.z = -.16; head.add(f);
+  rig.add(cyl(.075,.075,.58,6,'#6E6A5E',-.16,.29,0));
+  rig.add(cyl(.075,.075,.58,6,'#6E6A5E', .16,.29,0));
+  o.position.set(x,0,z); o.rotation.y = Math.PI; g.add(o);
+  return o;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   오른쪽 — Kenney 브릭
+   ══════════════════════════════════════════════════════════════ */
+const RIGHT = new THREE.Group(); RIGHT.position.x = 7.5; scene.add(RIGHT);
+
+const STUD = 0.28;                 // 가로세로 한 칸(스터드)
+const K = STUD / 0.079;            // 원본 브릭 단위 → 우리 단위
+const BRICK_H = 0.114 * K;         // 브릭 한 층 높이
+const PLATE_H = 0.05  * K;         // 플레이트 한 층 높이
+
+const loader = new GLTFLoader();
+const GEO = {};                    // 이름 → BufferGeometry (바닥 가운데가 원점)
+
+async function loadBrick(name){
+  const g = await loader.loadAsync('../assets/kenney/bricks/' + name + '.glb');
+  let geo = null;
+  g.scene.traverse(o => { if (o.isMesh && !geo) geo = o.geometry; });
+  geo = geo.clone();
+  geo.scale(K, K, K);
+  geo.computeBoundingBox();
+  const b = geo.boundingBox;
+  geo.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);   // 바닥 가운데
+  geo.computeVertexNormals();
+  GEO[name] = geo;
+  return geo;
+}
+
+/* 색깔별·모양별로 모아 두었다가 InstancedMesh 로 한 번에 그린다 */
+const bucket = new Map();          // 'shape|color' → [Matrix4…]
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(1,1,1);
+
+/** 브릭 하나 — 좌표는 스터드/층 단위 (LEGO 좌표) */
+function B(shape, sx, level, sz, color, rotY, plate){
+  const key = shape + '|' + color;
+  if (!bucket.has(key)) bucket.set(key, []);
+  _e.set(0, (rotY || 0) * Math.PI / 2, 0);
+  _q.setFromEuler(_e);
+  _m.compose(new THREE.Vector3(sx * STUD, level, sz * STUD), _q, _v);
+  bucket.get(key).push(_m.clone());
+}
+const L = (n) => n * BRICK_H;      // n번째 브릭 층의 바닥 높이
+const P = (n) => n * PLATE_H;
+
+function flushBricks(parent){
+  let count = 0, tris = 0;
+  bucket.forEach((list, key) => {
+    const [shape, color] = key.split('|');
+    const geo = GEO[shape];
+    if (!geo) return;
+    const im = new THREE.InstancedMesh(geo, mat(color), list.length);
+    list.forEach((m, i) => im.setMatrixAt(i, m));
+    im.instanceMatrix.needsUpdate = true;
+    parent.add(im);
+    count += list.length;
+    tris += (geo.index ? geo.index.count / 3 : 0) * list.length;
+  });
+  bucket.clear();
+  return { count, tris: Math.round(tris) };
+}
+
+/* ── 브릭으로 만든 한옥 ─────────────────────────────────────── */
+function brickHanok(cx, cz, W, D, storeys, wall, roof, beam){
+  // 기단 (플레이트)
+  for (let x = -W/2 - 1; x <= W/2 + 1; x += 2)
+    for (let z = -D/2 - 1; z <= D/2 + 1; z += 2)
+      B('none-hq-plate-2x2', cx + x, 0, cz + z, '#BDB6A4');
+
+  const base = PLATE_H;
+  // 벽 — 4면을 2x4 브릭으로 두르고 앞면 가운데는 문으로 비운다
+  for (let lv = 0; lv < storeys; lv++){
+    const y = base + L(lv);
+    for (let x = -W/2; x <= W/2; x += 4){
+      B('bevel-hq-brick-2x4', cx + x, y, cz - D/2, wall);
+      const isDoor = (lv < 2 && Math.abs(x) < 2);
+      if (!isDoor) B('bevel-hq-brick-2x4', cx + x, y, cz + D/2, wall);
+    }
+    for (let z = -D/2 + 2; z <= D/2 - 2; z += 4){
+      B('bevel-hq-brick-2x4', cx - W/2, y, cz + z, wall, 1);
+      B('bevel-hq-brick-2x4', cx + W/2, y, cz + z, wall, 1);
+    }
+  }
+
+  // 처마 — 벽보다 넓게 플레이트를 두른다
+  const eaveY = base + L(storeys);
+  for (let x = -W/2 - 2; x <= W/2 + 2; x += 4){
+    B('none-hq-plate-2x4', cx + x, eaveY, cz - D/2 - 2, beam);
+    B('none-hq-plate-2x4', cx + x, eaveY, cz + D/2 + 2, beam);
+  }
+  for (let z = -D/2 - 2; z <= D/2 + 2; z += 4){
+    B('none-hq-plate-2x4', cx - W/2 - 2, eaveY, cz + z, beam, 1);
+    B('none-hq-plate-2x4', cx + W/2 + 2, eaveY, cz + z, beam, 1);
+  }
+
+  // 기와지붕 — 경사 브릭을 층마다 안쪽으로 들이며 쌓는다
+  let ry = eaveY + PLATE_H;
+  let half = W/2 + 2;
+  let hz = D/2 + 2;
+  let step = 0;
+  while (half >= 1 && step < 6){
+    for (let x = -half; x <= half; x += 2){
+      B('bevel-hq-brick-slope-2x2', cx + x, ry, cz - hz, roof, 0);
+      B('bevel-hq-brick-slope-2x2', cx + x, ry, cz + hz, roof, 2);
+    }
+    for (let z = -hz + 2; z <= hz - 2; z += 2){
+      B('bevel-hq-brick-slope-2x2', cx - half, ry, cz + z, roof, 1);
+      B('bevel-hq-brick-slope-2x2', cx + half, ry, cz + z, roof, 3);
+    }
+    ry += BRICK_H; half -= 2; hz -= 2; step++;
+  }
+  // 용마루
+  for (let z = -hz; z <= hz; z += 2) B('bevel-hq-brick-2x2', cx, ry, cz + z, '#4A5460');
+}
+
+/* ── 브릭으로 만든 오층 석탑 ────────────────────────────────── */
+function brickPagoda(cx, cz){
+  let y = 0;
+  for (let x = -3; x <= 3; x += 2)
+    for (let z = -3; z <= 3; z += 2) B('none-hq-plate-2x2', cx + x, y, cz + z, '#B9B4A6');
+  y += PLATE_H;
+
+  let w = 3;
+  for (let i = 0; i < 5; i++){
+    // 몸돌
+    for (let x = -w + 1; x <= w - 1; x += 2)
+      for (let z = -w + 1; z <= w - 1; z += 2)
+        B('bevel-hq-brick-2x2', cx + x, y, cz + z, '#C3BEAF');
+    y += BRICK_H;
+    // 지붕돌 — 몸돌보다 한 칸씩 넓게
+    for (let x = -w; x <= w; x += 2)
+      for (let z = -w; z <= w; z += 2){
+        if (Math.abs(x) === w || Math.abs(z) === w) B('none-hq-plate-2x2', cx + x, y, cz + z, '#ADA898');
+      }
+    y += PLATE_H;
+    if (w > 1 && i % 2 === 1) w -= 2;
+  }
+  B('bevel-hq-brick-1x1-round', cx, y, cz, '#B0AA98');
+  B('bevel-hq-brick-1x1-round', cx, y + BRICK_H, cz, '#B0AA98');
+}
+
+/* ── 브릭으로 만든 고인돌 ───────────────────────────────────── */
+function brickDolmen(cx, cz){
+  for (let lv = 0; lv < 4; lv++){
+    B('bevel-hq-brick-2x2', cx - 3, L(lv), cz, '#A9A69A');
+    B('bevel-hq-brick-2x2', cx + 3, L(lv), cz, '#A9A69A');
+  }
+  const y = L(4);
+  for (let x = -5; x <= 5; x += 2)
+    for (let z = -2; z <= 2; z += 2)
+      B('none-hq-plate-2x2', cx + x, y, cz + z, '#9C9A8E');
+  for (let x = -3; x <= 3; x += 2) B('none-hq-plate-2x2', cx + x, y + PLATE_H, cz, '#9C9A8E');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Kenney 미니 캐릭터 + 가방 · 수첩
+   ══════════════════════════════════════════════════════════════ */
+let mixer = null, clips = null, action = null;
+
+async function loadCharacter(x, z, tint, file){
+  const g = await loader.loadAsync('../assets/kenney/characters/' + (file || 'character-male-a') + '.glb');
+  const root = g.scene;
+
+  // Kenney 팔레트는 원색이라 §8-5 에 어긋난다 — 몸통만 물들여 한복 느낌을 낸다
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    const isHead = /head/i.test(o.name);
+    o.material = new THREE.MeshStandardMaterial({
+      map: o.material.map || null,
+      color: (tint && !isHead) ? tint : '#FFFFFF',
+      flatShading: true, roughness: .95, metalness: 0
+    });
+  });
+
+  // 키를 2로 맞춘다 (§6-3)
+  const box3 = new THREE.Box3().setFromObject(root);
+  const h = box3.max.y - box3.min.y;
+  const s = 2.0 / h;
+  root.scale.setScalar(s);
+  root.position.set(x, 0, z);
+
+  // 가방과 수첩을 몸통 뼈에 붙인다 → 애니메이션을 따라 움직인다
+  const torso = root.getObjectByName('torso') || root;
+  const bagGroup = new THREE.Group();
+  const bag = box(.30, .26, .16, '#9C7A54', .30, -.02, -.12);
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(.30, .035, 5, 12), mat('#8A6E52'));
+  strap.rotation.set(Math.PI/2, 0, .5); strap.position.set(0, .06, 0);
+  const bookie = box(.18, .24, .06, '#C25B4F', -.30, 0, -.10);
+  bagGroup.add(bag); bagGroup.add(strap); bagGroup.add(bookie);
+  bagGroup.scale.setScalar(1 / s * s);     // torso 로컬 단위 그대로
+  torso.add(bagGroup);
+
+  mixer = new THREE.AnimationMixer(root);
+  clips = g.animations;
+  scene.add(root);
+  return { root, torso, clips };
+}
+
+function play(name){
+  if (!mixer || !clips) return;
+  const clip = THREE.AnimationClip.findByName(clips, name) || clips[0];
+  const next = mixer.clipAction(clip);
+  if (action && action !== next) action.fadeOut(.2);
+  next.reset().fadeIn(.2).play();
+  action = next;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   짓기
+   ══════════════════════════════════════════════════════════════ */
+const SHAPES = ['bevel-hq-brick-2x4','bevel-hq-brick-2x2','bevel-hq-brick-1x1-round',
+                'bevel-hq-brick-slope-2x2','none-hq-plate-2x2','none-hq-plate-2x4'];
+
+(async () => {
+  const t0 = performance.now();
+  await Promise.all(SHAPES.map(loadBrick));
+
+  // 왼쪽 — 지금 방식
+  oldHanok(LEFT, 0, -3, 5.2, 4.2, 2.6, '#DCD3BE', '#5A6470');
+  oldPagoda(LEFT, -6, 3);
+  oldDolmen(LEFT, 6, 4);
+  const duru = oldDuru(LEFT, 0, 6);
+  window.__duru = duru;
+
+  // 오른쪽 — 브릭
+  brickHanok(0, -10, 10, 8, 5, '#DCD3BE', '#5A6470', '#8A6E52');
+  brickPagoda(-22, 10);
+  brickDolmen(22, 12);
+  const info = flushBricks(RIGHT);
+
+  // 마을 — 실제 지역만큼 촘촘히 지어 성능을 잰다
+  brickHanok(-26, -6, 6, 6, 4, '#D9CDB4', '#6B7280', '#8A6E52');
+  brickHanok(26, -8, 6, 6, 4, '#E2DAC6', '#5B3B33', '#8A6E52');
+  brickHanok(-14, 14, 6, 6, 3, '#D9CDB4', '#5A6470', '#8A6E52');
+  brickDolmen(-34, 16);
+  brickPagoda(30, 14);
+  const info2 = flushBricks(RIGHT);
+  info.count += info2.count; info.tris += info2.tris;
+
+  const ch = await loadCharacter(CHAR_MODE ? 2.0 : 6.0, CHAR_MODE ? 0 : 5, null, 'character-male-a');
+  const ch2 = await loadCharacter(CHAR_MODE ? 5.0 : 9.5, CHAR_MODE ? 0 : 5, '#C9BFA6', 'character-male-b');
+  if (CHAR_MODE){ duru.position.set(-8.0, 0, 0); duru.rotation.y = Math.PI; }
+  play('walk');
+
+  const dt = Math.round(performance.now() - t0);
+  document.getElementById('stat').textContent =
+    `브릭 ${info.count}개 · 삼각형 ${info.tris.toLocaleString()} · 드로우콜 ${SHAPES.length}회(인스턴싱)\n` +
+    `캐릭터 애니 ${ch.clips.length}종 · 불러오기 ${dt}ms\n` +
+    `브릭 한 칸 ${STUD} · 브릭 높이 ${BRICK_H.toFixed(3)} · 캐릭터 키 2.0`;
+
+  let t = 0;
+  const clock = new THREE.Clock();
+  renderer.render(scene, camera);
+  renderer.setAnimationLoop(() => {
+    const d = clock.getDelta();
+    t += d;
+    if (mixer) mixer.update(d);
+    // 두루는 걷는 시늉만
+    if (!CHAR_MODE){ duru.position.x = Math.sin(t * .8) * 3; duru.rotation.y = Math.PI + Math.sin(t * .8) * .3; }
+    if (CHAR_MODE){ camera.position.set(4.2, 2.3, 8.2); camera.lookAt(4.2, 1.1, 0); }
+    else { camera.position.x = Math.sin(t * .12) * 3; camera.lookAt(0, 2.2, 0); }
+    renderer.render(scene, camera);
+  });
+
+  // 애니메이션을 차례로 보여 준다
+  const show = ['walk','idle','emote-yes','emote-no','pick-up','interact-right','jump'];
+  let i = 0;
+  setInterval(() => { play(show[i % show.length]); i++; }, 2200);
+  window.__playAnim = play;
+})().catch(e => {
+  document.getElementById('stat').textContent = '오류: ' + e.message;
+  console.error(e);
+});
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+</script>
+</body>
+</html>

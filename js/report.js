@@ -75,14 +75,20 @@
       (byWorld[a.world] = byWorld[a.world] || []).push(a);
     });
 
-    var essays = answers.filter(function (a) { return a.kind === 'essay' || (a.answer && String(a.answer).length > 24); });
+    /* 시대별 핵심 탐구질문 답 (요구 5) — 문항별 기록과 따로 싣는다.
+       채점하지 않는 답이므로 교사가 읽고 살펴볼 자리를 함께 둔다 */
+    var inquiries = answers.filter(function (a) { return a.kind === 'inquiry'; });
+    var graded = answers.filter(function (a) { return a.kind !== 'inquiry'; });
+    var essays = answers.filter(function (a) {
+      return a.kind !== 'inquiry' && (a.kind === 'essay' || (a.answer && String(a.answer).length > 24));
+    });
 
     var html =
       head('탐험 기록지', '탐험 등급 ' + r.name) +
 
       '<div class="pr-sec"><h3>탐험 요약</h3>' +
         '<table class="pr-table">' +
-          '<tr><th>탐험 등급</th><td>' + esc(r.icon + ' ' + r.name) + '</td>' +
+          '<tr><th>탐험 등급</th><td>' + esc(r.name) + '</td>' +
               '<th>탐험가 유형</th><td>' + esc(t.name) + '</td></tr>' +
           '<tr><th>발견한 임무</th><td>' + S.doneTotal() + '개</td>' +
               '<th>모은 유물</th><td>' + S.relicCount() + '개</td></tr>' +
@@ -104,7 +110,7 @@
       '<div class="pr-sec"><h3>문항별 기록</h3>' +
         '<table class="pr-table">' +
           '<tr><th style="width:24%">임무</th><th style="width:34%">문제</th><th style="width:26%">내 답</th><th style="width:8%">정오</th><th style="width:8%">시도</th></tr>' +
-          (answers.length ? answers.map(function (a) {
+          (graded.length ? graded.map(function (a) {
             var mark = a.correct === true ? '○' : (a.correct === false ? '✕' : '—');
             return '<tr><td>' + esc(a.title || '') + '</td>' +
                    '<td>' + esc(a.question || '') + '</td>' +
@@ -115,6 +121,19 @@
         '</table>' +
         '<p style="font-size:9pt;margin-top:5px">정오의 “—” 는 정답이 없는 열린 선택입니다.</p>' +
       '</div>' +
+
+      (inquiries.length ?
+      '<div class="pr-sec"><h3>시대별 핵심 탐구질문</h3>' +
+        '<p style="font-size:9.5pt;margin-bottom:6px">시대의 모든 임무를 마친 뒤 학생이 스스로 적은 답입니다. 정답을 채점하지 않습니다.</p>' +
+        inquiries.map(function (a) {
+          return '<table class="pr-table" style="margin-bottom:8px">' +
+            '<tr><th style="width:16%">시대</th><td colspan="3">' + esc(worldName[a.world] || a.title || a.world) + '</td></tr>' +
+            '<tr><th>질문</th><td colspan="3">' + esc(a.question || '') + '</td></tr>' +
+            '<tr><th>학생의 답</th><td colspan="3">' + esc(a.answer || '') + '</td></tr>' +
+            '<tr><th>교사 의견</th><td colspan="3"><div class="pr-answer-box"></div></td></tr>' +
+            '</table>';
+        }).join('') +
+      '</div>' : '') +
 
       (essays.length ?
       '<div class="pr-sec"><h3>서술형 답 전문 (교사 평가란)</h3>' +

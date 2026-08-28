@@ -8,6 +8,11 @@
 import { ST, Store, areaCleared, worldCleared } from './state.js';
 import { setAnim } from './anim.js';
 import { SAY } from './constants.js';
+import { icon, iconName } from './icons.js';
+
+/* 이모지를 쓰지 않는다 (요구 2) — 자료의 r.icon 은 선 아이콘 이름으로 옮겨진다 */
+function relicIcon(r){ return icon(iconName(r && r.icon, 'relic'), { size:24 }); }
+function questionIcon(){ return icon('question', { size:20, color:'#A3A3A0' }); }
 
 let toast = () => {};
 let onChange = () => {};
@@ -118,7 +123,7 @@ export function renderRelicBag(container, allRelicsByWorld, worldNames){
     const cells = list.map(r => {
       const has = got.has(r.id);
       return `<div class="relic-cell ${has ? 'got' : 'locked'}" ${has ? `title="${esc(r.line || '')}"` : ''}>
-                <div class="rc-icon">${has ? (r.icon || '🏺') : '❔'}</div>
+                <div class="rc-icon">${has ? relicIcon(r) : questionIcon()}</div>
                 <div class="rc-name">${has ? esc(r.name) : '?'}</div>
               </div>`;
     }).join('');

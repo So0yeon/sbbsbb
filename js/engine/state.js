@@ -29,7 +29,7 @@ export const ST = {
   head: null, crest: null, torso: null,
 
   activeMarker: null, questOpen: false, moving: false,
-  camYaw: Math.PI, camZoom: 1, camPitchOffset: 0,
+  camYaw: Math.PI, camZoom: 1, camPitch: 0.46,   // 올려다본 각(라디안). 0.02=눈높이 1.24=위에서
   orbitId: null, pinchDist: null, jumpY: 0, jumpVY: 0,
   spawnPos: { x:0, z:10 },
 

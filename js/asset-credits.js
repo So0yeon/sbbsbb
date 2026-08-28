@@ -137,7 +137,13 @@ var ATLAS_CREDITS_EXTRA = [
   { file:'assets/Models', item:'저폴리 키트 22점', author:'', license:'미확인',
     source:'라이선스 파일이 동봉되지 않아 사용을 보류했습니다', sourceUrl:'' },
   { file:'교과 내용', item:'학습 내용', author:'', license:'',
-    source:'초등학교 5학년 2학기 사회 교과서 및 2022 개정 교육과정 문서를 참고해 새로 썼습니다', sourceUrl:'' }
+    source:'초등학교 5학년 2학기 사회 교과서 및 2022 개정 교육과정 문서를 참고해 새로 썼습니다', sourceUrl:'' },
+  { file:'assets/kenney/bricks', item:'브릭 조각 74점 — 움집·가마·제단 따위를 쌓는 데 씁니다', author:'Kenney', license:'CC0 1.0',
+    source:'Kenney Brick Kit 1.0', sourceUrl:'https://kenney.nl/assets/brick-kit' },
+  { file:'assets/kenney/nature', item:'자연 조각 33점 — 풀과 바위를 뿌리는 데 씁니다', author:'Kenney', license:'CC0 1.0',
+    source:'Kenney Nature Kit 2.1', sourceUrl:'https://kenney.nl/assets/nature-kit' },
+  { file:'assets/kenney/characters', item:'캐릭터 12점 — 아직 앱에서 부르지 않습니다', author:'Kenney', license:'CC0 1.0',
+    source:'Kenney Mini Characters 1.0', sourceUrl:'https://kenney.nl/assets/mini-characters' }
 ];
 
 (function (g) {

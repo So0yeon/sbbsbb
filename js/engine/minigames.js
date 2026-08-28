@@ -17,8 +17,17 @@
    계약:  start(mini, host, done)   done(true|false)
    ══════════════════════════════════════════════════════════════════════ */
 
+import { icon as svgIcon, iconName } from './icons.js';
+
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* 놀이 조각도 이모지를 쓰지 않는다 (요구 2).
+   자료(js/eras/*.js)가 아직 이모지를 넘겨 주더라도 iconName 이 선 아이콘으로 옮긴다 */
+const sym = (v, size, color) => svgIcon(iconName(v, 'dot'), { size: size || 22, color: color });
+
+/* 학생이 쓰는 글의 금칙어 검사 (요구 6) */
+const WORDS = (typeof window !== 'undefined' && window.AtlasWords) || null;
 
 /* ── 누르는 순간 판정 (§5-2) ─────────────────────────────────── */
 export function onPress(el, fn){
@@ -224,7 +233,7 @@ function startKnap(mini, host, done){
 function startEmber(mini, host, done){
   const ui = shell(host, mini, `
     <div class="mg-ember">
-      <div class="mg-flame" id="mgFlame">🔥</div>
+      <div class="mg-flame" id="mgFlame">${sym('fire', 34, '#C25B4F')}</div>
       <div class="mg-gauge" style="width:100%"><div class="mg-gauge-fill" id="mgFill"></div></div>
     </div>`);
   const flame = ui.stage.querySelector('#mgFlame');
@@ -422,7 +431,7 @@ function startSort(mini, host, done){
 /* ── memory — 순서 기억해 되누르기 (한 번 틀리면 즉시 실패) ─── */
 function startMemory(mini, host, done){
   const rounds = Math.min(4, mini.rounds || 4);
-  const icons = mini.icons || ['🔥','🌊','🌿','⛰️','🌙','☀️'];
+  const icons = mini.icons || ['fire','water','leaf','mountain','moon','sun'];
   const n = Math.min(icons.length, 6);
   const ui = shell(host, mini, `<div class="mg-memory" id="mgCells"></div>`);
   const cells = ui.stage.querySelector('#mgCells');
@@ -431,7 +440,7 @@ function startMemory(mini, host, done){
 
   function paint(){
     cells.innerHTML = icons.slice(0, n).map((ic, i) =>
-      `<button class="mg-mcell" data-i="${i}" type="button">${ic}</button>`).join('');
+      `<button class="mg-mcell" data-i="${i}" type="button">${sym(ic, 26)}</button>`).join('');
     cells.querySelectorAll('.mg-mcell').forEach(b => onPress(b, () => tap(+b.dataset.i)));
     setScore(ui.score, `${round} / ${rounds} 판`);
   }
@@ -495,7 +504,19 @@ function startBlank(mini, host, done){
   input.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); check(); } });
 
   function check(){
-    const v = normalize(input.value);
+    const raw = String(input.value || '');
+
+    /* 금칙어가 섞이면 채점하지 않는다 (요구 6) */
+    if (WORDS){
+      const r = WORDS.check(raw);
+      if (!r.ok){
+        input.classList.add('wrong');
+        setScore(ui.score, r.message);
+        return;
+      }
+    }
+
+    const v = normalize(raw);
     if (!v) return;
     tries++;
     if (answers.map(normalize).includes(v)){
@@ -516,7 +537,7 @@ function startBlank(mini, host, done){
 /* ── dig — 격자 흙을 파서 유물 찾기 ─────────────────────────── */
 function startDig(mini, host, done){
   const cols = mini.cols || 6, rows = mini.rows || 4;
-  const relics = mini.relics || ['🪓','🏺','🦴'];
+  const relics = mini.relics || ['axe','relic','bone'];
   const digs = mini.digs || Math.ceil(cols * rows * .5);
   const ui = shell(host, mini, `<div class="mg-dig" id="mgGrid" style="grid-template-columns:repeat(${cols},1fr)"></div>`);
   const grid = ui.stage.querySelector('#mgGrid');
@@ -624,7 +645,7 @@ function startWeigh(mini, host, done){
 
   let sum = 0;
   bank.innerHTML = weights.map((w, i) =>
-    `<button class="mg-chip" data-w="${w}" type="button">⚖️ ${w}</button>`).join('') +
+    `<button class="mg-chip" data-w="${w}" type="button">${sym('scale', 15)} ${w}</button>`).join('') +
     `<button class="mg-chip" data-w="reset" type="button">↺ 비우기</button>`;
   bank.querySelectorAll('.mg-chip').forEach(b => onPress(b, () => {
     if (b.dataset.w === 'reset') sum = 0; else sum += +b.dataset.w;
@@ -663,10 +684,10 @@ function startRoute(mini, host, done){
     grid.innerHTML = Array.from({ length: cols * rows }, (_, i) => {
       let cls = 'mg-rcell';
       let ch = '';
-      if (blocked.has(i)){ cls += ' blocked'; ch = mini.blockIcon || '⛰️'; }
+      if (blocked.has(i)){ cls += ' blocked'; ch = sym(mini.blockIcon || 'mountain', 18); }
       if (path.includes(i)) cls += ' path';
-      if (i === here){ cls += ' here'; ch = '🕊️'; }
-      else if (i === goal) ch = mini.goalIcon || '🚩';
+      if (i === here){ cls += ' here'; ch = sym('dove', 18); }
+      else if (i === goal) ch = sym(mini.goalIcon || 'flag', 18);
       return `<button class="${cls}" data-i="${i}" type="button">${ch}</button>`;
     }).join('');
     grid.querySelectorAll('.mg-rcell').forEach(b => onPress(b, () => step(+b.dataset.i)));
@@ -726,14 +747,14 @@ function startOrder(mini, host, done){
 /* ── spot — 두 자료에서 다른 곳 찾기 ────────────────────────── */
 function startSpot(mini, host, done){
   const cols = mini.cols || 4, rows = mini.rows || 4;
-  const base = mini.base || ['🏺','🏺','🏺','🏺'];
+  const base = mini.base || ['relic','relic','relic','relic'];
   const diffs = mini.diffs || 3;
   const total = cols * rows;
 
   const left = Array.from({ length: total }, (_, i) => base[i % base.length]);
   const right = left.slice();
   const spots = [];
-  const alt = mini.alt || ['🪔','⚱️','🫖'];
+  const alt = mini.alt || ['lamp','urn','teapot'];
   while (spots.length < diffs){
     const p = Math.floor(Math.random() * total);
     if (spots.includes(p)) continue;
@@ -829,7 +850,7 @@ function startSteer(mini, host, done){
   const lanes = mini.lanes || 5;
   const need = mini.length || 14;
   const ui = shell(host, mini, `
-    <div class="mg-steer" id="mgSea"><div class="mg-ship" id="mgShip">${mini.shipIcon || '⛵'}</div></div>
+    <div class="mg-steer" id="mgSea"><div class="mg-ship" id="mgShip">${sym(mini.shipIcon || 'boat', 26)}</div></div>
     <div class="mg-steer-btns">
       <button class="mg-btn sub" id="mgL" type="button">← 왼쪽</button>
       <button class="mg-btn sub" id="mgR" type="button">오른쪽 →</button>
@@ -854,7 +875,7 @@ function startSteer(mini, host, done){
         const l = Math.floor(Math.random() * lanes);
         const el = document.createElement('div');
         el.className = 'mg-rock';
-        el.textContent = mini.rockIcon || '🪨';
+        el.innerHTML = sym(mini.rockIcon || 'rock', 22);
         el.style.left = `calc(${laneX(l)}% - 11px)`;
         el.style.top = '-24px';
         sea.appendChild(el);
