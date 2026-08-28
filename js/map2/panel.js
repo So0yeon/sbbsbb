@@ -39,7 +39,12 @@
   }
 
   var eraId = null;
-  var activeCats = null;        // null = 전부
+  /* 처음에는 아무 분류도 켜지 않습니다 — 지도를 깨끗하게 두고 보고 싶은 것만 켭니다.
+     null 이면 전부, 아니면 그 표에서 1 인 것만 봅니다. */
+  var activeCats = { relic: 0, person: 0, culture: 0, event: 0, exchange: 0, life: 0 };
+  function anyCat() {
+    return !activeCats || CAT_KEYS.some(function (k) { return activeCats[k]; });
+  }
   var G = null;                 // { rel, cap, mk }
   var api = null;               // window.Map2
 
@@ -68,22 +73,25 @@
         (on ? 'style="background:' + catColor(k) + '"' : '') + '>' +
         '<span class="cat-dot" style="background:' + (on ? '#fff' : catColor(k)) + '"></span>' +
         CAT_LABEL[k] + '</button>';
-    }).join('') + '<button class="cat-chip" id="catAll" type="button">전체</button>';
+    }).join('') +
+      '<button class="cat-chip ' + (activeCats ? '' : 'on') + '" id="catAll" type="button"' +
+      (activeCats ? '' : ' style="background:#4A4A46"') + '>전체</button>';
 
     box.querySelectorAll('.cat-chip[data-k]').forEach(function (b) {
       b.addEventListener('click', function () {
-        if (!activeCats) {
+        if (!activeCats) {                       /* 전부 켜져 있었으면 누른 것만 남깁니다 */
           activeCats = { relic: 0, person: 0, culture: 0, event: 0, exchange: 0, life: 0 };
           activeCats[b.dataset.k] = 1;
         } else {
           activeCats[b.dataset.k] = activeCats[b.dataset.k] ? 0 : 1;
-          if (CAT_KEYS.every(function (k) { return !activeCats[k]; })) activeCats = null;
         }
-        drawFilter(); drawMarkers(); drawList();
+        drawFilter(); drawList(); drawMarkers();
       });
     });
+    /* 「전체」는 켜져 있으면 모두 끄고, 아니면 모두 켭니다 */
     $('catAll').addEventListener('click', function () {
-      activeCats = null; drawFilter(); drawMarkers(); drawList();
+      activeCats = anyCat() ? { relic: 0, person: 0, culture: 0, event: 0, exchange: 0, life: 0 } : null;
+      drawFilter(); drawList(); drawMarkers();
     });
   }
 
@@ -92,7 +100,12 @@
     var box = $('itemList');
     var list = itemsOfEra();
     $('itemCount').textContent = list.length ? list.length + '개' : '';
-    if (!list.length) { box.innerHTML = '<p class="muted">이 시대에는 볼 항목이 없어요.</p>'; return; }
+    if (!list.length) {
+      box.innerHTML = '<p class="muted">' +
+        (anyCat() ? '이 시대에는 볼 항목이 없어요.'
+                  : '지도 왼쪽 위에서 보고 싶은 분류를 켜 보세요.') + '</p>';
+      return;
+    }
     box.innerHTML = list.map(function (c) {
       return '<button class="item-row ' + (S.bagHas(c.id) ? 'got' : '') + '" data-id="' + esc(c.id) + '" type="button">' +
         '<span class="item-bar" style="background:' + catColor((c.cat || [])[0]) + '"></span>' +
@@ -185,10 +198,11 @@
     (era.terr || []).forEach(function (t) {
       if (!t.cap || !t.cap.at) return;
       add(G.cap, 'circle', { cx: p2x(t.cap.at[1]), cy: p2y(t.cap.at[0]), r: 3.4 * upp, fill: '#191919' });
-      add(G.cap, 'text', { x: p2x(t.cap.at[1]), y: p2y(t.cap.at[0]) - 8 * upp,
+      /* 수도 이름은 점 아래에 둡니다 — 나라 이름은 위쪽에 있으므로 서로 겹치지 않습니다 */
+      add(G.cap, 'text', { x: p2x(t.cap.at[1]), y: p2y(t.cap.at[0]) + 14 * upp,
                            'class': 'cap-label', 'text-anchor': 'middle',
-                           'font-size': (12 * upp).toFixed(2), 'stroke-width': 3.4 * upp }, '◉ ' + t.cap.n);
-      reserved.push([p2x(t.cap.at[1]), p2y(t.cap.at[0]) - 8 * upp, ((t.cap.n.length + 2) * 6 + 8) * upp]);
+                           'font-size': (12 * upp).toFixed(2), 'stroke-width': 3.4 * upp }, t.cap.n);
+      reserved.push([p2x(t.cap.at[1]), p2y(t.cap.at[0]) + 14 * upp, ((t.cap.n.length + 1) * 6 + 8) * upp]);
     });
 
     (era.nb || []).forEach(function (n) {
