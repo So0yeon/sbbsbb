@@ -22,13 +22,8 @@
   --sh-2: 0 2px 6px rgba(25,25,25,.05), 0 12px 34px rgba(25,25,25,.10);
 }
 
-*,*::before,*::after{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
-  margin:0; font-family:var(--font); color:var(--text); background:var(--bg);
-  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
-}
-button{ font:inherit; color:inherit; cursor:pointer; }
+/* 몸통 배치는 이 파일을 부르는 쪽이 정합니다 —
+   앱에서는 #app 이(css/styles.css), 단독 페이지에서는 map2.html 이 grid 를 겁니다. */
 
 /* ── 위 ─────────────────────────────────────────────────── */
 .top{

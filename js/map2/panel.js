@@ -245,7 +245,9 @@
           return '<button class="item-row" data-id="' + esc(r.id) + '" type="button">' +
             '<span class="item-bar" style="background:' + catColor((r.cat || [])[0]) + '"></span>' +
             '<span class="item-txt"><b>' + esc(r.t) + '</b><span>' + esc(r.d || '') + '</span></span></button>';
-        }).join('') + '</div></div>' : '');
+        }).join('') + '</div></div>' : '') +
+      (window.startExploreMode ?
+        '<div class="mc-rel"><button class="intro-btn" id="mcExplore" type="button">🧭 이 시대를 걸어 보기</button></div>' : '');
 
     card.querySelectorAll('.mc-rel .item-row').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -254,6 +256,11 @@
         if (n.era !== eraId && api.showEra) api.showEra(n.era);
         openItem(n);
       });
+    });
+    var ex = card.querySelector('#mcExplore');
+    if (ex) ex.addEventListener('click', function () {
+      closeSheet();
+      window.startExploreMode(eraId);
     });
     openSheet();
   }

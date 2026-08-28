@@ -9,6 +9,7 @@
 <title>史뿐史뿐 — 시간이 쌓이는 지도</title>
 <link rel="stylesheet" href="vendor/font/pretendard.css">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/map2.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
 <script type="importmap">
 { "imports": {
@@ -151,43 +152,49 @@
     <button class="icon-btn" id="mapHomeBtn" type="button" aria-label="처음으로">←</button>
     <div class="map-brand">
       <b>史뿐史뿐</b>
-      <span id="mapEraName">구석기</span>
+      <span class="era-name" id="eraName">삼국시대</span>
+      <span class="era-years" id="eraYears"></span>
+      <span class="era-span" id="eraSpan"></span>
     </div>
-    <div class="spacer"></div>
+    <span class="cent" id="centLabel" hidden></span>
+    <button class="ghost" id="replay" type="button" title="고조선부터 조선까지 죽 봅니다">처음부터</button>
+    <button class="ghost" id="pause" type="button">이어보기</button>
+    <button class="ghost" id="motion" type="button">모핑 끄기</button>
+    <div class="legend" id="legend"></div>
     <button class="found" id="mapBagBtn" type="button">🎒 <span id="mapBagN">0</span></button>
     <button class="found" id="toExploreBtn" type="button">🧭 탐험 모드</button>
     <button class="icon-btn" id="mapMenuBtn" type="button" aria-label="메뉴">⋯</button>
   </header>
 
-  <div class="map-stage">
-    <svg id="mapSvg" viewBox="0 0 800 902" role="img" aria-label="한반도 시대별 지도"></svg>
-
-    <div class="map-zoom">
-      <button class="icon-btn" id="zoomIn" type="button" aria-label="확대">＋</button>
-      <button class="icon-btn" id="zoomOut" type="button" aria-label="축소">－</button>
-      <button class="icon-btn" id="zoomFit" type="button" aria-label="시대 전체 보기">⤢</button>
-    </div>
-
-    <div class="map-side">
-      <div class="era-head">
-        <p class="era-years" id="eraYears"></p>
-        <h2 class="era-name" id="eraTitle"></h2>
-        <p class="era-span" id="eraSpan"></p>
-        <p class="era-line" id="eraLine"></p>
+  <main class="stage">
+    <div class="map-wrap">
+      <svg id="mapSvg" role="img" aria-label="시대별 영토 지도"></svg>
+      <div class="map-filter"><div class="cat-filter" id="catFilter"></div></div>
+      <div class="zoomers">
+        <button class="icon-btn" id="zoomIn" type="button" aria-label="확대" title="확대">＋</button>
+        <button class="icon-btn" id="zoomOut" type="button" aria-label="축소" title="축소">－</button>
+        <button class="icon-btn" id="zoomFit" type="button" aria-label="시대 전체 보기" title="시대 전체 보기">⤢</button>
       </div>
-      <div class="cat-filter" id="catFilter"></div>
-      <div class="item-list" id="itemList"></div>
     </div>
-  </div>
 
-  <nav id="mapTimeline"><div id="mapTrack"></div></nav>
+    <aside class="map-side">
+      <p class="era-line" id="eraLine"></p>
+      <div class="list-head">이 시대의 이야기 <span id="itemCount"></span></div>
+      <div class="item-list" id="itemList"></div>
+    </aside>
+  </main>
+
+  <nav class="bottom">
+    <div id="dots"></div>
+    <div id="track"></div>
+  </nav>
 
   <div id="mapScrim"></div>
   <div id="mapSheet" role="dialog" aria-modal="true" aria-label="항목 상세">
+    <button class="icon-btn sheet-x" id="sheetClose" type="button" aria-label="닫기">✕</button>
     <div class="map-card" id="mapCard"></div>
   </div>
 </div>
-
 
 <!-- ══════════════════════════════════════════════════════════════
      탐험 모드  (MASTER §6-8 DOM 뼈대 — id 고정)
@@ -334,7 +341,10 @@
 <script src="js/atlas-photos.js"></script>
 <script src="js/asset-credits.js"></script>
 <script src="js/atlas-dedupe.js"></script>
-<script src="js/map-app.js"></script>
+<script src="js/map2/territory-data.js"></script>
+<script src="js/map2/morph.js"></script>
+<script src="js/map2/panel.js"></script>
+<script src="js/map2/map2-app.js"></script>
 <script src="js/report.js"></script>
 <script src="js/shell.js"></script>
 

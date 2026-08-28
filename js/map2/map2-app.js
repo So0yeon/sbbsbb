@@ -597,11 +597,70 @@
   }
 
   /* ── 시작 ────────────────────────────────────────────────── */
-  function start() {
+  /* 앱(index.html)에 붙었을 때는 셸이 AtlasMap.open() 을 부를 때까지 기다립니다.
+     단독 페이지(map2.html)에는 인트로가 없으므로 바로 엽니다. */
+  var standalone = !document.getElementById('intro');
+  var booted = false;
+
+  function boot() {
+    if (booted) return true;
     if (!T || !window.ERAS || !window.KOREA || !window.Morph) {
       console.error('[map2] 자료가 없습니다 — script 순서를 확인하세요');
-      return;
+      return false;
     }
+    booted = true;
+    build();
+    return true;
+  }
+
+  /* 셸이 지도 모드로 들어올 때 부릅니다 */
+  function open(id) {
+    if (!boot()) return;
+    showEra(id || eraId || 'three');
+    updateBagCount();
+  }
+
+  function currentEra() { return eraOf(eraId); }
+
+  function updateBagCount() {
+    var n = $('mapBagN');
+    if (n && window.AtlasStore) n.textContent = window.AtlasStore.bag.size;
+  }
+
+  /* 교사용이면 학습지 인쇄 단추를 보여 줍니다 (기존 지도 모드에서 그대로 옮겼습니다) */
+  function refreshMode() {
+    if (!window.AtlasStore || !$('mapMenuBtn')) return;
+    var teacher = window.AtlasStore.mapMode() === 'teacher';
+    var btn = $('mapPrintBtn');
+    if (teacher && !btn) {
+      btn = document.createElement('button');
+      btn.id = 'mapPrintBtn';
+      btn.className = 'found';
+      btn.type = 'button';
+      btn.textContent = '🖨 학습지';
+      btn.addEventListener('click', function () {
+        if (window.AtlasReport && window.Map2Panel) {
+          window.AtlasReport.printWorksheet(currentEra(), window.Map2Panel.itemsOfEra());
+        }
+      });
+      $('mapMenuBtn').before(btn);
+    } else if (!teacher && btn) {
+      btn.remove();
+    }
+  }
+
+  /* 앱 껍데기의 위쪽 단추들 — 있을 때만 묶습니다 */
+  function bindShell() {
+    var b;
+    if ((b = $('mapHomeBtn'))) b.addEventListener('click', function () { window.AtlasShell.toIntro(); });
+    if ((b = $('mapBagBtn'))) b.addEventListener('click', function () { window.AtlasShell.openRelics(); });
+    if ((b = $('toExploreBtn'))) b.addEventListener('click', function () {
+      if (window.startExploreMode) window.startExploreMode(eraId);
+    });
+    if ((b = $('mapMenuBtn'))) b.addEventListener('click', function () { window.AtlasShell.openSettings(); });
+  }
+
+  function build() {
     drawBase();
     window.addEventListener('resize', function () { rectCache = null; paintLabelScale(); });
     setView([0, 0, M.w, M.h]);
@@ -647,18 +706,23 @@
       );
     }
 
-    if (q.get('selftest')) { eraId = 'three'; selftest(); return; }
+    bindShell();
+    paintPlay();
+
+    if (q.get('selftest') && standalone) { eraId = 'three'; selftest(); return; }
 
     /* 열자마자 저절로 흘러가지 않습니다 — 첫 장면만 보여 주고 멈춰 있습니다.
        「처음부터」나 시대를 누르면 그때부터 이어서 재생합니다. */
-    var want = q.get('era') || 'three';
-    showEra(eraOf(want) ? want : 'three');
-    if (q.get('play')) playEra(eraId, true);
-    paintPlay();
+    if (standalone) {
+      var want = q.get('era') || 'three';
+      showEra(eraOf(want) ? want : 'three');
+      if (q.get('play')) playEra(eraId, true);
+    }
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-  else start();
+  function startup() { if (standalone) boot(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startup);
+  else startup();
 
   /* 나라 이름이 차지한 자리 — 마커 라벨이 그 위에 겹치지 않도록 알려 줍니다 */
   function nationLabelBoxes() {
@@ -671,6 +735,15 @@
     });
     return out;
   }
+
+  /* 셸(js/shell.js)이 부르는 이름들 — 기존 지도 모드와 같습니다.
+     그래서 shell.js 는 한 줄도 고치지 않았습니다. */
+  window.AtlasMap = {
+    open: open, setEra: showEra, setEraById: showEra,
+    refreshMode: refreshMode, updateBagCount: updateBagCount,
+    currentEra: currentEra,
+    itemsOfEra: function () { return window.Map2Panel ? window.Map2Panel.itemsOfEra() : []; }
+  };
 
   window.Map2 = {
     showFrame: showFrame, playEra: playEra, showEra: showEra, selftest: selftest,
