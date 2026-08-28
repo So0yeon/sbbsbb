@@ -140,7 +140,8 @@
                              role: 'button', 'aria-label': c.t });
       add(g, 'circle', { 'class': 'hit', cx: x, cy: y, r: rHit });     // 터치 영역을 크게
       add(g, 'circle', { 'class': 'dot', cx: x, cy: y, r: got ? rDot * 1.2 : rDot,
-                         fill: got ? col : '#FDFDFB', stroke: col, 'stroke-width': 1.6 * upp });
+                         fill: col, 'fill-opacity': got ? 1 : 0.4,
+                         stroke: col, 'stroke-width': 1.6 * upp });
 
       /* 라벨은 겹치면 뺍니다. 점은 남깁니다 */
       var half = (c.t.length * 5.6 + 10) * upp;
@@ -302,10 +303,12 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
   }
 
-  /** 학습 항목 하나를 이름으로 찾아 펼친다 (탐험 모드의 역사 가방에서 부른다) */
+  /** 학습 항목 하나를 이름으로 찾아 펼친다 (탐험 모드의 역사 가방에서 부른다).
+      실제로 찍힌 자리로 지도를 옮겨 줘야 그 위치가 눈에 들어온다 (요구 7). */
   function openItemById(id) {
     var c = (window.CONTENT || []).find(function (x) { return x.id === id; });
     if (!c) return false;
+    if (c.at && api.focusOn) api.focusOn(c.at);
     openItem(c);
     return true;
   }
