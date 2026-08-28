@@ -133,14 +133,17 @@ export function buildPlayer(){
   skull.position.y = .34;
   head.add(skull);
 
-  // 머리카락 — 정수리·뒤통수만 덮는다. 눈보다 뒤에 머물러야 얼굴과 안 겹친다
-  const hair = new THREE.Mesh(new THREE.IcosahedronGeometry(.27, 0), mat(AVATAR.hairColor));
-  hair.scale.set(1, .82, .88);
-  hair.position.set(0, .47, -.09);
-  head.add(hair);
+  // 머리카락 — 바가지머리. 뒤통수~옆통수를 덮는 큰 덩어리 + 이마를 덮는
+  // 앞머리, 둘을 넉넉히 겹쳐서 관자놀이 쪽에 빈틈(대머리 자국)이 안 생기게 한다.
+  const hairBack = new THREE.Mesh(new THREE.IcosahedronGeometry(.30, 0), mat(AVATAR.hairColor));
+  hairBack.scale.set(1.05, 1.15, .78);
+  hairBack.position.set(0, .42, -.15);
+  head.add(hairBack);
 
-  // 앞머리 — 이마 위에서 눈 위쪽까지만, 눈에 닿지 않는다
-  const bangs = box(.30, .09, .07, AVATAR.hairColor, 0, .44, .21);
+  // 앞머리 — 이마 전체를 넓게 덮되, 눈보다 확실히 위에서 끊는다
+  const bangs = new THREE.Mesh(new THREE.IcosahedronGeometry(.28, 0), mat(AVATAR.hairColor));
+  bangs.scale.set(1, .30, .90);
+  bangs.position.set(0, .50, 0);
   head.add(bangs);
 
   // 눈 — +z 를 향한다 (앞을 알려 주는 표시)
