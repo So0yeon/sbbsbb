@@ -271,11 +271,22 @@
     openSheet();
   }
 
+  /** 화살표 상세의 나가는/들어오는 물품 — 있을 때만 그린다 */
+  function goodsSide(s, cls) {
+    if (!s || !s.list || !s.list.length) return '';
+    return '<div class="mc-goods ' + cls + '"><h4>' + esc(s.label) + '</h4>' +
+      '<div class="mc-tags">' + s.list.map(function (x) {
+        return '<span class="mc-tag">' + esc(x) + '</span>';
+      }).join('') + '</div></div>';
+  }
+
   function openRel(r) {
+    var g = r.goods || {};
     $('mapCard').innerHTML =
       '<div class="mc-badges"><span class="mc-badge" style="background:#7C6BA8">' + esc(r.ty || '교류') + '</span></div>' +
       '<h2 class="mc-title">' + esc(r.t) + '</h2>' +
-      '<div class="mc-b"><p>' + esc(r.d || '') + '</p></div>';
+      '<div class="mc-b"><p>' + esc(r.d || '') + '</p></div>' +
+      goodsSide(g.out, 'out') + goodsSide(g.in, 'in');
     openSheet();
   }
 

@@ -239,6 +239,15 @@
 .mc-rel{ margin-top:20px; border-top:1px solid var(--border); padding-top:16px; }
 .mc-rel h4{ font-size:13px; color:var(--text2); margin:0 0 8px; font-weight:600; }
 
+/* 교류 화살표 상세 — 나가는 물품/들어오는 물품을 색으로 구분 */
+.mc-goods{ margin-top:14px; }
+.mc-goods h4{ font-size:13px; margin:0 0 8px; font-weight:600; display:flex; align-items:center; gap:6px; }
+.mc-goods h4::before{ content:''; width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+.mc-goods.out h4::before{ background:var(--accent); }
+.mc-goods.in h4::before{ background:#A8534F; }
+.mc-goods.out .mc-tag{ border-color:rgba(110,155,148,.4); color:var(--accent); background:var(--accent-soft); }
+.mc-goods.in .mc-tag{ border-color:rgba(168,83,79,.4); color:#A8534F; background:rgba(168,83,79,.10); }
+
 @media (max-width:900px){
   .stage{ grid-template-columns:1fr; grid-template-rows:1fr auto; }
   .map-side{ border-left:0; border-top:1px solid var(--border); max-height:40vh; }
