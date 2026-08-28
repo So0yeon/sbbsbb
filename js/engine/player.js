@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { ST } from './state.js';
 import { mat, cyl, sph, box, cone } from './scene-helpers.js';
 import { setAnim, setSpeed, updateAnim } from './anim.js';
+import { anyOpen } from './popups.js';
 import { MASCOT } from './constants.js';
 
 const SPEED = 9;              // 초당 이동 거리
@@ -152,7 +153,9 @@ export function bindInput(canvas, hooks){
   hooks = hooks || {};
 
   window.addEventListener('keydown', e => {
-    if (ST.questOpen || ST.paused) return;
+    // 창이 하나라도 떠 있으면 세상은 키를 받지 않는다.
+    // (ui.js 가 Esc·Enter·E 로 그 창을 닫는다)
+    if (ST.questOpen || ST.paused || anyOpen()) return;
     const id = keyId(e);
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(id)) e.preventDefault();
     if (id === 'Space'){ tryJump(); return; }
@@ -167,7 +170,7 @@ export function bindInput(canvas, hooks){
 
   /* 드래그 오빗 — 반드시 유지한다 (§6-1) */
   canvas.addEventListener('pointerdown', e => {
-    if (ST.questOpen) return;
+    if (ST.questOpen || ST.paused || anyOpen()) return;
     ST.orbitId = e.pointerId;
     ST._orbitX = e.clientX; ST._orbitY = e.clientY;
     canvas.setPointerCapture(e.pointerId);
@@ -248,7 +251,7 @@ export function updatePlayer(dt){
   if (!p) return;
 
   let fwd = 0, strafe = 0;
-  if (!ST.questOpen && !ST.paused){
+  if (!ST.questOpen && !ST.paused && !anyOpen()){
     if (CODE_FWD.some(k => keys.has(k)))   fwd += 1;
     if (CODE_BACK.some(k => keys.has(k)))  fwd -= 1;
     if (CODE_RIGHT.some(k => keys.has(k))) strafe += 1;

@@ -37,6 +37,25 @@
     }
   }
 
+  /* 선 아이콘 한 조각 (js/icons.js) — 이모지를 쓰지 않는다 (요구 2) */
+  function ic(name, size) {
+    return window.AtlasIcons ? window.AtlasIcons.svg(name, { size: size || 18 }) : '';
+  }
+
+  /* 이름에 쓸 수 없는 말이 섞였는지 본다 (요구 6).
+     막기만 하고 벌주지 않는다 — 무엇이 문제인지 알려 주고 다시 쓰게 한다 */
+  function nameOk(value) {
+    var note = $('nameWarn');
+    if (!window.AtlasWords) return true;
+    var r = window.AtlasWords.check(value);
+    if (note) {
+      note.textContent = r.ok ? '' : r.message;
+      note.classList.toggle('on', !r.ok);
+    }
+    if (!r.ok) $('nameInput').focus();
+    return r.ok;
+  }
+
   function bindIntro() {
     $('coverNext').addEventListener('click', function () {
       step(S.hasAgreed() ? 'name' : 'consent');
@@ -52,6 +71,7 @@
     });
 
     $('nameNext').addEventListener('click', function () {
+      if (!nameOk($('nameInput').value)) return;
       S.setName($('nameInput').value);
       step('kit');
     });
@@ -125,8 +145,19 @@
     document.querySelectorAll('[data-close-sheet]').forEach(function (b) {
       b.addEventListener('click', closeSheets);
     });
+    /* 큰 시트도 Esc·Enter·E 로 닫는다 (요구 4).
+       글을 쓰는 중이거나 단추에 초점이 있을 때는 건드리지 않는다 */
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeSheets();
+      var open = SHEETS.some(function (id) { var el = $(id); return el && el.classList.contains('on'); });
+      if (!open) return;
+      var t = e.target || {};
+      var tag = (t.tagName || '').toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || t.isContentEditable) return;
+      if (e.key === 'Enter' && tag === 'BUTTON') return;
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === 'e' || e.key === 'E') {
+        e.preventDefault();
+        closeSheets();
+      }
     });
 
     $('relicBtn').addEventListener('click', openRelics);
@@ -171,7 +202,7 @@
     var axes = t.axes.map(function (a) {
       var m = meta[a.id];
       return '<div class="axis-row">' +
-        '<span class="ax-name">' + m.icon + ' ' + m.label + '</span>' +
+        '<span class="ax-name">' + ic(m.icon, 15) + ' ' + m.label + '</span>' +
         '<span class="ax-bar"><span class="ax-fill" style="width:' + Math.round(a.n / maxAxis * 100) + '%"></span></span>' +
         '<span class="ax-n">' + a.n + '</span></div>';
     }).join('');
@@ -180,7 +211,7 @@
 
     body.innerHTML =
       '<div class="rank-hero">' +
-        '<div class="rank-badge">' + r.icon + '</div>' +
+        '<div class="rank-badge">' + ic(r.icon, 30) + '</div>' +
         '<h3 class="rank-name">' + esc(r.name) + '</h3>' +
         (name ? '<p class="rank-say">' + esc(name) + ', ' + esc(r.say) + '</p>'
               : '<p class="rank-say">' + esc(r.say) + '</p>') +
@@ -227,7 +258,7 @@
         if (c.source) bits.push(esc(c.source));
         return '<div class="credit-item"><b>' + esc(c.file) + (c.item ? ' <span class="muted">— ' + esc(c.item) + '</span>' : '') + '</b>' +
                '<span>' + bits.join(' · ') + '</span>' +
-               (c.sourceUrl ? '<a href="' + esc(c.sourceUrl) + '" target="_blank" rel="noopener">원본 보기 ↗</a>' : '') +
+               (c.sourceUrl ? '<a href="' + esc(c.sourceUrl) + '" target="_blank" rel="noopener">원본 보기</a>' : '') +
                '</div>';
       }).join('');
     };
@@ -348,6 +379,7 @@
      시작
      ══════════════════════════════════════════════════════════ */
   function init() {
+    if (window.AtlasIcons) window.AtlasIcons.paint(document);   // HTML 의 [data-icon] 자리를 채운다
     bindIntro();
     bindSheets();
 
@@ -405,6 +437,18 @@
                 say('발견총계', document.getElementById('exFoundT').textContent);
                 say('임무목록', document.querySelectorAll('#exRailList .rail-item').length);
                 say('캔버스', document.getElementById('exCanvas').width + 'x' + document.getElementById('exCanvas').height);
+                var A3 = window.__atlas3d;
+                if (A3) {
+                  var kinds = {};
+                  A3.scene.children.forEach(function (o) {
+                    var k = o.name || (o.isMesh ? (o.geometry && o.geometry.type) : o.type);
+                    kinds[k] = (kinds[k] || 0) + 1;
+                  });
+                  say('씬구성', JSON.stringify(kinds));
+                  say('배경', A3.scene.background ? '색' : '없음(돔)');
+                  say('안개', A3.scene.fog ? (A3.scene.fog.near.toFixed(0) + '~' + A3.scene.fog.far.toFixed(0) + ' #' + A3.scene.fog.color.getHexString()) : '없음');
+                  say('카메라높이', A3.camera.position.y.toFixed(1));
+                }
                 var W = E.WORLDS;
                 var qn = 0, gn = 0, nn = 0, rn = 0;
                 Object.keys(W).forEach(function (k) {
@@ -415,6 +459,17 @@
                 });
                 say('퀘스트합', qn); say('관문합', gn); say('유물합', rn);
                 say('시대목록', Object.keys(W).length);
+
+                if (STOP === 'story') {
+                  // 시대 안내 카드를 띄운 채로 멈춘다 — 화면을 눈으로 확인할 때 (요구 1)
+                  say('학습목표', (document.querySelector('#exStoryGoal .ex-goal-text') || {}).textContent || '없음');
+                  say('성취기준', (document.getElementById('exStoryStandard') || {}).textContent || '없음');
+                  document.querySelectorAll('#exIntroStory, .ex-story-card').forEach(function (e) {
+                    e.style.transition = 'none'; e.style.opacity = '1'; e.style.transform = 'none';
+                  });
+                  console.log('[SELFTEST] ' + JSON.stringify(out));
+                  return;
+                }
 
                 // 이야기 카드를 닫고 실제 월드를 보인다
                 var go = document.getElementById('exStoryGo');
@@ -468,6 +523,129 @@
                   say('인쇄물', which);
                   say('인쇄길이', document.getElementById('printArea').innerHTML.length);
                   console.log('[SELFTEST] ' + JSON.stringify(out));
+                  return;
+                }
+
+                if (STOP === 'newui') {
+                  /* 이번에 고친 것들을 실제 화면에서 확인한다
+                     1 시대 안내의 학습 목표·성취기준 · 2 이모지 0개 · 3 마법진
+                     4 팝업 닫기 · 5 핵심 탐구질문 · 7 지도 모드 이동 · 8 사진 비율 */
+                  // 활자 화살표(→ ←)는 이모지가 아니므로 세지 않는다 — js/icons.js 와 같은 기준
+                  var EMO = /[\u{1F000}-\u{1FAFF}\u{2300}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
+                  var scanEmoji = function () {
+                    var n = 0, w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+                    var node, hits = [];
+                    while ((node = w.nextNode())) {
+                      if (EMO.test(node.nodeValue)) { n++; if (hits.length < 3) hits.push(node.nodeValue.trim().slice(0, 20)); }
+                    }
+                    return n + (hits.length ? ' — ' + hits.join(' / ') : '');
+                  };
+
+                  // ① 시대 안내 (이야기 카드가 아직 떠 있는 상태)
+                  say('학습목표', (document.querySelector('#exStoryGoal .ex-goal-text') || {}).textContent || '없음');
+                  say('성취기준', (document.getElementById('exStoryStandard') || {}).textContent || '없음');
+                  say('시대제목', (document.getElementById('exStoryTitle') || {}).textContent || '');
+                  say('닫기단추', document.getElementById('exStoryX') ? '있음' : '없음');
+
+                  var go4 = document.getElementById('exStoryGo'); if (go4) go4.click();
+
+                  setTimeout(function () {
+                    // ② 이모지
+                    say('화면이모지', scanEmoji());
+
+                    // ③ 마법진 — 마커와 사람 발밑에 깔렸는가
+                    var auras = 0, npcAuras = 0;
+                    var STx = (A3 && A3.ST) || { markerGroups: [], npcGroups: [] };
+                    STx.markerGroups.forEach(function (g) {
+                      if (g.userData && g.userData.aura) auras++;
+                    });
+                    STx.npcGroups.forEach(function (g) {
+                      if (g.userData && g.userData.aura) npcAuras++;
+                    });
+                    say('마커마법진', auras + ' / ' + STx.markerGroups.length);
+                    say('사람마법진', npcAuras + ' / ' + STx.npcGroups.length);
+
+                    // 마친 임무의 마법진은 회색으로 흐려져야 한다 (요구 3)
+                    var wid = window.AtlasExplore.currentWorld();
+                    var Wc = window.AtlasExplore.WORLDS[wid];
+                    var target = Wc.quests.filter(function (q) { return q.kind !== 'gate' && q.pos; })[0];
+                    var st = {};
+                    st[target.id] = 'done';
+                    try { localStorage.setItem(Wc.saveKey, JSON.stringify({ questState: st })); } catch (e) {}
+                    window.AtlasExplore.switchWorld(wid);
+                    var goA = document.getElementById('exStoryGo'); if (goA) goA.click();
+
+                    var before = 0, after = 0;
+                    STx.markerGroups.forEach(function (g) {
+                      if (!g.userData || !g.userData.aura) return;
+                      if (g.userData.quest.id === target.id) after = g.userData.aura.material.opacity;
+                      else before = g.userData.aura.material.opacity;
+                    });
+                    say('마친임무', target.title);
+                    say('마친마법진', after.toFixed(2) + ' (아직인 것 ' + before.toFixed(2) + ')');
+                    say('회색으로', after < before ? 'O' : 'X');
+
+                    // ④ 임무 창의 닫기 단추 + ⑧ 사진 비율
+                    var first = document.querySelector('#exRailList .rail-item');
+                    if (first) first.click();
+                    setTimeout(function () {
+                      say('임무닫기단추', document.querySelector('#questCard .q-x') ? '있음' : '없음');
+                      var ph = document.querySelector('#questCard .q-photo');
+                      say('사진맞춤', ph ? getComputedStyle(ph).objectFit : '사진없음');
+                      say('임무창이모지', scanEmoji());
+
+                      // Esc · Enter · E 세 키가 모두 닫는가 (요구 4)
+                      var keyCloses = function (key) {
+                        var first2 = document.querySelector('#exRailList .rail-item');
+                        if (first2) first2.click();
+                        var wasOpen = document.getElementById('questModal').classList.contains('on');
+                        document.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
+                        var nowOpen = document.getElementById('questModal').classList.contains('on');
+                        return wasOpen && !nowOpen ? 'O' : 'X';
+                      };
+                      say('Esc닫힘', keyCloses('Escape'));
+                      say('Enter닫힘', keyCloses('Enter'));
+                      say('E닫힘', keyCloses('e'));
+                      setTimeout(function () {
+
+                        // ⑤ 핵심 탐구질문 — 이 시대를 다 마친 것으로 만들고 연다
+                        var Wn = window.AtlasExplore.WORLDS[window.AtlasExplore.currentWorld()];
+                        say('탐구질문있음', (Wn && Wn.inquiry && Wn.inquiry.question) ? '있음' : '없음');
+                        window.AtlasExplore.showEraComplete();
+
+                        setTimeout(function () {
+                          var inq = document.getElementById('eccInquiry');
+                          say('질문화면', (inq && !inq.hidden) ? '열림' : '안열림');
+                          say('질문글', (document.querySelector('.ecc-inq-q') || {}).textContent || '');
+
+                          var box = document.getElementById('eccInqInput');
+                          var btn = document.getElementById('eccInqSave');
+                          if (box && btn) {
+                            // ⑥ 금칙어가 섞이면 저장되지 않아야 한다
+                            box.value = '이 시대는 씨발 재미없다';
+                            btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles:true }));
+                            say('금칙어막힘', (document.getElementById('eccInqNote') || {}).textContent || '');
+                            say('금칙어저장', S.answers().filter(function (a) { return a.kind === 'inquiry'; }).length);
+
+                            // 제대로 쓴 답은 기록에 남아야 한다
+                            box.value = '고인돌을 옮기려면 사람이 아주 많이 필요했을 것이므로 힘을 가진 사람이 있었다고 생각한다.';
+                            btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles:true }));
+                            var saved = S.answers().filter(function (a) { return a.kind === 'inquiry'; });
+                            say('답저장', saved.length ? saved[0].answer.slice(0, 24) : '없음');
+                            say('기록지반영', window.AtlasReport.previewRecord().indexOf('핵심 탐구질문') >= 0 ? 'O' : 'X');
+                          }
+
+                          // ⑦ 지도 모드로 이동
+                          document.getElementById('eccClose').click();
+                          document.getElementById('toMapBtn').click();
+                          setTimeout(function () {
+                            say('지도이동', document.getElementById('app').classList.contains('on') ? 'O' : 'X');
+                            console.log('[SELFTEST] ' + JSON.stringify(out));
+                          }, 400);
+                        }, 400);
+                      }, 250);
+                    }, 500);
+                  }, 700);
                   return;
                 }
 

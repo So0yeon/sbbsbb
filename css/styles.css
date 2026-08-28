@@ -263,7 +263,10 @@ b{ font-weight:700; }
   height:100%; overflow-y:auto; background:var(--card); border-left:1px solid var(--border);
   padding:22px 24px 40px; box-shadow:var(--sh-2);
 }
-.mc-photo{ width:100%; max-height:300px; object-fit:cover; border-radius:var(--r-md); display:block; background:var(--land-far); }
+/* 지도 모드 카드 사진도 같은 규칙 — 세로 사진을 자르지 않는다 (요구 8) */
+.mc-photo{ max-width:100%; width:auto; max-height:min(42vh, 320px); height:auto;
+           object-fit:contain; border-radius:var(--r-md); margin-inline:auto;
+           display:block; background:var(--land-far); }
 .mc-credit{ margin-top:6px; font-size:11.5px; color:var(--text3); }
 .mc-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
 .mc-badge{ font-size:12px; padding:3px 10px; border-radius:999px; color:#fff; }
@@ -311,6 +314,24 @@ b{ font-weight:700; }
 .ex-story-body{ font-size:15.5px; color:var(--text2); margin-top:16px; white-space:pre-line; }
 .ex-story-hint{ font-size:13.5px; color:var(--text3); margin-top:16px; }
 #exStoryGo{ margin-top:26px; }
+
+/* 이 시대에서 할 일 — 성취기준을 학생의 말로 옮긴 학습 목표 (요구 1) */
+.ex-story-card{ position:relative; }
+.ex-story-card .sheet-x{ position:absolute; top:10px; right:10px; }
+.ex-goal{
+  margin-top:18px; padding:14px 16px; border-radius:var(--r-md);
+  background:var(--accent-soft); border:1px solid rgba(110,155,148,.34); text-align:left;
+}
+.ex-goal-tag{
+  display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.04em;
+  color:#fff; background:var(--accent); padding:2px 9px; border-radius:999px;
+}
+.ex-goal-text{ margin-top:8px; font-size:15px; font-weight:600; color:var(--text); line-height:1.55; }
+.ex-story-standard{
+  margin-top:14px; font-size:11.5px; color:var(--text3); line-height:1.5;
+  padding-top:12px; border-top:1px dashed var(--border);
+}
+.ex-story-standard:empty{ display:none; }
 
 .ex-top{
   position:absolute; top:0; left:0; right:0; z-index:5;
@@ -410,9 +431,13 @@ b{ font-weight:700; }
 .q-tag{ font-size:12px; font-weight:600; color:#fff; padding:2px 9px; border-radius:999px; }
 .q-title{ font-size:20px; margin-top:3px; }
 
-.q-photo{ width:100%; max-height:260px; object-fit:cover; border-radius:var(--r-md);
-          margin-top:16px; display:block; background:var(--land-far); cursor:zoom-in; }
-.q-photo.zoom{ max-height:none; object-fit:contain; cursor:zoom-out; }
+/* 사진틀은 사진의 비율을 따른다 (요구 8).
+   cover 로 잘라내면 세로 사진의 위아래가 날아가 유물이 반쯤 사라졌다.
+   contain 으로 두고 폭이 아니라 높이를 제한한다 */
+.q-photo{ max-width:100%; width:auto; max-height:min(46vh, 340px); height:auto;
+          object-fit:contain; border-radius:var(--r-md);
+          margin:16px auto 0; display:block; background:var(--land-far); cursor:zoom-in; }
+.q-photo.zoom{ max-height:min(78vh, 720px); cursor:zoom-out; }
 .q-photo-credit{ font-size:11.5px; color:var(--text3); margin-top:5px; }
 
 .q-story{
@@ -668,7 +693,32 @@ b{ font-weight:700; }
 .ecc-img{ width:100%; border-radius:var(--r-md); display:none; }
 .ecc-img[src]{ display:block; }
 .ecc-burst{ position:absolute; inset:0; background:radial-gradient(400px 200px at 50% 0%, var(--accent-soft), transparent 70%); pointer-events:none; }
-.ecc-medal{ font-size:52px; }
+.ecc-medal{ display:grid; place-items:center; color:var(--accent); }
+
+/* 핵심 탐구질문 (요구 5) — 시대를 마친 자리에서 한 번 묻는다 */
+.era-complete-card{ position:relative; }
+.era-complete-card .sheet-x{ position:absolute; top:10px; right:10px; }
+.ecc-inq{
+  margin-top:22px; padding:18px 18px 16px; border-radius:var(--r-md);
+  background:var(--paper); border:1px solid var(--paper-line); text-align:left;
+}
+.ecc-inq[hidden]{ display:none; }
+.ecc-inq-head{
+  display:flex; align-items:center; gap:7px;
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--accent);
+}
+.ecc-inq-q{ margin-top:10px; font-size:16px; font-weight:700; color:var(--ink); line-height:1.55; }
+.ecc-inq-hint{ margin-top:6px; font-size:13px; color:var(--text3); line-height:1.5; }
+.ecc-inq-hint:empty{ display:none; }
+.ecc-inq-input{
+  width:100%; margin-top:12px; padding:12px 13px; border-radius:var(--r-sm);
+  border:1px solid var(--border-strong); background:var(--card);
+  font:inherit; font-size:15px; line-height:1.6; color:var(--text); resize:vertical;
+}
+.ecc-inq-input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+.ecc-inq-note{ margin-top:8px; font-size:12.5px; color:var(--text3); min-height:1em; }
+.ecc-inq-note.bad{ color:var(--c-event); font-weight:600; }
+.ecc-inq .q-next{ margin-top:12px; }
 .ecc-eyebrow{ font-size:13px; color:var(--accent); font-weight:600; margin-top:6px; }
 .ecc-title{ font-size:26px; margin-top:6px; }
 .ecc-body{ font-size:15px; color:var(--text2); margin-top:12px; white-space:pre-line; }
@@ -695,7 +745,8 @@ b{ font-weight:700; }
   border:1px solid var(--border-strong); background:var(--card); font-size:13px;
   font-weight:500; text-decoration:none; color:var(--text2); display:inline-flex; align-items:center;
 }
-.sheet-x{ min-width:38px; min-height:38px; border:0; background:none; font-size:16px; color:var(--text2); border-radius:50%; }
+.sheet-x{ min-width:38px; min-height:38px; border:0; background:none; color:var(--text2);
+          border-radius:50%; display:inline-grid; place-items:center; }
 .sheet-x:hover{ background:var(--bg); }
 .big-sheet-body{ overflow-y:auto; padding:20px 22px 28px; }
 
@@ -899,3 +950,38 @@ body.print-preview #printArea{
   #exMiniScrim, #toast, #stampFx{ display:none !important; }
   #printArea{ display:block !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   선 아이콘 (요구 2 — 이모지를 쓰지 않는다)
+
+   js/icons.js 가 넣는 <svg class="ai"> 와, HTML 에 적어 둔
+   [data-icon] 자리의 공통 정렬 규칙이다.
+   ══════════════════════════════════════════════════════════════ */
+svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:visible; }
+.btn-ic,
+[data-icon]{ display:inline-flex; align-items:center; justify-content:center; line-height:0; }
+
+.found .btn-ic{ margin-right:2px; }
+.kit-icon, .mode-icon{ color:var(--accent); }
+.rail-item .ri-icon{ display:inline-flex; align-items:center; flex:0 0 auto; color:var(--text2); }
+.rail-item.done .ri-icon{ opacity:.5; }
+.q-mi svg.ai{ vertical-align:0; }
+.q-hot .hot-i{ display:inline-flex; align-items:center; opacity:.55; }
+.q-hot.seen .hot-i{ opacity:1; color:var(--c-culture); }
+.mg-flame{ display:grid; place-items:center; line-height:0;
+           transition:transform 140ms var(--ease), opacity 140ms; }
+.mg-mcell{ line-height:0; }
+.mg-rcell svg.ai, .mg-cell svg.ai, .mg-chip svg.ai{ vertical-align:-.2em; }
+#exInteract svg.ai{ vertical-align:0; }
+
+/* 임무 카드의 닫기 단추 (요구 4) */
+.quest-card, .exmini-card{ position:relative; }
+.quest-card .q-x, .exmini-card .sheet-x{ position:absolute; top:8px; right:8px; z-index:2; }
+.quest-card .q-head{ padding-right:34px; }
+
+/* 이름 금칙어 안내 (요구 6) */
+.name-warn{
+  margin-top:10px; min-height:1.2em; font-size:13.5px; font-weight:600;
+  color:var(--c-event); opacity:0; transition:opacity var(--t-fast) var(--ease);
+}
+.name-warn.on{ opacity:1; }

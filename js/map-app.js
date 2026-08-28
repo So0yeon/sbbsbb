@@ -131,7 +131,7 @@
         add(gL, 'text', {
           x: px(t.cap.at[1]), y: py(t.cap.at[0]) - 8 * u, class: 'cap-label', 'text-anchor': 'middle',
           'font-size': (12 * u).toFixed(2), 'stroke-width': 3.4 * u
-        }, '◉ ' + t.cap.n);
+        }, t.cap.n);      // 점은 바로 위 <circle> 이 이미 찍는다 — 글자 기호는 겹쳐서 뺀다
       }
     });
 
@@ -418,7 +418,7 @@
             '<span class="item-bar" style="background:' + catColor((r.cat || [])[0]) + '"></span>' +
             '<span class="item-txt"><b>' + esc(r.t) + '</b><span>' + esc(r.d || '') + '</span></span></button>';
         }).join('') + '</div></div>' : '') +
-      '<div class="mc-rel"><button class="intro-btn" id="mcExplore" type="button">🧭 이 시대를 걸어 보기</button></div>';
+      '<div class="mc-rel"><button class="intro-btn" id="mcExplore" type="button">이 시대를 걸어 보기</button></div>';
 
     card.querySelectorAll('.mc-rel .item-row').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -505,7 +505,7 @@
       btn.id = 'mapPrintBtn';
       btn.className = 'found';
       btn.type = 'button';
-      btn.textContent = '🖨 학습지';
+      btn.textContent = '학습지';
       btn.addEventListener('click', function () {
         if (window.AtlasReport) window.AtlasReport.printWorksheet(window.ERAS[eraIdx], itemsOfEra());
       });

@@ -8,6 +8,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { ST } from './state.js';
+import { drawIcon } from './icons.js';
 
 /* ── 재료 ────────────────────────────────────────────────────── */
 const matCache = new Map();
@@ -481,12 +482,18 @@ export function makeNPC(color, icon){
   g.add(cyl(.1,.1,.7,6, c,  .42, .95, 0));
   g.add(cyl(.12,.12,.5,6,'#6E6A5E', -.14, .25, 0));  // 다리
   g.add(cyl(.12,.12,.5,6,'#6E6A5E',  .14, .25, 0));
-  if (icon){
-    const s = iconSprite(icon, .9);
-    s.position.set(0, 2.5, 0);
-    g.add(s);
-  }
+  // 말을 걸 수 있다는 표시 — 발밑 마법진과 머리 위 말풍선 아이콘 (요구 3)
+  const aura = makeAura(color || '#6E9B94', 1.7);
+  g.add(aura);
+
+  // 자료의 icon 은 이모지라 쓰지 않는다 — 사람에게는 언제나 말풍선을 얹는다
+  const s = iconSprite('chat', .9, c);
+  s.position.set(0, 2.6, 0);
+  g.add(s);
+
   g.userData.isNPC = true;
+  g.userData.aura = aura;
+  g.userData.icon = s;
   return g;
 }
 
@@ -495,29 +502,149 @@ export function makeNPC(color, icon){
    ══════════════════════════════════════════════════════════════ */
 const texCache = new Map();
 
-export function iconTexture(emoji){
-  if (texCache.has('i:' + emoji)) return texCache.get('i:' + emoji);
-  const s = 128;
+/** 선 아이콘 한 장. 이모지를 쓰지 않는다 — 둥근 패에 그림을 얹는다 */
+export function iconTexture(name, color){
+  const key = 'i:' + name + '|' + (color || '');
+  if (texCache.has(key)) return texCache.get(key);
+
+  const s = 160;
   const c = document.createElement('canvas');
   c.width = c.height = s;
   const x = c.getContext('2d');
-  x.font = '92px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-  x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText(emoji, s/2, s/2 + 6);
+
+  // 바탕 패 — 멀리서도 아이콘이 배경에 묻히지 않게
+  x.beginPath();
+  x.arc(s/2, s/2, s/2 - 4, 0, Math.PI * 2);
+  x.fillStyle = 'rgba(253,252,247,.94)';
+  x.fill();
+  x.lineWidth = 6;
+  x.strokeStyle = color || '#5B5347';
+  x.stroke();
+
+  // 그림 — 패 안쪽에 맞춰 그린다
+  const inner = s * .56;
+  x.save();
+  x.translate((s - inner) / 2, (s - inner) / 2);
+  drawIcon(x, name, inner, color || '#3A352C', 2.1);
+  x.restore();
+
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
-  texCache.set('i:' + emoji, t);
+  texCache.set(key, t);
   return t;
 }
 
-export function iconSprite(emoji, scale){
+export function iconSprite(name, scale, color){
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: iconTexture(emoji), transparent: true, depthWrite: false
+    map: iconTexture(name, color), transparent: true, depthWrite: false
   }));
   const s = scale || 1;
   sp.scale.set(s, s, s);
   return sp;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   마법진 — '여기는 말을 걸 수 있다' 는 표시 (요구 3)
+
+   상호작용 전  분류 색으로 또렷하게
+   상호작용 후  회색으로 흐리게
+   바닥에 눕혀 두고 천천히 돌린다.
+   ══════════════════════════════════════════════════════════════ */
+const DONE_COLOR = '#9A968C';
+
+function auraTexture(color){
+  const key = 'a:' + color;
+  if (texCache.has(key)) return texCache.get(key);
+
+  const s = 256, r = s / 2;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const x = c.getContext('2d');
+
+  /* 바닥이 밝은 흙빛이라 옅은 색은 그대로 묻힌다.
+     먼저 어두운 그림자를 깔고 그 위에 색을 얹어야 '그림자'로 읽힌다. */
+  const shade = x.createRadialGradient(r, r, r * .10, r, r, r * .96);
+  shade.addColorStop(0,   'rgba(40,36,28,.20)');
+  shade.addColorStop(.70, 'rgba(40,36,28,.10)');
+  shade.addColorStop(1,   'rgba(40,36,28,0)');
+  x.fillStyle = shade;
+  x.beginPath(); x.arc(r, r, r, 0, Math.PI * 2); x.fill();
+
+  // 안쪽에서 밖으로 옅어지는 빛 — '색깔 있는 그림자'
+  const grad = x.createRadialGradient(r, r, r * .16, r, r, r);
+  grad.addColorStop(0,   hexA(color, .62));
+  grad.addColorStop(.62, hexA(color, .34));
+  grad.addColorStop(.90, hexA(color, .12));
+  grad.addColorStop(1,   hexA(color, 0));
+  x.fillStyle = grad;
+  x.beginPath(); x.arc(r, r, r, 0, Math.PI * 2); x.fill();
+
+  x.strokeStyle = color;
+  x.lineCap = 'round';
+
+  // 바깥 테두리 두 겹
+  x.globalAlpha = 1; x.lineWidth = 7;
+  x.beginPath(); x.arc(r, r, r * .90, 0, Math.PI * 2); x.stroke();
+  x.globalAlpha = .6; x.lineWidth = 3.5;
+  x.beginPath(); x.arc(r, r, r * .79, 0, Math.PI * 2); x.stroke();
+
+  // 눈금 — 마법진처럼 보이게 하는 것은 이 규칙성이다
+  x.globalAlpha = .92; x.lineWidth = 6;
+  for (let i = 0; i < 12; i++){
+    const a = (i / 12) * Math.PI * 2;
+    const long = i % 3 === 0;
+    const r1 = r * (long ? .56 : .66), r2 = r * .74;
+    x.beginPath();
+    x.moveTo(r + Math.cos(a) * r1, r + Math.sin(a) * r1);
+    x.lineTo(r + Math.cos(a) * r2, r + Math.sin(a) * r2);
+    x.stroke();
+  }
+
+  // 안쪽 고리
+  x.globalAlpha = .75; x.lineWidth = 3.5;
+  x.beginPath(); x.arc(r, r, r * .40, 0, Math.PI * 2); x.stroke();
+  x.globalAlpha = 1;
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  texCache.set(key, t);
+  return t;
+}
+
+function hexA(hex, a){
+  const h = String(hex).replace('#', '');
+  const n = parseInt(h.length === 3 ? h.replace(/(.)/g, '$1$1') : h, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+/** 바닥에 눕히는 마법진 하나 */
+export function makeAura(color, radius){
+  const r = radius || 1.9;
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(r * 2, r * 2),
+    new THREE.MeshBasicMaterial({
+      map: auraTexture(color || '#7B6A55'),
+      transparent: true, depthWrite: false, opacity: .95
+    })
+  );
+  m.rotation.x = -Math.PI / 2;
+  // 바닥 얼룩(skyground.js 의 groundPatches)보다 확실히 위에 눕힌다
+  m.position.y = .06;
+  m.renderOrder = -1;
+  m.userData.auraColor = color;
+  return m;
+}
+
+/** 상호작용을 마친 표시 — 색을 잃고 회색이 된다 */
+export function setAuraDone(aura, done){
+  if (!aura || !aura.material) return;
+  const color = done ? DONE_COLOR : (aura.userData.auraColor || '#7B6A55');
+  aura.material.map = auraTexture(color);
+  aura.material.opacity = done ? .42 : .95;
+  aura.material.needsUpdate = true;
+}
+
+export { DONE_COLOR };
 
 export function textSprite(text, scale, x, y, z){
   const key = 't:' + text;
