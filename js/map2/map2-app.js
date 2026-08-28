@@ -711,8 +711,18 @@
 
   /* 셸(js/shell.js)이 부르는 이름들 — 기존 지도 모드와 같습니다.
      그래서 shell.js 는 한 줄도 고치지 않았습니다. */
+  /** 학습 항목 하나를 그 시대로 옮겨 가 펼친다.
+      탐험 모드의 역사 가방에서 항목을 누르면 여기로 온다.
+      (옛 map-app.js 에 있던 것이 지도 v2 병합에서 빠져 있었다) */
+  function showItemById(id) {
+    var c = (window.CONTENT || []).find(function (x) { return x.id === id; });
+    if (!c) return false;
+    if (c.era && c.era !== eraId) showEra(c.era);
+    return !!(window.Map2Panel && window.Map2Panel.openItemById(id));
+  }
+
   window.AtlasMap = {
-    open: open, setEra: showEra, setEraById: showEra,
+    open: open, setEra: showEra, setEraById: showEra, showItemById: showItemById,
     refreshMode: refreshMode, updateBagCount: updateBagCount,
     currentEra: currentEra,
     itemsOfEra: function () { return window.Map2Panel ? window.Map2Panel.itemsOfEra() : []; }

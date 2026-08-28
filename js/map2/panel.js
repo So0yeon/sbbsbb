@@ -302,9 +302,18 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
   }
 
+  /** 학습 항목 하나를 이름으로 찾아 펼친다 (탐험 모드의 역사 가방에서 부른다) */
+  function openItemById(id) {
+    var c = (window.CONTENT || []).find(function (x) { return x.id === id; });
+    if (!c) return false;
+    openItem(c);
+    return true;
+  }
+
   window.Map2Panel = {
     init: init, setEra: setEra,
     relabel: function () { drawEraExtras(); drawMarkers(); },
-    itemsOfEra: itemsOfEra, closeSheet: closeSheet
+    itemsOfEra: itemsOfEra, closeSheet: closeSheet,
+    openItemById: openItemById
   };
 })();

@@ -236,6 +236,66 @@ const ART = {
     }
   },
 
+  /* 기원제 — 제단에 해·땅·물·불을 차려 놓은 자리 */
+  jedan: {
+    label: '기원을 올리던 자리',
+    draw: () => {
+      let s = `<rect x="0" y="0" width="100" height="100" fill="#F1EDE0"/>
+        <ellipse cx="50" cy="86" rx="42" ry="9" fill="${C.groundD}" opacity=".7"/>`;
+      // 세 단 제단
+      s += `<rect x="24" y="66" width="52" height="10" fill="${C.stone}" stroke="${C.stoneD}" stroke-width="1"/>
+            <rect x="29" y="57" width="42" height="9"  fill="${C.stoneL}" stroke="${C.stoneD}" stroke-width="1"/>
+            <rect x="34" y="49" width="32" height="8"  fill="${C.stone}" stroke="${C.stoneD}" stroke-width="1"/>`;
+      // 제물 넷 — 왼쪽부터 해·땅·물·불
+      const put = [
+        [40, 45, '#D8A24B'],   // 해
+        [47, 45, '#8C9A5B'],   // 땅
+        [54, 45, '#8FB6C4'],   // 물
+        [61, 45, '#C25B4F']    // 불
+      ];
+      put.forEach(([x, y, col]) => {
+        s += `<ellipse cx="${x}" cy="${y}" rx="3" ry="2.4" fill="${col}"/>`;
+      });
+      // 뒤에 세운 솟대 둘
+      s += `<path d="M22 66V28" stroke="${C.wood}" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M78 66V32" stroke="${C.wood}" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M17 29c3-3 7-3 10 0-3 2-7 2-10 0Z" fill="${C.boneD}"/>
+            <path d="M73 33c3-3 7-3 10 0-3 2-7 2-10 0Z" fill="${C.boneD}"/>`;
+      // 피어오르는 연기
+      s += `<path d="M50 44c-3-5 3-8 0-13 3-5-3-8 0-12" fill="none"
+                  stroke="#C9C2B0" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>`;
+      return s;
+    }
+  },
+
+  /* 큰물 — 불어난 물이 마을 앞까지 닿은 날 */
+  hongsu: {
+    label: '불어난 물',
+    draw: () => {
+      let s = `<rect x="0" y="0" width="100" height="100" fill="#EDEFE6"/>`;
+      // 뒤쪽 낮은 산 (밝은 초록 세 가지)
+      s += `<path d="M0 46 L18 28 L34 46Z" fill="#BBD29B"/>
+            <path d="M24 46 L44 24 L64 46Z" fill="#A9C48A"/>
+            <path d="M54 46 L74 30 L94 46Z" fill="#96B87C"/>`;
+      // 언덕 위로 피한 움집
+      s += `<path d="M62 46 L74 34 L86 46Z" fill="${C.soil}"/>
+            <path d="M66 46h16v3H66Z" fill="${C.groundD}"/>`;
+      // 물에 잠긴 아래쪽
+      for (let i = 0; i < 5; i++){
+        const y = 54 + i * 9;
+        s += `<path d="M-4 ${y} Q 14 ${y - 4} 30 ${y} T 66 ${y} T 104 ${y}"
+                    fill="none" stroke="${C.water}" stroke-width="${5 - i * 0.5}"
+                    stroke-linecap="round" opacity="${(0.9 - i * 0.13).toFixed(2)}"/>`;
+      }
+      s += `<rect x="0" y="50" width="100" height="50" fill="${C.water}" opacity=".34"/>`;
+      // 떠내려가는 것들
+      s += `<path d="M18 62h10l-2 4H20Z" fill="${C.clay}" opacity=".9"/>
+            <path d="M60 74h12l-2.4 4H62Z" fill="${C.wood}" opacity=".85"/>
+            <path d="M38 84h9l-1.8 3.4h-5.4Z" fill="${C.boneD}" opacity=".8"/>`;
+      return s;
+    }
+  },
+
   /* 씨앗과 이삭 — 농사 미션의 배경 그림 */
   ssiat: {
     label: '거둔 곡식',

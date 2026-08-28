@@ -80,7 +80,8 @@ export function bootExplore(startWorldId){
 
   preloadNature();                 // 하늘·바닥에 쓸 CC0 자연 조각 (없어도 앱은 돈다)
   // 헤드리스 검사용 훅 — 실제 씬을 밖에서 들여다볼 수 있게 한다
-  if (typeof window !== 'undefined') window.__atlas3d = { scene, camera, renderer, ST };
+  // 헤드리스 검사용 훅 — 씬을 들여다보고 한 프레임을 직접 돌릴 수 있게 한다
+  if (typeof window !== 'undefined') window.__atlas3d = { scene, camera, renderer, ST, tick };
   ST.ready = true;
   switchWorld(startWorldId || firstWorldId());
   running = true;

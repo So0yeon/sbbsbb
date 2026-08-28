@@ -62,12 +62,34 @@ export const NEO_QUEST_MINIS = {
         retry:'순서가 어긋나면 정성이 흐트러진다. 해와 땅, 물과 불의 순서를 다시 눈여겨보고 처음부터 따라 해 보자.' }
 };
 
-/** 그 시대의 임무들에 이식해 온 미니게임을 덮어씌운다 */
+/* ── 임무마다 보여 줄 그림 ────────────────────────────────────
+   신석기 임무 열 가운데 사진이 있는 것은 빗살무늬토기 하나뿐이다.
+   나머지 아홉에는 직접 그린 그림을 붙인다 (js/engine/artifact-art.js).
+   화면에는 "실물 사진이 아니라 그린 그림" 이라고 밝힌다.
+
+   사진을 구하면 그 임무의 여기 한 줄을 지우고 자료에 img 를 넣으면 된다. */
+export const NEO_QUEST_ART = {
+  'gansingi':     'gan',        // 갈아서 만든 돌
+  'garak-yumul':  'garak',      // 가락바퀴
+  'galdolgalpan': 'galdol',     // 갈돌과 갈판
+  'nongsa':       'ssiat',      // 거둔 곡식
+  'garakbakwi':   'garak',      // 실 잣기
+  'umjip':        'umjipteo',   // 움집터
+  'umjip-yumul':  'umjipteo',
+  'sinang':       'jedan',      // 기원을 올리던 자리
+  'hongsu':       'hongsu'      // 불어난 물
+};
+
+/** 그 시대의 임무들에 이식해 온 미니게임과 그림을 덮어씌운다 */
 export function applyNeoMinis(quests){
   if (!Array.isArray(quests)) return quests;
   quests.forEach(q => {
-    const m = NEO_QUEST_MINIS[q && q.id];
+    if (!q) return;
+    const m = NEO_QUEST_MINIS[q.id];
     if (m) q.mini = m;
+    // 사진이 이미 있으면 그림을 얹지 않는다
+    const a = NEO_QUEST_ART[q.id];
+    if (a && !(q.img && q.img.length)) q.art = a;
   });
   return quests;
 }

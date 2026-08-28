@@ -131,8 +131,18 @@ export function updateMarkers(t){
     u.icon.position.y = u.base + Math.sin(t * 1.7 + i) * .13;
     u.aura.rotation.z += u.done ? 0.0012 : 0.004;    // 마친 자리는 천천히 돈다
     const d = Math.hypot(p.position.x - g.position.x, p.position.z - g.position.z);
-    const scale = d < NEAR ? 1.14 : 1;
+
+    /* 임무 목록에서 고른 자리는 세상에서도 숨을 쉰다 (요구 1) */
+    const lit = isFlashed(u);
+    const beat = lit ? flashBeat() : 0;
+    const scale = (d < NEAR ? 1.14 : 1) + beat * 0.34;
     g.scale.setScalar(scale);
+    u.icon.material.opacity = lit ? 1 : (u.done ? .5 : 1);
+    u.aura.material.opacity = lit ? (.55 + beat * .45)
+                                  : (u.done ? .42 : .95);
+    u.post.material.opacity = lit ? (.5 + beat * .5) : (u.done ? .3 : .8);
+    if (lit) u.aura.rotation.z += 0.03;              // 가리키는 동안 빠르게 돈다
+
     if (!u.done && d < bestD){ bestD = d; best = g; }
   });
 
@@ -150,6 +160,12 @@ export function updateMarkers(t){
     const u = g.userData;
     u.sprite.position.y = u.base + Math.sin(t * 2.1 + i) * .1;
     u.aura.rotation.z -= u.got ? 0.0015 : 0.005;
+
+    const lit = isFlashed(u);
+    const beat = lit ? flashBeat() : 0;
+    g.scale.setScalar(1 + beat * 0.4);
+    u.aura.material.opacity = lit ? (.55 + beat * .45) : (u.got ? .42 : .95);
+    if (lit) u.aura.rotation.z -= 0.03;
   });
 
   ST.activeNear = best;
@@ -193,12 +209,24 @@ export function flashQuest(q){
   else if (q.pos) pts.push(q.pos);
   if (!pts.length){ flash = null; return false; }
   flash = {
+    id: q.id,                                   // 세상에서도 이 자리를 반짝이게 한다
     pts,
     color: q.kind === 'gate' ? '#6E9B94' : catColor(q.cat),
     until: nowSec() + FLASH_SEC
   };
   return true;
 }
+
+/** 이 표지가 지금 가리켜지고 있는가 — 세상 쪽 반짝임에 쓴다 */
+function isFlashed(u){
+  if (!flash || !flashActive()) return false;
+  if (u.quest)  return u.quest.id  === flash.id;
+  if (u.findOf) return u.findOf.id === flash.id;
+  return false;
+}
+
+/** 0 ↔ 1 로 오가는 숨결. 미니맵과 세상이 같은 박자로 뛴다 */
+function flashBeat(){ return (Math.sin(nowSec() * 6.6) + 1) / 2; }
 export function flashActive(){ return !!(flash && nowSec() < flash.until); }
 export function clearFlash(){ flash = null; }
 

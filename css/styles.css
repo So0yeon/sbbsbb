@@ -1292,8 +1292,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 .neo-host .mg-bar{
   position:relative; height:26px; border-radius:999px;
   background:var(--bg); border:1px solid var(--border); overflow:hidden;
-.neo-host }
-.mg-bar.tall{ height:34px; }
+}
+.neo-host .mg-bar.tall{ height:34px; }
 .neo-host .mg-zone{ position:absolute; top:0; bottom:0; background:rgba(92,143,92,.3); border-left:2px solid #5C8F5C; border-right:2px solid #5C8F5C; }
 .neo-host .mg-needle{ position:absolute; top:-2px; bottom:-2px; width:4px; margin-left:-2px; background:var(--text); border-radius:2px; }
 .neo-host .mg-fill{ position:absolute; left:0; top:0; bottom:0; background:var(--accent); opacity:.75; }
@@ -1301,8 +1301,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   width:100%; margin-top:14px; border:0; border-radius:999px;
   background:var(--accent); color:#fff; padding:16px; font-size:16px; font-weight:700;
   min-height:56px; touch-action:manipulation; user-select:none;
-.neo-host }
-.mg-hit.good{ background:#5C8F5C; }
+}
+.neo-host .mg-hit.good{ background:#5C8F5C; }
 .neo-host .mg-hit.miss{ background:#C4573F; }
 .neo-host .mg-dots{ display:flex; gap:5px; justify-content:center; margin-top:12px; }
 .neo-host .mg-dots i{ width:10px; height:10px; border-radius:50%; background:var(--border-strong); }
@@ -1316,23 +1316,23 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   position:relative; width:190px; height:190px; margin:6px auto; border-radius:50%;
   border:2px dashed var(--border-strong); background:var(--bg);
   display:flex; align-items:center; justify-content:center; touch-action:none;
-.neo-host }
-.mg-spin-core{
+}
+.neo-host .mg-spin-core{
   width:150px; height:150px; min-width:0; min-height:0; border-radius:50%;
   background:var(--accent); opacity:.85; border:0; transform:scale(.28);
   transition:transform var(--t) var(--ease);
-.neo-host }
-.mg-spin-mark{
+}
+.neo-host .mg-spin-mark{
   position:absolute; left:50%; top:4px; width:4px; height:26px; margin-left:-2px;
   background:var(--text); border-radius:2px; transform-origin:50% 91px;
-.neo-host }
+}
 
-.mg-ember{ display:flex; align-items:flex-end; justify-content:center; gap:22px; height:170px; }
+.neo-host .mg-ember{ display:flex; align-items:flex-end; justify-content:center; gap:22px; height:170px; }
 .neo-host .mg-gauge{
   position:relative; width:44px; height:150px; border-radius:14px;
   background:var(--bg); border:1px solid var(--border); overflow:hidden;
-.neo-host }
-.mg-good{ position:absolute; left:0; right:0; bottom:40%; height:35%; background:rgba(92,143,92,.22);
+}
+.neo-host .mg-good{ position:absolute; left:0; right:0; bottom:40%; height:35%; background:rgba(92,143,92,.22);
           border-top:1.5px solid #5C8F5C; border-bottom:1.5px solid #5C8F5C; }
 .neo-host .mg-level{ position:absolute; left:0; right:0; bottom:0; background:#5C8F5C; transition:height 60ms linear; }
 .neo-host .mg-flame{ font-size:52px; transition:transform 120ms var(--ease); }
@@ -1346,8 +1346,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 .neo-host .mg-step{
   text-align:left; border:1px solid var(--border); background:var(--card);
   border-radius:var(--r-md); padding:11px 13px; font-size:13.5px; line-height:1.5;
-.neo-host }
-.mg-step.ok{ background:rgba(92,143,92,.12); border-color:#5C8F5C; color:var(--text2); }
+}
+.neo-host .mg-step.ok{ background:rgba(92,143,92,.12); border-color:#5C8F5C; color:var(--text2); }
 .neo-host .mg-step.no{ border-color:#C4573F; animation:shake .3s; }
 .neo-host .mg-step:disabled{ opacity:.7; }
 
@@ -1356,8 +1356,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   min-height:120px; border-radius:var(--r-lg); border:1px solid var(--border);
   background:var(--paper); display:flex; flex-direction:column; align-items:center;
   justify-content:center; gap:6px; transition:all var(--t-fast) var(--ease);
-.neo-host }
-.mg-card.ok{ border-color:#5C8F5C; background:rgba(92,143,92,.14); }
+}
+.neo-host .mg-card.ok{ border-color:#5C8F5C; background:rgba(92,143,92,.14); }
 .neo-host .mg-card.no{ border-color:#C4573F; background:rgba(196,87,63,.1); }
 .neo-host .mg-card-icon{ font-size:40px; }
 .neo-host .mg-card-label{ font-size:16px; font-weight:600; }
@@ -1365,15 +1365,15 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 .neo-host .mg-bin{
   border:1px solid var(--border-strong); background:var(--card);
   border-radius:var(--r-md); padding:16px 10px; font-size:14px; font-weight:600;
-.neo-host }
-.mg-bin:hover{ background:var(--accent-soft); border-color:var(--accent); }
+}
+.neo-host .mg-bin:hover{ background:var(--accent-soft); border-color:var(--accent); }
 
 .neo-host .mg-memory{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .neo-host .mg-pad{
   height:88px; border:1px solid var(--border-strong); background:var(--card);
   border-radius:var(--r-lg); font-size:34px;
-.neo-host }
-.mg-pad.lit{ background:var(--accent); transform:scale(1.03); }
+}
+.neo-host .mg-pad.lit{ background:var(--accent); transform:scale(1.03); }
 
 /* ── 신석기 전용 미니게임 (js/engine/minigames-neolithic.js) ──
    조작은 아홉 종 그대로이고, 보이는 것만 신석기의 일로 바꿉니다. */
@@ -1385,23 +1385,23 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   position:absolute; left:0; top:0; z-index:3; pointer-events:none;
   transform:translate(-50%,-50%); font-size:30px; line-height:1;
   display:flex; align-items:center; gap:4px;
-.neo-host }
+}
 
 /* 1 · 간석기 만들기 ------------------------------------------- */
-.neo-grind .gn-dust{ animation:gnDust .62s var(--ease) forwards; }
+.neo-host .neo-grind .gn-dust{ animation:gnDust .62s var(--ease) forwards; }
 @keyframes gnDust{
   0%{ transform:translate(0,0); opacity:.95; }
   100%{ transform:translate(var(--dx),var(--dy)); opacity:0; }
-.neo-host }
-#gnPress.press{ animation:gnPress .26s var(--ease); }
+}
+.neo-host #gnPress.press{ animation:gnPress .26s var(--ease); }
 @keyframes gnPress{ 0%,100%{ transform:none; } 45%{ transform:translateY(5px) scaleY(.94); } }
 .neo-host #gnSlip.slip{ animation:gnSlip .3s var(--ease); }
 @keyframes gnSlip{
   0%,100%{ transform:none; }
   30%{ transform:translate(7px,-4px) rotate(7deg); }
   65%{ transform:translate(-5px,2px) rotate(-4deg); }
-.neo-host }
-#gnBlade{ transition:fill var(--t) linear; }
+}
+.neo-host #gnBlade{ transition:fill var(--t) linear; }
 .neo-host #gnEdgeL, .neo-host #gnEdgeR{ transition:opacity var(--t-fast) var(--ease); }
 .neo-host .neo-meter{ display:flex; align-items:center; gap:9px; margin-top:9px; }
 .neo-host .neo-meter-cap{ font-size:11.5px; color:var(--text2); white-space:nowrap; }
@@ -1416,8 +1416,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   min-height:118px; border-radius:var(--r-lg); border:1px solid var(--border);
   background:var(--paper); display:flex; flex-direction:column; align-items:center;
   justify-content:center; gap:6px; transition:all var(--t-fast) var(--ease);
-.neo-host }
-.wn-card.ok{ border-color:#5C8F5C; background:rgba(92,143,92,.14); }
+}
+.neo-host .wn-card.ok{ border-color:#5C8F5C; background:rgba(92,143,92,.14); }
 .neo-host .wn-card.no{ border-color:#C4573F; background:rgba(196,87,63,.1); }
 .neo-host .wn-card.done{ opacity:.55; }
 .neo-host .wn-card-icon{ font-size:40px; line-height:1; }
@@ -1428,8 +1428,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
   border:1px solid var(--border-strong); background:var(--card);
   border-radius:var(--r-md); padding:10px 8px 12px;
   transition:border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
-.neo-host }
-.wn-bin:hover{ background:var(--accent-soft); border-color:var(--accent); }
+}
+.neo-host .wn-bin:hover{ background:var(--accent-soft); border-color:var(--accent); }
 .neo-host .wn-bin.take{ border-color:var(--accent); animation:wnTake .42s var(--ease); }
 @keyframes wnTake{ 0%,100%{ transform:none; } 40%{ transform:translateY(4px) scale(1.03); } }
 .neo-host .wn-art{ width:78px; height:auto; }
@@ -1447,8 +1447,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 .neo-host .sp-pad{
   position:absolute; left:50%; bottom:2%; width:56%; aspect-ratio:1;
   transform:translateX(-50%); border-radius:50%; touch-action:none; cursor:grab;
-.neo-host }
-.sp-pad:active{ cursor:grabbing; }
+}
+.neo-host .sp-pad:active{ cursor:grabbing; }
 .neo-host .sp-coil{ opacity:0; transition:opacity var(--t) var(--ease); }
 .neo-host #spFiber{ transition:transform var(--t) var(--ease); }
 
@@ -1463,7 +1463,7 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 @keyframes umjipDig{ from{ transform:scaleY(.12); } to{ transform:scaleY(1); } }
 @keyframes umjipRaise{
   0%{ transform:scaleY(.06); } 70%{ transform:scaleY(1.05); } 100%{ transform:scaleY(1); }
-.neo-host }
+}
 @keyframes umjipRoof{ from{ transform:translateY(-52px) scale(.88); } to{ transform:none; } }
 @keyframes umjipFire{ 0%{ transform:scale(.3); } 65%{ transform:scale(1.14); } 100%{ transform:scale(1); } }
 @keyframes umjipFlick{ from{ transform:scaleY(.86) scaleX(1.06); } to{ transform:scaleY(1.1) scaleX(.94); } }
@@ -1488,15 +1488,15 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 @media (max-width:860px){
   .mg-stack.neo-umjip{ grid-template-columns:1fr; }
   .neo-umjip .mg-stack-svg{ max-width:210px; margin:0 auto; }
-.neo-host }
+}
 @media (prefers-reduced-motion: reduce){
   .neo-umjip .stack-part.on{ animation:none !important; }
   .neo-umjip .stack-part.on[data-step="3"] .umjip-flame{ animation:none; }
   #gnPress.press, #gnSlip.slip, .wn-bin.take{ animation:none; }
-.neo-host }
+}
 
 /* 시대 완료 */
-.era-complete-card{ text-align:center; }
+.neo-host .era-complete-card{ text-align:center; }
 .neo-host .ecc-img{ display:none; }
 .neo-host .ecc-burst{ display:none; }
 .neo-host .ecc-medal{ font-size:54px; }
@@ -1506,3 +1506,40 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 .neo-host .era-complete-card .intro-btn{ display:block; width:100%; text-align:center; }
 
 .neo-host #inspectPanel, .neo-host #eventSheet{ display:none; }
+
+/* ══════════════════════════════════════════════════════════════
+   움집 짓기 — 그림을 창 가득, 가운데에 (요구 3)
+
+   이식해 온 원본은 그림과 차례 목록을 좌우로 나란히 놓는다.
+   그림이 150px 로 작아 무엇을 짓고 있는지 잘 보이지 않았다.
+   짓는 모습이 주인공이므로 위아래로 세우고 그림을 넓게 편다.
+   게임 로직은 건드리지 않았다 — 자리만 바꾼 것이다.
+   ══════════════════════════════════════════════════════════════ */
+.neo-host .mg-stack.neo-umjip{
+  grid-template-columns:1fr;          /* 좌우 → 위아래 */
+  gap:16px;
+  justify-items:center;
+}
+.neo-host .mg-stack.neo-umjip .mg-stack-svg{
+  width:100%;
+  max-width:min(520px, 100%);
+  max-height:46vh;
+  margin:0 auto;
+}
+.neo-host .mg-stack.neo-umjip .mg-steps{
+  width:100%;
+  max-width:min(520px, 100%);
+}
+
+/* 작은 화면에서도 같은 자리 — 원본의 좁은 화면 규칙을 되돌린다 */
+@media (max-width: 640px){
+  .neo-host .mg-stack.neo-umjip .mg-stack-svg{ max-width:100%; max-height:38vh; }
+}
+
+/* 임무 카드의 그림 자리 — 사진이 없을 때 (요구 2) */
+.q-art{
+  margin:16px auto 0; max-width:min(100%, 360px);
+  border-radius:var(--r-md); overflow:hidden;
+  border:1px solid var(--border-strong); background:var(--land-far);
+}
+.q-art svg{ display:block; width:100%; height:auto; }

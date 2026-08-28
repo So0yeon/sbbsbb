@@ -70,15 +70,32 @@ export function buildGround(color){
 export function buildWater(x, z, w, d, rotY){
   const m = new THREE.Mesh(
     new THREE.PlaneGeometry(w || 30, d || 120),
-    new THREE.MeshStandardMaterial({ color:'#8FC1C4', transparent:true, opacity:.72, flatShading:true })
+    new THREE.MeshStandardMaterial({
+      color:'#8FC1C4', transparent:true, opacity:.72, flatShading:true,
+      /* 깊이를 기록하지 않는다.
+         기록하면 바닥 얼룩(polygonOffset 을 준 원반)과 그리는 차례가
+         카메라 위치에 따라 뒤바뀌어, 걸을 때마다 강이 나타났다 사라졌다 한다.
+         물은 언제나 바닥 위에 얹히는 것이므로 깊이 다툼에 끼울 이유가 없다.
+
+         polygonOffset 은 주지 않는다 — 한 번 줘 봤더니 물이 언덕을
+         뚫고 나와 엉뚱한 자리에 청록 조각으로 떴다.
+         대신 바닥에서 충분히 띄워 다툼 자체를 없앤다. */
+      depthWrite:false
+    })
   );
   m.rotation.x = -Math.PI / 2;
   m.rotation.z = rotY || 0;
-  m.position.set(x || 0, 0.04, z || 0);
+  m.position.set(x || 0, 0.09, z || 0);
+  m.renderOrder = -2;            // 마법진(-1)보다 먼저 — 물 위에 마법진이 보이게
   return add(m);
 }
 
-/** 가장자리 저폴리 산. 반지름은 ST.BOUND × 1.02 부터 (§6-4) */
+/* 산에 쓰는 밝은 초록 세 가지.
+   한 가지로 두면 종이 오린 것처럼 납작해 보인다 — 셋을 번갈아 섞는다. */
+export const HILL_GREENS = ['#A9C48A', '#BBD29B', '#96B87C'];
+
+/** 가장자리 저폴리 산. 반지름은 ST.BOUND × 1.02 부터 (§6-4).
+    높이는 예전의 절반이다 — 마을을 내려다보는 대신 둘러싸게 한다. */
 export function buildMountains(color, n){
   const g = new THREE.Group();
   const count = n || 26;
@@ -86,8 +103,8 @@ export function buildMountains(color, n){
   for (let i = 0; i < count; i++){
     const a = (i / count) * Math.PI * 2 + (i % 3) * 0.06;
     const r = base + 3 + (i % 4) * 2.4;
-    const h = 7 + (i % 5) * 2.6;
-    const c = cone(5.2 + (i % 3) * 1.4, h, 5, color || '#B9BCA8',
+    const h = (7 + (i % 5) * 2.6) * 0.5;
+    const c = cone(5.2 + (i % 3) * 1.4, h, 5, HILL_GREENS[i % HILL_GREENS.length],
                    Math.cos(a) * r, h / 2 - 0.4, Math.sin(a) * r);
     c.rotation.y = i * 0.7;
     g.add(c);
@@ -100,8 +117,8 @@ export function buildMountainsWide(color){
   for (let i = 0; i < 20; i++){
     const a = (i / 20) * Math.PI * 2 + 0.15;
     const r = 80 + (i % 3) * 6;
-    const h = 12 + (i % 4) * 4;
-    g.add(cone(9 + (i % 3) * 2, h, 5, color || '#C6C9B6',
+    const h = (12 + (i % 4) * 4) * 0.5;
+    g.add(cone(9 + (i % 3) * 2, h, 5, HILL_GREENS[(i + 1) % HILL_GREENS.length],
                Math.cos(a) * r, h / 2, Math.sin(a) * r));
   }
   return add(g);

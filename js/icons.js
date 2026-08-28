@@ -141,13 +141,22 @@
     return fallback || 'pin';
   }
 
-  /** 임무 하나에 맞는 그림 이름 — 자료의 icon(이모지)은 쓰지 않는다 */
+/** 임무 하나에 맞는 그림 이름.
+
+     자료의 icon(이모지)은 쓰지 않는다. 그리고 '무엇에 관한 것인가'(분류)가
+     아니라 **무엇을 하는가**로 고른다 — 놀이면 놀이, 물음이면 물음.
+     목록에서 한눈에 "이건 게임이구나" 를 알아볼 수 있어야 하기 때문이다.
+     분류는 색이 이미 알려 준다. */
   function forQuest(q){
     if (!q) return 'pin';
-    if (q.kind === 'gate') return 'gate';
-    if (q.kind === 'find') return 'find';
-    if (q.kind === 'inspect') return 'search';
-    return BY_CAT[q.cat] || 'pin';
+    if (q.kind === 'gate')    return 'gate';      // 다른 고을로 가는 길목
+    if (q.kind === 'find')    return 'find';      // 걸어가 주워 오는 것
+    if (q.mini)               return 'gamepad';   // 놀이가 붙은 임무
+    if (q.kind === 'inspect') return 'search';    // 자료를 살펴보는 것
+    if (q.kind === 'choice')  return 'question';  // 정답이 없는 열린 선택
+    if (q.stages && q.stages.length) return 'event';   // 여러 판으로 이어지는 것
+    if (q.q)                  return 'question';  // 물음에 답하는 것
+    return 'chat';                                // 이야기를 듣는 것
   }
   function forCat(cat){ return BY_CAT[cat] || 'pin'; }
 

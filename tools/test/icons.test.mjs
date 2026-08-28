@@ -63,17 +63,29 @@ test('모르는 것은 기본값으로 떨어진다', () => {
   assert.equal(A.resolve(''), 'pin');
 });
 
-test('임무 갈래에 맞는 그림을 고른다', () => {
+test('임무 아이콘은 "무엇을 하는가"로 고른다', () => {
+  // 목록에서 "이건 게임이구나" 를 한눈에 알아볼 수 있어야 한다.
+  // 무엇에 관한 것인가(분류)는 색이 이미 알려 준다.
   assert.equal(A.forQuest({ kind:'gate' }), 'gate');
   assert.equal(A.forQuest({ kind:'find' }), 'find');
   assert.equal(A.forQuest({ kind:'inspect' }), 'search');
-  assert.equal(A.forQuest({ cat:'person' }), 'person');
-  assert.equal(A.forQuest({ cat:'없는분류' }), 'pin');
+  assert.equal(A.forQuest({ kind:'choice' }), 'question');
+  assert.equal(A.forQuest({ q:{ text:'…' } }), 'question');
+  assert.equal(A.forQuest({ stages:[{}, {}] }), 'event');
+  assert.equal(A.forQuest({}), 'chat');
   assert.equal(A.forQuest(null), 'pin');
 });
 
-test('자료의 icon(이모지)은 무시한다 — 분류로만 고른다', () => {
-  assert.equal(A.forQuest({ cat:'event', icon:'🏺' }), 'event');
+test('놀이가 붙은 임무는 무엇에 관한 것이든 게임 모양이다', () => {
+  assert.equal(A.forQuest({ kind:'minigame', mini:{ type:'spin' } }), 'gamepad');
+  assert.equal(A.forQuest({ kind:'inspect', mini:{ type:'blank' }, cat:'relic' }), 'gamepad');
+  // 놀이가 없으면 하는 일에 따라 갈린다
+  assert.equal(A.forQuest({ kind:'inspect', cat:'relic' }), 'search');
+});
+
+test('자료의 icon(이모지)은 무시한다', () => {
+  assert.equal(A.forQuest({ kind:'inspect', icon:'🏺' }), 'search');
+  assert.equal(A.forQuest({ mini:{}, icon:'🏺' }), 'gamepad');
 });
 
 test('strip() 이 이모지를 걷어낸다', () => {

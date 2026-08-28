@@ -14,6 +14,7 @@ import { onQuestDone, esc } from './collect.js';
 import { refreshMarkerStates } from './markers.js';
 import { setAuraDone } from './scene-helpers.js';
 import { icon, iconForQuest, stripEmoji } from './icons.js';
+import { artSVG, hasArt } from './artifact-art.js';
 import { pushPopup, popPopup, anyOpen, closeTop } from './popups.js';
 import { noticeQuestOpened } from './quest-engine.js';
 
@@ -130,7 +131,12 @@ function head(q){
 }
 
 
-function photoBlock(imgs){
+/** 임무 위쪽의 그림 자리 — 사진이 있으면 사진, 없으면 그린 그림 */
+function photoBlock(imgs, art){
+  if ((!imgs || !imgs.length) && art && hasArt(art)){
+    return `<div class="q-art">${artSVG(art)}</div>
+            <p class="q-photo-credit">실물 사진이 아니라 특징을 살려 그린 그림이오</p>`;
+  }
   if (!imgs || !imgs.length) return '';
   const file = imgs[0];
   const src = /^(assets|data:|https?:)/.test(file) ? file : `assets/photos/${file}`;
@@ -196,7 +202,7 @@ function renderRole(q, card){
 
   card.innerHTML = `
     ${head(q)}
-    ${photoBlock(q.img)}
+    ${photoBlock(q.img, q.art)}
     ${q.story ? `<div class="q-story">${esc(q.story)}</div>` : ''}
     ${done && q.recap ? `<div class="q-story" style="opacity:.85">${esc(q.recap)}</div>` : ''}
     <button class="q-reveal" id="qReveal" type="button">이제 어찌하겠소? →</button>
@@ -276,7 +282,7 @@ function renderRole(q, card){
 function renderChoice(q, card){
   card.innerHTML = `
     ${head(q)}
-    ${photoBlock(q.img)}
+    ${photoBlock(q.img, q.art)}
     ${q.setup ? `<div class="q-story">${esc(q.setup)}</div>` : ''}
     <p class="q-q">${esc(q.prompt || '그대는 어찌하겠소?')}</p>
     <div id="qChoiceHost"></div>
@@ -307,7 +313,7 @@ function renderInspect(q, card){
   const hs = q.hotspots || [];
   card.innerHTML = `
     ${head(q)}
-    ${photoBlock(q.img)}
+    ${photoBlock(q.img, q.art)}
     ${q.story ? `<div class="q-story">${esc(q.story)}</div>` : ''}
     <div class="q-hotspots" id="qHots"></div>
     <p class="q-progress" id="qProg"></p>
@@ -473,7 +479,7 @@ function renderFind(q, card){
 
   card.innerHTML = `
     ${head(q)}
-    ${photoBlock(q.img)}
+    ${photoBlock(q.img, q.art)}
     ${q.story ? `<div class="q-story">${esc(stripEmoji(q.story))}</div>` : ''}
     <p class="q-progress">${got} / ${items.length} 가지를 주웠소</p>
     <div class="q-hotspots" id="qFindList"></div>

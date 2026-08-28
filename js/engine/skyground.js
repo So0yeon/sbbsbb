@@ -274,7 +274,11 @@ function farFrom(x, z, list, d){
  */
 export function buildGroundPro(scene, opts){
   opts = opts || {};
+  /* 땅은 시대색보다 한 단 밝게 깐다.
+     사람과 지형지물이 바닥에 묻히지 않고 떠오른다. */
   const base = new THREE.Color(opts.color || '#E9E4D3');
+  base.getHSL(_hsl);
+  base.setHSL(_hsl.h, Math.max(0, _hsl.s * .86), Math.min(.97, _hsl.l + .07));
   const bound = ST.BOUND || 40;
   const seed = opts.seed || 'ground';
   const rng = rngOf(seed);
@@ -528,15 +532,22 @@ export function farRidges(scene, skyMid, seed){
   const g = new THREE.Group();
   g.name = 'farRidges';
 
-  [{ r:[118, 138], h:[14, 26], n:26, t:.62 },
-   { r:[172, 196], h:[20, 36], n:22, t:.80 }].forEach(layer => {
-    const geoCol = mix('#A9AE9A', skyMid, layer.t);
+  /* 높이는 예전의 절반, 색은 밝은 초록 세 가지를 층마다 나눠 쓴다 */
+  const RIDGE_GREENS = ['#A9C48A', '#BBD29B', '#96B87C'];
+  [{ r:[118, 138], h:[7, 13], n:26, t:.62, c:0 },
+   { r:[172, 196], h:[10, 18], n:22, t:.80, c:1 }].forEach(layer => {
+    const geoCol = mix(RIDGE_GREENS[layer.c], skyMid, layer.t);
     const m = new THREE.MeshStandardMaterial({ color: geoCol, flatShading:true, roughness:.98, metalness:0 });
     for (let i = 0; i < layer.n; i++){
       const a = (i / layer.n) * Math.PI * 2 + rng() * .12;
       const r = layer.r[0] + rng() * (layer.r[1] - layer.r[0]);
       const h = layer.h[0] + rng() * (layer.h[1] - layer.h[0]);
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(14 + rng() * 12, h, 5), m);
+      // 셋째 색을 드문드문 섞어 한 덩어리로 보이지 않게 한다
+      const mm = (i % 3 === 2)
+        ? new THREE.MeshStandardMaterial({ color: mix(RIDGE_GREENS[2], skyMid, layer.t),
+                                           flatShading:true, roughness:.98, metalness:0 })
+        : m;
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(14 + rng() * 12, h, 5), mm);
       cone.position.set(Math.cos(a) * r, h / 2 - 2, Math.sin(a) * r);
       cone.rotation.y = rng() * 6.28;
       g.add(cone);
@@ -551,11 +562,12 @@ export function farRidges(scene, skyMid, seed){
    ══════════════════════════════════════════════════════════════ */
 
 /** 흩뿌리기 종류별 바닥색과 얼룩색 — 바닥이 한 가지 모래색이면 밋밋하다 */
+/* 바닥은 밝게 — 얼룩도 바탕과 너무 벌어지지 않게 한 단씩 올렸다 */
 const GROUND_OF_SET = {
-  green: { base:'#DCDCC0', tones:['#C7CFA8', '#D3D6B8', '#BFC8A0'] },
-  dry:   { base:'#DDD5C0', tones:['#CFC4A8', '#D8CCB0', '#C6BA9C'] },
-  farm:  { base:'#DAD6B8', tones:['#C9BE96', '#D2CBA6', '#BFB48C'] },
-  water: { base:'#D6DCC6', tones:['#C2CFB2', '#CED8C0', '#B8C8A8'] }
+  green: { base:'#EAEBD6', tones:['#DBE2C2', '#E4E7D0', '#D2DCBA'] },
+  dry:   { base:'#ECE5D6', tones:['#E0D8C2', '#E8DFCB', '#D8CFB6'] },
+  farm:  { base:'#EAE7D0', tones:['#DCD3B2', '#E4DEC2', '#D4CBA8'] },
+  water: { base:'#E6EBDA', tones:['#D6E2C8', '#E0E8D4', '#CCDCC0'] }
 };
 
 /** 시대 id → 어떤 흩뿌리기를 쓸지 */

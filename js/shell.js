@@ -590,10 +590,11 @@
 
                 if (STOP === 'neomini') {
                   /* 이식해 온 신석기 놀이 — 미션 시퀀스의 '돌 갈기' 자리에서 확인한다 */
+                  var AT = +(new URLSearchParams(location.search).get('at') || 8);
                   try {
                     localStorage.setItem('neolithicChain_v1', JSON.stringify({
-                      at: 8, flags: {}, inventory: ['stone', 'seed'], relations: {},
-                      kept: [], observed: [], done: false
+                      at: AT, flags: {}, inventory: ['stone', 'seed', 'clay', 'pot', 'post'],
+                      relations: {}, kept: [], observed: [], done: false
                     }));
                   } catch (e) {}
                   window.AtlasExplore.switchWorld('neolithic');
@@ -616,6 +617,20 @@
                       var types = W7.quests.map(function (q) { return q.mini && q.mini.type; })
                                            .filter(Boolean).join(' ');
                       say('임무놀이갈래', types);
+
+                      /* 움집 그림이 창을 가득 채우는가 (요구 3) */
+                      var us = document.querySelector('.neo-host .mg-stack.neo-umjip .mg-stack-svg');
+                      if (us) {
+                        var ur = us.getBoundingClientRect();
+                        // 카드에는 세로 스크롤바가 있어 가운데가 조금 밀린다.
+                        // 실제로 담고 있는 상자를 기준으로 잰다.
+                        var box = us.closest('.mg-stack');
+                        var cr = (box || document.querySelector('.mq-card')).getBoundingClientRect();
+                        say('움집그림너비', Math.round(ur.width) + ' / 카드 ' + Math.round(cr.width));
+                        say('움집그림비율', Math.round(ur.width / cr.width * 100) + '%');
+                        say('움집그림가운데',
+                          Math.abs((ur.left + ur.width / 2) - (cr.left + cr.width / 2)) < 6 ? 'O' : 'X');
+                      }
                       console.log('[SELFTEST] ' + JSON.stringify(out));
                     }, 900);
                   }, 900);
@@ -754,6 +769,24 @@
                         document.getElementById('exMiniRadar').innerHTML.indexOf('stroke-width="2.4"') >= 0 ? 'O' : 'X');
                     say('접기단추자리',
                         getComputedStyle(document.getElementById('exQuestRail')).alignItems);
+
+                    /* 세상에서도 그 자리가 숨을 쉬는가 (요구 1) */
+                    var railId = rail1 && rail1.dataset.id;
+                    var litMk = STx.markerGroups.filter(function (g) {
+                      return g.userData && g.userData.quest.id === railId;
+                    })[0];
+                    if (litMk) {
+                      var s1 = litMk.scale.x, o1 = litMk.userData.aura.material.opacity;
+                      var A3b = window.__atlas3d;
+                      // 시계를 조금 밀어 숨결의 다른 지점을 본다
+                      if (A3b && A3b.ST.clock) A3b.ST.clock.elapsedTime += 0.24;
+                      if (A3b && A3b.tick) A3b.tick();      // 한 프레임 돌린다
+                      var s2 = litMk.scale.x;
+                      say('세상반짝임', (s1 !== s2 || s1 > 1.2) ? 'O' : 'X (' + s1.toFixed(2) + '→' + s2.toFixed(2) + ')');
+                      say('마법진밝기', o1.toFixed(2));
+                    } else {
+                      say('세상반짝임', '표지를 못 찾음');
+                    }
 
                     /* ① 성취기준은 학생 화면에 없어야 한다 (요구 1) */
                     say('성취기준노출', document.getElementById('exStoryStandard') ? '있음(틀림)' : '없음');
