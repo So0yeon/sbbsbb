@@ -154,11 +154,20 @@ function choicesHTML(list){
   }</div>`;
 }
 
+/* 카드 안에 새 내용이 생겨 스크롤이 길어질 때, 부드럽게 아래로 따라간다.
+   막 열려서 처음 그려지는 중에는 내리지 않는다 — 도입부부터 읽어야 하니까
+   (openQuest 가 그 첫 렌더가 끝날 때까지 justOpened 를 걸어 둔다) */
+function scrollNew(card){
+  if (card.dataset.justOpened) return;
+  card.scrollTo({ top: card.scrollHeight, behavior: 'smooth' });
+}
+
 function fb(card, kind, text){
   const el = card.querySelector('#qFb');
   if (!el) return;
   el.className = 'q-fb on ' + kind;
   el.textContent = text || '';
+  scrollNew(card);
 }
 
 function nextBtn(card, label, fn){
@@ -169,6 +178,7 @@ function nextBtn(card, label, fn){
   const fresh = b.cloneNode(true);
   b.replaceWith(fresh);
   onPress(fresh, fn);
+  scrollNew(card);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -179,12 +189,14 @@ export function openQuest(q){
   const card = document.getElementById('questCard');
   ST.activeMarker = q;
 
+  card.dataset.justOpened = '1';   // 첫 렌더가 끝날 때까지 자동 스크롤을 막는다
   if (q.kind === 'gate')            renderGate(q, card);
   else if (q.kind === 'find')       renderFind(q, card);
   else if (q.kind === 'choice')     renderChoice(q, card);
   else if (q.kind === 'inspect')    renderInspect(q, card);
   else if (q.stages && q.stages.length) renderStages(q, card);
   else                              renderRole(q, card);
+  delete card.dataset.justOpened;
 
   noticeQuestOpened(q.id);      // 미션 시퀀스가 이 표지를 기다리고 있을 수 있다
 
@@ -216,7 +228,7 @@ function renderRole(q, card){
 
   const reveal = card.querySelector('#qReveal');
   const wrap = card.querySelector('#qWrap');
-  onPress(reveal, () => { reveal.style.display = 'none'; wrap.classList.add('on'); askQ(); });
+  onPress(reveal, () => { reveal.style.display = 'none'; wrap.classList.add('on'); askQ(); scrollNew(card); });
 
   if (!q.q){ reveal.style.display = 'none'; wrap.classList.add('on'); afterCorrect(); return; }
 
@@ -300,6 +312,7 @@ function renderChoice(q, card){
     const out = card.querySelector('#qOut');
     out.style.display = 'block';
     out.textContent = c.outcome || '';
+    scrollNew(card);
     bumpAxis('story', 1);
     logAnswer({ world: ST.WORLD_ID, questId: q.id, title: q.title,
                 question: q.prompt, answer: c.label, correct: null, tries: 1, kind:'choice-open' });
@@ -339,6 +352,11 @@ function renderInspect(q, card){
       paint();
     }));
     prog.textContent = `${seen.size} / ${hs.length} 가지를 살펴보았소`;
+    // 다시 그릴 때마다 단추가 통째로 새로 생겨 초점이 풀린다 —
+    // 다음에 볼 항목에 초점을 이어 줘야 마우스 없이 엔터만으로 죽 훑을 수 있다
+    const next = host.querySelector('.q-hot:not(.seen)');
+    if (next) next.focus({ preventScroll: true });
+    scrollNew(card);
     if (seen.size >= hs.length) openCap();
   }
 
@@ -353,12 +371,13 @@ function renderInspect(q, card){
 
     // 마무리 문제가 없거나 선택지가 비어 있으면 놀이나 완료로 넘어간다
     if (!hasQuiz){
-      if (cap && cap.text) capHost.innerHTML = `<p class="q-q">${esc(cap.text)}</p>`;
+      if (cap && cap.text){ capHost.innerHTML = `<p class="q-q">${esc(cap.text)}</p>`; scrollNew(card); }
       afterCap();
       return;
     }
 
     capHost.innerHTML = `<p class="q-q">${esc(cap.text)}</p><div id="capChoices"></div>`;
+    scrollNew(card);
     const ch = capHost.querySelector('#capChoices');
     ch.innerHTML = choicesHTML(cap.choices);
     let tries = 0;
