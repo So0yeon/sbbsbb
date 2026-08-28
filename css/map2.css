@@ -203,6 +203,9 @@
 .mk circle.dot{ stroke:#fff; }
 /* 글자에 흰 테두리를 두르지 않습니다 (js 가 넣는 stroke-width 는 stroke:none 이 이깁니다) */
 .mk text{ fill:var(--text); stroke:none; }
+/* 실험 — 삼국시대 유물·인물 점의 사진 라벨 */
+.mk-thumb-fr{ fill:#fff; fill-opacity:.92; stroke-width:1.6; }
+.mk-thumb{ pointer-events:none; }
 .cap-label{ font-weight:600; fill:var(--ink); stroke:none; }
 .nb-label{ fill:var(--text3); stroke:none; }
 #gMk, #gCap{ font-family:var(--font); }

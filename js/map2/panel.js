@@ -9,6 +9,9 @@
   'use strict';
 
   var NS = 'http://www.w3.org/2000/svg';
+  /* 실험용 — 삼국시대의 유물·인물 점 옆에 글자 대신 작은 사진을 띄워 본다.
+     별로면 false 로 바꾸거나 이 기능을 넣은 커밋을 되돌리면 바로 원래대로 돌아간다. */
+  var TEST_PHOTO_DOTS = true;
   var $ = function (id) { return document.getElementById(id); };
   var S = window.AtlasStore || { bagHas: function () { return false; }, bag: { size: 0 } };
 
@@ -142,6 +145,38 @@
       add(g, 'circle', { 'class': 'dot', cx: x, cy: y, r: got ? rDot * 1.2 : rDot,
                          fill: col, 'fill-opacity': got ? 1 : 0.4,
                          stroke: col, 'stroke-width': 1.6 * upp });
+
+      /* 실험: 삼국시대의 유물·인물만, 사진이 있으면 글자 대신 작은 사진으로 —
+         별로면 TEST_PHOTO_DOTS 를 false 로 바꾸거나 이 커밋을 되돌리면 그만이다 */
+      var ph = TEST_PHOTO_DOTS && eraId === 'three' &&
+               ['relic', 'person'].indexOf((c.cat || [])[0]) >= 0 &&
+               window.AtlasPhotos && window.AtlasPhotos.photoFor(c.id);
+
+      if (ph) {
+        var half = 15 * upp, side = 30 * upp;
+        var slot = [[0, -22 * upp], [0, 22 * upp], [half + 20 * upp, 0], [-half - 20 * upp, 0]];
+        for (var j = 0; j < slot.length; j++) {
+          var px = x + slot[j][0], py = y + slot[j][1];
+          var pclash = placed.some(function (p) {
+            return Math.abs(p[0] - px) < (p[2] + half) && Math.abs(p[1] - py) < half + gapY;
+          });
+          if (!pclash) {
+            placed.push([px, py, half]);
+            add(g, 'rect', { x: px - side / 2 - 1.4 * upp, y: py - side / 2 - 1.4 * upp,
+                             width: side + 2.8 * upp, height: side + 2.8 * upp,
+                             rx: 5 * upp, class: 'mk-thumb-fr', stroke: col });
+            add(g, 'image', { x: px - side / 2, y: py - side / 2, width: side, height: side,
+                              rx: 4 * upp, class: 'mk-thumb', href: ph.src,
+                              preserveAspectRatio: 'xMidYMid slice' });
+            break;
+          }
+        }
+        g.addEventListener('click', function () { openItem(c); });
+        g.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openItem(c); }
+        });
+        return;
+      }
 
       /* 라벨은 겹치면 뺍니다. 점은 남깁니다 */
       var half = (c.t.length * 5.6 + 10) * upp;
