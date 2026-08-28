@@ -256,7 +256,7 @@
     }, { passive: false });
 
     svg.addEventListener('pointerdown', function (e) {
-      if (e.target.closest && e.target.closest('.mk')) return;   /* 마커를 누른 것은 이동이 아닙니다 */
+      if (e.target.closest && e.target.closest('.mk, .rel-hit')) return;   /* 마커·교류선을 누른 것은 이동이 아닙니다 */
       svg.setPointerCapture(e.pointerId);
       pts[e.pointerId] = { x: e.clientX, y: e.clientY };
       var ids = Object.keys(pts);
@@ -539,7 +539,7 @@
       b.className = 'tl-btn' + (has ? '' : ' bare');
       b.dataset.era = e.id;
       b.innerHTML = '<b>' + e.short + '</b>';
-      b.addEventListener('click', function () { playEra(e.id); });
+      b.addEventListener('click', function () { showEra(e.id); });
       track.appendChild(b);
     });
   }
