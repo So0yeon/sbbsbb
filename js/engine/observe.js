@@ -118,6 +118,12 @@ export function runObserve(spec, host, done){
   const progEl = host.querySelector('#obProg');
   const notes  = host.querySelector('#obNotes');
   const helpEl = host.querySelector('#obHelp');
+
+  /* 팝업 안에 내용이 늘어 스크롤이 길어질 때, 방금 늘어난 곳까지 부드럽게 따라가 준다 */
+  function scrollToNew(){
+    const card = host.closest('.quest-card, .exmini-card, .event-card');
+    if (card) card.scrollTo({ top: card.scrollHeight, behavior: 'smooth' });
+  }
   const zEl    = host.querySelector('#obZ');
 
   let zoom = 1, panX = 0, panY = 0, misses = 0, hinted = false, finished = false;
@@ -203,6 +209,7 @@ export function runObserve(spec, host, done){
     li.innerHTML = `<span class="ob-note-i">${icon('eye', { size:14 })}</span><span></span>`;
     li.querySelector('span:last-child').textContent = p.text;
     notes.appendChild(li);
+    scrollToNew();
   }
 
   function reveal(p){
@@ -296,6 +303,7 @@ export function runObserve(spec, host, done){
     btn.hidden = false;
     btn.classList.add('on');
     btn.textContent = '알겠소 →';
+    scrollToNew();
     onPress(btn, () => done({
       ok: true,
       found: points.filter(p => p.found).map(p => p.text),
