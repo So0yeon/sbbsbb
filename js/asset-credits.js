@@ -146,7 +146,9 @@ var ATLAS_CREDITS_EXTRA = [
   { file:'assets/kenney/nature', item:'자연 조각 33점 — 풀과 바위를 뿌리는 데 씁니다', author:'Kenney', license:'CC0 1.0',
     source:'Kenney Nature Kit 2.1', sourceUrl:'https://kenney.nl/assets/nature-kit' },
   { file:'assets/kenney/characters', item:'캐릭터 12점 — 아직 앱에서 부르지 않습니다', author:'Kenney', license:'CC0 1.0',
-    source:'Kenney Mini Characters 1.0', sourceUrl:'https://kenney.nl/assets/mini-characters' }
+    source:'Kenney Mini Characters 1.0', sourceUrl:'https://kenney.nl/assets/mini-characters' },
+  { file:'assets/fonts', item:'글꼴 — 신라문화체(Medium·Bold)', author:'경주시', license:'공공누리 제1유형',
+    source:'경주서체', sourceUrl:'https://www.gyeongju.go.kr/open_content/ko/page.do?mnu_uid=3288' }
 ];
 
 (function (g) {

@@ -148,7 +148,7 @@ bash tools/check.sh           헤드리스 Chrome 으로 열어 콘솔 오류 �
 
 - 지도 — Natural Earth 1:50m (퍼블릭 도메인)
 - 사진 — 위키미디어 공용 (CC BY / CC BY-SA / CC0 / 공공누리 1유형 / 퍼블릭 도메인) — [`assets/photos/CREDITS.md`](assets/photos/CREDITS.md)
-- 글꼴 — Pretendard, 길형진 (SIL OFL 1.1)
+- 글꼴 — Pretendard, 길형진 (SIL OFL 1.1) · 신라문화체, 경주시 (공공누리 제1유형) — https://www.gyeongju.go.kr/open_content/ko/page.do?mnu_uid=3288
 - 3D 엔진 — three.js 0.160.0 (MIT)
 - 내용 — 초등학교 5학년 2학기 사회 교과서 및 2022 개정 교육과정 문서
 
