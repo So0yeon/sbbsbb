@@ -125,7 +125,8 @@ var ATLAS_CREDITS_PHOTOS = [
   { file:"amnok.jpg", item:"amnok", orig:"—", author:"Caitriana Nicholson from 北京 ~ Beijing, 中国 ~ China", license:"CC BY-SA 2.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"armistice.jpg", item:"armistice", orig:"—", author:"United States Department of State", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"isan.jpg", item:"isan", orig:"—", author:"Rbtjd0201(talk / Contributions) at the Korean Wikipedia", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
-  { file:"ireumdoro.jpg", item:"ireumdoro", orig:"—", author:"JoshBerglund19", license:"CC BY 2.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' }
+  { file:"ireumdoro.jpg", item:"ireumdoro", orig:"—", author:"JoshBerglund19", license:"CC BY 2.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
+  { file:"umjip.jpg", item:"umjip-yumul", orig:"Korea-Seoul-Amsadong-Neolithic.age-01.jpg", author:"Jtm71", license:"CC BY-SA 2.0 KR", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' }
 ];
 
 var ATLAS_CREDITS_EXTRA = [

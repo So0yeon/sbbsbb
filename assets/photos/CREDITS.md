@@ -134,3 +134,4 @@
 | `armistice.jpg` | armistice | — | United States Department of State | Public domain |
 | `isan.jpg` | isan | — | Rbtjd0201(talk / Contributions) at the Korean Wikipedia | Public domain |
 | `ireumdoro.jpg` | ireumdoro | — | JoshBerglund19 | CC BY 2.0 |
+| `umjip.jpg` | umjip-yumul | Korea-Seoul-Amsadong-Neolithic.age-01.jpg | Jtm71 | CC BY-SA 2.0 KR |

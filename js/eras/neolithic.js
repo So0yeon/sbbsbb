@@ -349,7 +349,10 @@ export const QUESTS_NEO_BASE = [
     "note": "움집 한가운데에는 화덕(불 땐 자리)이 있소. 이곳에서 음식을 익히고 추운 밤을 데우며, 불씨를 꺼뜨리지 않고 대대로 이어 갔소."
    }
   ],
-  "cat": "life"
+  "cat": "life",
+  "img": [
+   "umjip.jpg"
+  ]
  },
  {
   "title": "원시 신앙과 기원제",
