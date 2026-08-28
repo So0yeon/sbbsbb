@@ -1037,8 +1037,11 @@
                     var mqx = document.getElementById('mqX');
                     if (mqx && document.getElementById('mqModal').classList.contains('on')) mqx.click();
                     var STq = (window.__atlas3d || {}).ST;
+                    var WANT = new URLSearchParams(location.search).get('q');   // ?q=<임무 id>
                     var mg = STq && STq.markerGroups.filter(function (g) {
-                      return g.userData && g.userData.quest.kind !== 'gate';
+                      if (!g.userData) return false;
+                      if (WANT) return g.userData.quest.id === WANT;
+                      return g.userData.quest.kind !== 'gate';
                     })[0];
                     if (mg && STq.player) {
                       STq.player.position.set(mg.position.x, 0, mg.position.z);
@@ -1056,6 +1059,28 @@
                       if (qc) { qc.style.transition = 'none'; qc.style.transform = 'none'; }
                       say('임무카드', document.getElementById('questModal').classList.contains('on') ? '열림' : '안열림');
                       say('카드제목', (document.querySelector('#questCard .q-title') || {}).textContent || '');
+
+                      /* 놀이가 붙은 임무면 물음에 답하고 놀이까지 열어 본다 */
+                      var rv = document.querySelector('#questCard #qReveal');
+                      if (rv) rv.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                      var W5 = window.AtlasExplore.WORLDS[window.AtlasExplore.currentWorld()];
+                      var qq = W5.quests.find(function (x) { return x.id === (WANT || ''); });
+                      if (qq && qq.q) {
+                        var ch = document.querySelectorAll('#questCard .q-choice');
+                        var pick = ch[qq.q.correct];
+                        if (pick) pick.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                        var nb = document.querySelector('#questCard #qNext');
+                        if (nb) nb.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                      }
+                      setTimeout(function () {
+                        say('놀이틀', document.querySelector('.neo-host') ? '있음' : '없음');
+                        say('놀이속', document.querySelector('.neo-host .mg') ? '그려짐' : '빔');
+                        var gi = document.querySelector('.neo-host .mg-intro');
+                        say('놀이안내', gi ? gi.textContent.slice(0, 26) : '없음');
+                        say('토기그림', document.querySelector('.neo-host svg') ? '있음' : '없음');
+                        console.log('[SELFTEST] ' + JSON.stringify(out));
+                      }, 400);
+                      return;
                       console.log('[SELFTEST] ' + JSON.stringify(out));
                     }, 500);
                   }, 500);

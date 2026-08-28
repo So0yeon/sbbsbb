@@ -1548,3 +1548,8 @@ svg.ai{ display:inline-block; vertical-align:-.18em; flex:0 0 auto; overflow:vis
 .ex-home{ min-width:40px; min-height:40px; flex:0 0 auto; color:var(--text2);
           background:rgba(255,255,255,.9); backdrop-filter:blur(6px); }
 .ex-home:hover{ color:var(--accent); }
+
+/* 탐험 모드 우상단 설정 단추 */
+.ex-settings{ min-width:40px; min-height:40px; flex:0 0 auto; color:var(--text2);
+              background:rgba(255,255,255,.9); backdrop-filter:blur(6px); }
+.ex-settings:hover{ color:var(--accent); }

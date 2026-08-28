@@ -301,9 +301,10 @@ function pointToQuest(q){
   const ok = flashQuest(q);
   drawRadar();
   if (!ok){ showToast('이 임무는 자리가 정해져 있지 않소'); return; }
+  // 빛기둥은 그 자리에 닿을 때까지 남는다 — 서둘러 보라고 하지 않는다
   showToast(isDone(q.id)
-    ? `이미 마친 곳이오 — 미니맵에서 반짝이는 자리요`
-    : `${q.title} — 미니맵에서 반짝이는 자리로 가 보시오`);
+    ? `이미 마친 곳이오 — 빛기둥이 선 자리요`
+    : `${q.title} — 빛기둥이 선 자리로 가 보시오`);
 }
 
 const NPC_NEAR = 3.2;
@@ -357,6 +358,11 @@ function bindChrome(){
 
   /* 지도 모드로 돌아가기 (요구 7) — 이 단추에 아무 것도 걸려 있지 않았다 */
   on('toMapBtn', toMapMode);
+
+  /* 설정 — 두 모드가 같은 시트를 쓴다 */
+  on('exSettingsBtn', () => {
+    if (window.AtlasShell) window.AtlasShell.openSettings();
+  });
 
   /* 홈 — 두 갈래길로 돌아간다 */
   on('exHomeBtn', () => {

@@ -5,8 +5,9 @@
 import * as THREE from 'three';
 import { ST, questState, isDone } from './state.js';
 import { catColor } from './constants.js';
-import { mat, iconSprite, makeAura, setAuraDone, DONE_COLOR } from './scene-helpers.js';
+import { mat, makeAura, setAuraDone, DONE_COLOR } from './scene-helpers.js';
 import { iconForQuest } from './icons.js';
+import { makeIcon3D, faceCamera } from './marker3d.js';
 
 /** 이 거리 안이면 '조사하기'가 뜨고, 그 버튼이 실제로 동작한다.
  *  boot.js 의 interact() 도 이 값을 쓴다 — 두 곳이 어긋나면
@@ -33,14 +34,14 @@ function makeMarker(q){
   post.position.y = .75;
   g.add(post);
 
-  // 아이콘 — 이모지가 아니라 선 아이콘 (요구 2)
-  const icon = iconSprite(iconForQuest(q), 1.05, done ? DONE_COLOR : color);
+  // 그림 — 납작한 스프라이트가 아니라 3차원 패 (marker3d.js)
+  const icon = makeIcon3D(iconForQuest(q), 1.05, done ? DONE_COLOR : color);
   icon.position.y = 2.05;
-  icon.material.opacity = done ? .5 : 1;
+  icon.userData.setTone(done ? DONE_COLOR : color, done ? .55 : 1, done);
   g.add(icon);
 
   g.position.set(q.pos.x, 0, q.pos.z);
-  g.userData = { quest: q, aura, post, icon, color, base: 2.05, done };
+  g.userData = { quest: q, aura, post, icon, color, base: 2.05, done, tone: '' };
   return g;
 }
 
@@ -73,13 +74,13 @@ function buildFindItems(){
       g.add(aura);
       setAuraDone(aura, got);
 
-      const sp = iconSprite('find', .85, got ? DONE_COLOR : color);
+      const sp = makeIcon3D('find', .85, got ? DONE_COLOR : color);
       sp.position.y = 1.2;
-      sp.material.opacity = got ? .4 : 1;
+      sp.userData.setTone(got ? DONE_COLOR : color, got ? .45 : 1, got);
       g.add(sp);
 
       g.position.set(it.pos.x, 0, it.pos.z);
-      g.userData = { findOf: q, item: it, sprite: sp, aura, color, base: 1.2, got };
+      g.userData = { findOf: q, item: it, sprite: sp, aura, color, base: 1.2, got, tone: '' };
       ST.scene.add(g);
       ST.findGroups.push(g);
     });
@@ -102,10 +103,8 @@ export function refreshMarkerStates(){
     setAuraDone(d.aura, done);                       // 색 → 회색 (요구 3)
     d.post.material = mat(done ? DONE_COLOR : d.color,
       { transparent:true, opacity: done ? .3 : .8 });
-    d.icon.material.map = iconSprite(iconForQuest(d.quest), 1,
-      done ? DONE_COLOR : d.color).material.map;
-    d.icon.material.opacity = done ? .5 : 1;
-    d.icon.material.needsUpdate = true;
+    d.icon.userData.setTone(done ? DONE_COLOR : d.color, done ? .55 : 1, done);
+    d.tone = '';                                     // 다음 프레임에 다시 맞춘다
   });
   ST.findGroups.forEach(g => {
     const d = g.userData;
@@ -113,9 +112,8 @@ export function refreshMarkerStates(){
     if (got === d.got) return;
     d.got = got;
     setAuraDone(d.aura, got);
-    d.sprite.material.map = iconSprite('find', 1, got ? DONE_COLOR : d.color).material.map;
-    d.sprite.material.opacity = got ? .4 : 1;
-    d.sprite.material.needsUpdate = true;
+    d.sprite.userData.setTone(got ? DONE_COLOR : d.color, got ? .45 : 1, got);
+    d.tone = '';
   });
 }
 
@@ -129,6 +127,7 @@ export function updateMarkers(t){
   ST.markerGroups.forEach((g, i) => {
     const u = g.userData;
     u.icon.position.y = u.base + Math.sin(t * 1.7 + i) * .13;
+    faceCamera(u.icon, ST.camera);                   // 늘 읽히되 테의 두께는 보이게
     u.aura.rotation.z += u.done ? 0.0012 : 0.004;    // 마친 자리는 천천히 돈다
     const d = Math.hypot(p.position.x - g.position.x, p.position.z - g.position.z);
 
@@ -137,7 +136,12 @@ export function updateMarkers(t){
     const beat = lit ? flashBeat() : 0;
     const scale = (d < NEAR ? 1.14 : 1) + beat * 0.34;
     g.scale.setScalar(scale);
-    u.icon.material.opacity = lit ? 1 : (u.done ? .5 : 1);
+    const tone = (lit ? 'L' : '') + (u.done ? 'D' : '');
+    if (tone !== u.tone){                            // 재질은 바뀔 때만 만진다
+      u.tone = tone;
+      u.icon.userData.setTone(u.done && !lit ? DONE_COLOR : u.color,
+                              lit ? 1 : (u.done ? .55 : 1), u.done && !lit);
+    }
     u.aura.material.opacity = lit ? (.55 + beat * .45)
                                   : (u.done ? .42 : .95);
     u.post.material.opacity = lit ? (.5 + beat * .5) : (u.done ? .3 : .8);
@@ -159,6 +163,7 @@ export function updateMarkers(t){
   ST.findGroups.forEach((g, i) => {
     const u = g.userData;
     u.sprite.position.y = u.base + Math.sin(t * 2.1 + i) * .1;
+    u.sprite.rotation.y += 0.012;                    // 수집물은 천천히 돈다
     u.aura.rotation.z -= u.got ? 0.0015 : 0.005;
 
     const lit = isFlashed(u);
@@ -168,6 +173,7 @@ export function updateMarkers(t){
     if (lit) u.aura.rotation.z -= 0.03;
   });
 
+  checkArrived();           // 그 자리에 닿았으면 가리키기를 그친다
   updateBeacons();          // 세상에 세운 표시등 (요구: 화면에서도 반짝이게)
 
   ST.activeNear = best;
@@ -193,8 +199,15 @@ export function findItemUnderPlayer(){
    알려 주는 곳이다. 누르면 미니맵의 그 자리가 잠시 반짝인다.
    임무는 걸어가서 직접 열어야 한다.
    ══════════════════════════════════════════════════════════════ */
-const FLASH_SEC = 6;
-let flash = null;      // { pts:[{x,z}], color, until }
+/* 가리킨 자리는 '도착할 때까지' 남는다.
+
+   예전에는 여섯 해아 만에 꺼졌다. 안내 글을 읽고 미니맵으로 눈을 옮기면
+   이미 사라져 있어서, "반짝이는 데로 가라는데 반짝이는 데가 없다" 가 되었다.
+   이제는 그 자리에 닿거나, 다른 임무를 고르거나, 지역을 옮길 때까지 남는다.
+   끝내 가지 않을 때를 대비해 넉넉한 한도만 둔다. */
+const FLASH_MAX_SEC = 150;     // 이만큼 지나면 스스로 걷힌다
+const FLASH_ARRIVE  = 4.5;     // 이만큼 가까이 가면 '도착했다'
+let flash = null;      // { id, pts, color, until }
 
 /* 시간은 렌더 시계로 잰다.
    performance.now() 로 재면 헤드리스의 가상 시간과 어긋나 레이더를
@@ -254,7 +267,9 @@ function updateBeacons(){
   if (!beacons.length) return;
   if (!flashActive()){ clearBeacons(); return; }
   const t = nowSec();
-  const life = Math.max(0, (flash.until - t) / FLASH_SEC);      // 1 → 0
+  // 끝나 갈 때만 옅어진다 (그 전에는 늘 또렷하게)
+  const left = flash.until - t;
+  const life = Math.max(0, Math.min(1, left / 6));
   const beat = flashBeat();
 
   beacons.forEach(g => {
@@ -280,7 +295,7 @@ export function flashQuest(q){
   else if (q.pos) pts.push(q.pos);
   if (!pts.length){ flash = null; return false; }
   const color = q.kind === 'gate' ? '#6E9B94' : catColor(q.cat);
-  flash = { id: q.id, pts, color, until: nowSec() + FLASH_SEC };
+  flash = { id: q.id, pts, color, until: nowSec() + FLASH_MAX_SEC };
 
   // 세상에도 표시등을 세운다 — 멀리서도 보이게
   clearBeacons();
@@ -304,6 +319,15 @@ function isFlashed(u){
 /** 0 ↔ 1 로 오가는 숨결. 미니맵과 세상이 같은 박자로 뛴다 */
 function flashBeat(){ return (Math.sin(nowSec() * 6.6) + 1) / 2; }
 export function flashActive(){ return !!(flash && nowSec() < flash.until); }
+
+/** 가리킨 자리에 닿았으면 걷는다 — 매 프레임 살핀다 */
+function checkArrived(){
+  if (!flash || !ST.player) return;
+  const p = ST.player.position;
+  const near = flash.pts.some(q =>
+    Math.hypot(p.x - q.x, p.z - q.z) <= FLASH_ARRIVE);
+  if (near) clearFlash();
+}
 export function clearFlash(){ flash = null; clearBeacons(); }
 
 /* ── 미니맵 레이더 ───────────────────────────────────────────── */
@@ -330,7 +354,7 @@ export function drawRadar(){
   /* 임무 목록에서 고른 자리 — 숨을 쉬듯 커졌다 작아진다 (요구 3) */
   if (flashActive()){
     const t = nowSec();
-    const life = (flash.until - t) / FLASH_SEC;           // 1 → 0
+    const life = Math.max(0, Math.min(1, (flash.until - t) / 6));
     const beat = (Math.sin(t * 6.6) + 1) / 2;             // 0 ↔ 1
     flash.pts.forEach(p => {
       const fx = C + (p.x / lim) * R;

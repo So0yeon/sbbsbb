@@ -23,10 +23,11 @@
    ══════════════════════════════════════════════════════════════════════ */
 import { MINIGAME_STARTERS as NEO_STARTERS, startMinigame as neoStart } from './neo/minigames.js';
 import './neo/minigames-neolithic.js';          // neo-* 다섯 개를 NEO_STARTERS 에 등록한다
+import './neo/minigames-bitsal.js';             // neo-pot (빗살무늬토기 세우기) 한 개를 더 등록한다
 import { MINIGAME_STARTERS, onPress } from './minigames.js';
 
-/** 이 다리를 통해 우리 엔진에 올리는 것 — 신석기 다섯 가지뿐이다 */
-export const NEO_TYPES = ['neo-grind', 'neo-winnow', 'neo-spindle', 'neo-umjip', 'neo-rite'];
+/** 이 다리를 통해 우리 엔진에 올리는 것 — 신석기 여섯 가지뿐이다 */
+export const NEO_TYPES = ['neo-grind', 'neo-winnow', 'neo-spindle', 'neo-umjip', 'neo-rite', 'neo-pot'];
 
 /** 저쪽 게임 하나를 우리 계약으로 감싼다 */
 function adapt(type){
