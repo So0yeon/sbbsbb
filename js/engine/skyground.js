@@ -20,6 +20,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ST } from './state.js';
+import { flushBricks } from './bricks.js';
 
 /* ══════════════════════════════════════════════════════════════
    색 다루기
@@ -253,6 +254,8 @@ function occupied(){
     if (n.pos && (!n.area || n.area === ST.currentArea)) pts.push([n.pos.x, n.pos.z]);
   });
   if (ST.spawnPos) pts.push([ST.spawnPos.x, ST.spawnPos.z]);
+  // 시대 소품이 차지한 자리 (움집·가마·밭 …) — 그 위에 풀을 뿌리지 않는다
+  (ST.propSpots || []).forEach(p => pts.push([p[0], p[1]]));
   return pts;
 }
 function farFrom(x, z, list, d){
@@ -595,6 +598,9 @@ export function dressArea(scene, opts){
   buildGroundPro(scene, { color: gcol, seed });
   installSky(scene, bg, seed);
   groundPatches(scene, { color: gcol, tones: gp.tones, seed });
+
+  // 시대 소품이 담아 둔 브릭을 한 번에 내보낸다 (모양·색별 InstancedMesh)
+  flushBricks(scene);
 
   const skyMid = midOf(bg);
   farRidges(scene, skyMid, seed);

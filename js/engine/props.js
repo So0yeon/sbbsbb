@@ -10,6 +10,8 @@
    ══════════════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { ST } from './state.js';
+import { preloadBricks } from './bricks.js';
+import { NEO_PROPS } from './props-neolithic.js';
 import {
   mat, box, cyl, cone, sph, place, add,
   buildGround, buildWater, buildMountains, buildMountainsWide,
@@ -360,6 +362,19 @@ export function buildMammothGround(x, z){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   시대 전용 표 — 이름의 낱말로 고르기 전에 여기부터 본다.
+   낱말 규칙은 buildVillageNeo 를 '판잣집 다섯 채'로 보냈다. 신석기 마을은 움집이다.
+   ══════════════════════════════════════════════════════════════ */
+// 되돌이 import 라서 표를 미리 만들어 두면 아직 안 실린 것을 건드린다.
+// 부를 때 찾도록 미룬다.
+function eraTable(id){
+  if (id === 'neolithic') return NEO_PROPS;
+  return null;
+}
+
+preloadBricks();          // 브릭은 미리 받아 둔다 (없어도 앱은 돈다)
+
+/* ══════════════════════════════════════════════════════════════
    물 — 한 지역에 큰 물은 한 번만
    ══════════════════════════════════════════════════════════════ */
 let bigWaterArea = null;      // 큰 물을 이미 놓은 지역
@@ -490,7 +505,20 @@ function sandbag(x, z, i){
     지역 키가 달라지면 저절로 풀린다 — claimBigWater 가 지역 키로 판단한다) */
 export function resetWaterClaim(){ bigWaterArea = null; }
 
+let lastAreaKey = null;
+
 export function eraProp(name, x, z){
+  // 지역이 바뀌면 '이미 놓은 자리' 기록을 비운다
+  const key = ST.WORLD_ID + ':' + ST.currentArea;
+  if (key !== lastAreaKey){ lastAreaKey = key; ST.propSpots = []; resetWaterClaim(); }
+
+  // 그 시대만의 것이 있으면 그것부터
+  const table = eraTable(ST.WORLD_ID);
+  if (table && table[name]){
+    try { return table[name](x, z); }
+    catch(e){ console.warn('[eraProp:' + ST.WORLD_ID + ']', name, e); }
+  }
+
   const n = String(name || '').replace(/^build/, '');
   for (const [re, fn] of RULES){
     if (re.test(n)){
