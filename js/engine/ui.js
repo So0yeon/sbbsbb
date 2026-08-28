@@ -104,6 +104,20 @@ document.addEventListener('keydown', e => {
   if (!anyOpen()) return;
   if (isTyping(e.target)) return;
 
+  /* 초점이 늘 제대로 가 있지는 않는다 — 숫자키로 선택지를, 엔터로
+     '이제 어찌하겠소?' 같은 안내 단추를 바로 누를 수 있게 해 준다 */
+  if (/^[1-9]$/.test(e.key)){
+    const choices = [...document.querySelectorAll('.q-choice')].filter(b => !b.disabled && b.offsetParent);
+    const i = +e.key - 1;
+    if (choices[i]){ e.preventDefault(); e.stopPropagation(); choices[i].click(); return; }
+  }
+  if (e.key === 'Enter'){
+    const reveal = document.getElementById('qReveal');
+    if (reveal && reveal.offsetParent && !reveal.disabled){
+      e.preventDefault(); e.stopPropagation(); reveal.click(); return;
+    }
+  }
+
   const k = e.key;
   const close = (k === 'Escape') || (k === 'Enter') || (k === 'e' || k === 'E' || e.code === 'KeyE');
   if (!close) return;
