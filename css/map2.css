@@ -1,5 +1,5 @@
 /* © 2026 김용현 */
-/* 지도 모드 v2 — 영토 애니메이션 전용.
+/* 지도 모드 v2 — 영토 모핑 전용.
    기존 css/styles.css 는 건드리지 않습니다. 색 토큰만 같은 값으로 맞춰 두었습니다. */
 
 :root{
@@ -11,10 +11,6 @@
   --sea:#E8E9E4;
   --land:#FCFCFA;    --land-far:#F1F1EC;
   --coast:#D4D4CC;
-
-  --terr-dim:#DAD6CA;        /* 꺼진 영토 */
-  --terr-dim-line:#C6C1B2;
-  --tide-edge:#3A3126;   /* 수면 줄 — 나라 색(파랑·초록·금색)과 겹치지 않는 먹색 */
 
   --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,
          'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
@@ -44,7 +40,6 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px;
   background:var(--accent-soft); color:#3F6B63;
 }
-.cent.borrowed{ background:#F1EBDD; color:#8A7B4E; }
 .cent[hidden]{ display:none; }
 
 .legend{ display:flex; gap:6px; flex-wrap:wrap; margin-left:auto; }
@@ -53,9 +48,7 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   font-size:12px; padding:3px 10px 3px 7px; border-radius:999px;
   background:var(--bg); border:1px solid var(--border);
 }
-.lg::before{
-  content:''; width:9px; height:9px; border-radius:3px; background:var(--nat);
-}
+.lg::before{ content:''; width:9px; height:9px; border-radius:3px; background:var(--nat); }
 .lg-none{ font-size:12px; color:var(--text3); }
 
 .ghost{
@@ -68,7 +61,12 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 
 /* ── 지도 ───────────────────────────────────────────────── */
 .stage{ position:relative; min-height:0; padding:10px 14px; }
-#mapSvg{ width:100%; height:100%; display:block; }
+#mapSvg{
+  width:100%; height:100%; display:block;
+  touch-action:none;                 /* 두 손가락 확대를 브라우저에 뺏기지 않게 */
+  cursor:grab;
+}
+#mapSvg.dragging{ cursor:grabbing; }
 
 .sea{ fill:var(--sea); }
 .land{ fill:var(--land); stroke:var(--coast); stroke-width:.7; }
@@ -76,14 +74,32 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 
 /* 색은 반드시 이렇게 CSS 규칙으로 줍니다.
    fill="var(--nat)" 처럼 속성에 직접 쓰면 브라우저가 무시합니다. */
-.nat-dim{ fill:var(--terr-dim); stroke:none; }
-.nat-lit{ fill:var(--nat); fill-opacity:.82; stroke:none; }
-.nat-edge{ fill:none; stroke:var(--nat); stroke-width:1.1; stroke-opacity:.85;
-           stroke-linejoin:round; }
-.nat{ transition:opacity 420ms var(--ease); }
-/* 차오르는 동안 수면 줄. 그 나라 안쪽에서만 보이게 잘라 둡니다. */
-.nat-tide{ fill:none; stroke:var(--tide-edge); stroke-width:2.2; stroke-linecap:round; stroke-opacity:.42; }
-.nat.going{ opacity:.55; }
+.nat-fill{
+  fill:var(--nat); fill-opacity:.78;
+  stroke:var(--nat); stroke-width:1; stroke-linejoin:round; stroke-opacity:.9;
+}
+.nat{ transition:opacity 300ms var(--ease); }
+
+/* 라벨 — 글자 크기는 js 가 배율에 맞춰 되돌려 놓습니다 */
+#gLabels{ font-family:var(--font); font-weight:700; pointer-events:none; }
+.nat-label{
+  text-anchor:middle; dominant-baseline:middle;
+  fill:#2F2E2A;
+  paint-order:stroke; stroke:var(--bg); stroke-width:.3em; stroke-linejoin:round;
+}
+
+/* 확대·축소 단추 */
+.zoomers{
+  position:absolute; right:24px; bottom:20px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.icon-btn{
+  width:36px; height:36px; border-radius:var(--r-sm);
+  border:1px solid var(--border-strong); background:var(--card); color:var(--text2);
+  font-size:15px; line-height:1; display:grid; place-items:center;
+  box-shadow:0 1px 2px rgba(25,25,25,.05);
+}
+.icon-btn:hover{ background:var(--bg); color:var(--text); }
 
 /* ── 아래 ───────────────────────────────────────────────── */
 .bottom{ background:var(--card); border-top:1px solid var(--border); padding:8px 12px 10px; }
@@ -113,4 +129,5 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   .era-name{ font-size:16px; }
   .era-span{ display:none; }
   .legend{ margin-left:0; width:100%; }
+  .zoomers{ right:16px; bottom:14px; }
 }

@@ -61,8 +61,10 @@ const FRAMES = [
   { key: 'c6', century: 6, label: '6세기', eras: ['three'], dir: '6세기(신라 전성기)', use: [
     ['goguryeo', '6goguryeo.geojson'], ['baekje', '6baekje.geojson'], ['silla', '6silla.geojson'] ] },
 
+  /* 신라는 삼국 → 통일신라 → 후삼국까지 이어지는 한 나라로 둡니다 (영토가 이어서 모핑됩니다).
+     7세기 장면에서만 이름표를 「통일신라」로 답니다 — use 의 셋째 칸이 그 이름표입니다. */
   { key: 'c7', century: 7, label: '7세기', eras: ['unified'], dir: '7세기', use: [
-    ['balhae', '7balhae.geojson'], ['silla', '7silla.geojson'] ] },
+    ['balhae', '7balhae.geojson'], ['silla', '7tongilsilla.geojson', '통일신라'] ] },
 
   { key: 'c10', century: 10, label: '10세기', eras: ['later'], dir: '10세기', use: [
     ['korea', '10korea.geojson'], ['hubaekje', '10hubaekje.geojson'],
@@ -74,7 +76,8 @@ const FRAMES = [
   { key: 'c12', century: 12, label: '12세기', eras: ['goryeo'], dir: '', use: [
     ['korea', '12korea.geojson'] ] },
 
-  { key: 'c14', century: 14, label: '조선', dir: '', use: [ ['choseon', '14choseon.geojson'] ],
+  /* 조선 전기부터 6·25 까지는 영토가 같아 전환(모핑)을 두지 않습니다 — still */
+  { key: 'c14', century: 14, label: '조선', dir: '', still: true, use: [ ['choseon', '14choseon.geojson'] ],
     eras: ['joseon_e', 'joseon_l', 'open', 'colonial', 'liberation', 'war'] },
 ];
 
@@ -168,7 +171,7 @@ window.TERRITORY = {
   meta: { lng0:${MAP.lng0}, lng1:${MAP.lng1}, lat0:${MAP.lat0}, lat1:${MAP.lat1}, w:${W}, h:${H} },
   nations: ${JSON.stringify(nations, null, 2).replace(/\n/g, '\n  ')},
   frames: [
-${frames.map(f => `    { key:'${f.key}', century:${f.century}, label:'${f.label}', eras:${JSON.stringify(f.eras)}${f.src ? `, src:'${f.src}'` : ''},
+${frames.map(f => `    { key:'${f.key}', century:${f.century}, label:'${f.label}', eras:${JSON.stringify(f.eras)}${f.still ? ', still:true' : ''},
       nations:[
 ${f.nations.map(n => `        { id:'${n.id}', d:'${n.d}' }`).join(',\n')}
       ] }`).join(',\n')}

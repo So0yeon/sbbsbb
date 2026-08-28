@@ -18,12 +18,17 @@
   </div>
   <span class="cent" id="centLabel" hidden></span>
   <button class="ghost" id="replay" type="button">다시 재생</button>
-  <button class="ghost" id="motion" type="button">움직임 끄기</button>
+  <button class="ghost" id="motion" type="button">모핑 끄기</button>
   <div class="legend" id="legend"></div>
 </header>
 
 <main class="stage">
   <svg id="mapSvg" role="img" aria-label="시대별 영토 지도"></svg>
+  <div class="zoomers">
+    <button class="icon-btn" id="zoomIn" type="button" aria-label="확대" title="확대">＋</button>
+    <button class="icon-btn" id="zoomOut" type="button" aria-label="축소" title="축소">－</button>
+    <button class="icon-btn" id="zoomFit" type="button" aria-label="시대 전체 보기" title="시대 전체 보기">⤢</button>
+  </div>
 </main>
 
 <nav class="bottom">
@@ -37,7 +42,7 @@
 
 <!-- v2 -->
 <script src="js/map2/territory-data.js"></script>
-<script src="js/map2/tide.js"></script>
+<script src="js/map2/morph.js"></script>
 <script src="js/map2/map2-app.js"></script>
 
 </body>

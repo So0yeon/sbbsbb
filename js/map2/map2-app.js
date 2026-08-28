@@ -1,7 +1,7 @@
 // © 2026 김용현
-/* 지도 모드 v2 — 시대별 영토 애니메이션
+/* 지도 모드 v2 — 시대별 영토를 국가별로 모핑합니다.
    기존 지도(js/map-app.js)는 건드리지 않습니다. 이 파일은 map2.html 에서만 씁니다.
-   의존: js/atlas-geo.js (해안선) · js/map-data.js (13시대) · js/map2/territory-data.js · js/map2/tide.js */
+   의존: js/atlas-geo.js (해안선) · js/map-data.js (13시대) · js/map2/territory-data.js · js/map2/morph.js */
 (function () {
   'use strict';
 
@@ -10,13 +10,24 @@
   var ERAS = window.ERAS || [];
   var $ = function (id) { return document.getElementById(id); };
 
-  var svg, defs, gTerr;
-  var live = {};          // 화면에 올라와 있는 나라 — id → { g, dim, lit, edge, keep, wave }
-  var anims = [];         // 돌고 있는 애니메이션
-  var timer = null;       // 다음 프레임 예약
+  var svg, defs, gTerr, gLabels, rectCache = null;
+  var live = {};          // 화면에 올라와 있는 나라 — id → { g, fill }
+  var anims = [];         // 돌고 있는 모핑
+  var timer = null;       // 다음 세기 예약
   var frameIdx = -1;
   var eraId = null;
   var queue = [];         // 이 시대에서 남은 프레임
+
+  /* ── 움직임 ──────────────────────────────────────────────── */
+  /* 윈도우에서 「애니메이션 효과」를 끄면 브라우저가 prefers-reduced-motion 으로 알려 줍니다.
+     그때는 모핑 없이 바로 바꿉니다. 머리말 단추로 되돌릴 수 있습니다. */
+  var systemReduced = !!(window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var motion = {
+    force: null,
+    on: function () { return motion.force === null ? !systemReduced : motion.force; },
+    dur: function () { return motion.on() ? 1600 : 0; }
+  };
 
   /* ── 좌표 ────────────────────────────────────────────────── */
   var M = T.meta;
@@ -45,8 +56,7 @@
   }
   function manyPath(rings) { return normRings(rings).map(ringPath).join(' '); }
 
-  /* 경로 문자열에서 바로 테두리 상자를 잽니다 (그리기 전에도 알 수 있어야 하므로 DOM 을 쓰지 않습니다).
-     굽어 나온 경로는 "M x y L x y … Z" 뿐이라 숫자만 짝지으면 됩니다. */
+  /* 경로 문자열에서 바로 테두리 상자를 잽니다 (그리기 전에도 알아야 하므로 DOM 을 쓰지 않습니다) */
   function boxOfD(d, into) {
     var b = into || { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 };
     var n = d.match(/-?\d+(?:\.\d+)?/g);
@@ -62,9 +72,7 @@
   /* ── 밑그림 (한 번만) ────────────────────────────────────── */
   function drawBase() {
     svg = $('mapSvg');
-    svg.setAttribute('viewBox', '0 0 ' + M.w + ' ' + M.h);
     svg.innerHTML = '';
-
     defs = el('defs');
     svg.appendChild(defs);
 
@@ -74,55 +82,64 @@
 
     gTerr = el('g', { id: 'gTerr' });
     svg.appendChild(gTerr);
+    gLabels = el('g', { id: 'gLabels' });      /* 라벨은 언제나 영토 위에 */
+    svg.appendChild(gLabels);
   }
 
-  /* ── 나라 한 겹 만들기 ───────────────────────────────────── */
+  /* 라벨 자리 — 가장 큰 조각의 중심입니다 (섬이 아니라 본토에 붙습니다) */
+  function labelPos(d) {
+    var rings = window.Morph.parseRings(d), best = null, bestA = -1;
+    rings.forEach(function (r) {
+      var a = 0, cx = 0, cy = 0, i;
+      for (i = 0; i < r.length; i++) {
+        var q = r[(i + 1) % r.length];
+        a += r[i][0] * q[1] - q[0] * r[i][1];
+        cx += r[i][0]; cy += r[i][1];
+      }
+      a = Math.abs(a / 2);
+      if (a > bestA) { bestA = a; best = [cx / r.length, cy / r.length]; }
+    });
+    return best;
+  }
+
+  /* 확대해도 글자 크기는 그대로 두기 위해, 보이는 배율에 맞춰 글자 크기를 되돌립니다 */
+  function svgRect() {
+    if (!rectCache || !rectCache.width) rectCache = svg.getBoundingClientRect();
+    return rectCache;
+  }
+  function paintLabelScale() {
+    if (!gLabels || !view) return;
+    var r = svgRect();
+    if (!r.width) return;
+    var s = Math.min(r.width / view[2], r.height / view[3]);
+    gLabels.style.fontSize = (14 / s).toFixed(2) + 'px';
+  }
+
+  /* ── 나라 ────────────────────────────────────────────────── */
   function ensureNation(id) {
     if (live[id]) return live[id];
     var info = T.nations[id] || { name: id, color: '#888' };
-
-    var keep = el('path', { d: '' });     // 이전 영토 — 계속 켜져 있는 부분
-    var wave = el('path', { d: '' });     // 물결 영역 — 새로 차오르는 부분
-    var clip = el('clipPath', { id: 'clip-' + id, clipPathUnits: 'userSpaceOnUse' });
-    clip.appendChild(keep);
-    clip.appendChild(wave);
-    defs.appendChild(clip);
-
-    /* 수면 줄을 그 나라 안쪽에서만 보이게 자를 클립 */
-    var shape = el('path', { d: '' });
-    var shapeClip = el('clipPath', { id: 'shape-' + id, clipPathUnits: 'userSpaceOnUse' });
-    shapeClip.appendChild(shape);
-    defs.appendChild(shapeClip);
-
     var g = el('g', { 'class': 'nat', 'data-id': id });
     /* 색은 CSS 규칙으로만 씁니다. fill 속성에 var() 를 쓰면 브라우저가 무시합니다. */
     g.style.setProperty('--nat', info.color);
-    var dim = el('path', { 'class': 'nat-dim', d: '' });
-    var lit = el('path', { 'class': 'nat-lit', d: '', 'clip-path': 'url(#clip-' + id + ')' });
-    var edge = el('path', { 'class': 'nat-edge', d: '' });
-    var line = el('path', { 'class': 'nat-tide', d: '', 'clip-path': 'url(#shape-' + id + ')' });
-    g.appendChild(dim); g.appendChild(lit); g.appendChild(edge); g.appendChild(line);
+    var fill = el('path', { 'class': 'nat-fill', d: '' });
+    g.appendChild(fill);
     gTerr.appendChild(g);
 
-    return (live[id] = {
-      g: g, dim: dim, lit: lit, edge: edge, line: line,
-      keep: keep, wave: wave, clip: clip, shape: shape, shapeClip: shapeClip
-    });
+    var label = el('text', { 'class': 'nat-label', x: 0, y: 0 });
+    label.textContent = info.name;
+    label.style.setProperty('--nat', info.color);
+    gLabels.appendChild(label);
+
+    return (live[id] = { g: g, fill: fill, label: label, d: '' });
   }
 
   function dropNation(id) {
     var o = live[id];
     if (!o) return;
     if (o.g.parentNode) o.g.parentNode.removeChild(o.g);
-    if (o.clip.parentNode) o.clip.parentNode.removeChild(o.clip);
-    if (o.shapeClip.parentNode) o.shapeClip.parentNode.removeChild(o.shapeClip);
+    if (o.label && o.label.parentNode) o.label.parentNode.removeChild(o.label);
     delete live[id];
-  }
-
-  /* 물결 한 장면을 그 나라에 칠합니다 */
-  function paintWave(o, w) {
-    o.wave.setAttribute('d', w.area);
-    o.line.setAttribute('d', w.line);
   }
 
   function stopAnims() {
@@ -131,8 +148,21 @@
     if (timer) { clearTimeout(timer); timer = null; }
   }
 
-  /* ── 보이는 범위 ─────────────────────────────────────────── */
+  /* ── 보이는 범위 · 줌 · 이동 ─────────────────────────────── */
   var view = null, viewAnim = 0;
+  var MIN_W = 60, MAX_W = M.w * 2.4;
+
+  function setView(v) {
+    view = v;
+    svg.setAttribute('viewBox', v.map(function (n) { return n.toFixed(1); }).join(' '));
+    paintLabelScale();
+  }
+  function moveLabel(o, p) {
+    if (!p) { o.label.setAttribute('opacity', 0); return; }
+    o.label.setAttribute('opacity', 1);
+    o.label.setAttribute('x', p[0].toFixed(1));
+    o.label.setAttribute('y', p[1].toFixed(1));
+  }
 
   function boxOfEra(id) {
     var b = null;
@@ -145,18 +175,17 @@
     return b;
   }
 
-  function setView(v) {
-    view = v;
-    svg.setAttribute('viewBox', v.map(function (n) { return n.toFixed(1); }).join(' '));
+  function fitBox(b) {
+    var w = b.x1 - b.x0, h = b.y1 - b.y0;
+    var padX = w * 0.10 + 24, padY = h * 0.10 + 24;
+    return [b.x0 - padX, b.y0 - padY, w + padX * 2, h + padY * 2];
   }
 
   function fitTo(b, animate) {
-    var w = b.x1 - b.x0, h = b.y1 - b.y0;
-    var padX = w * 0.10 + 24, padY = h * 0.10 + 24;
-    var to = [b.x0 - padX, b.y0 - padY, w + padX * 2, h + padY * 2];
-    if (!view || !animate || window.Tide.calm()) { setView(to); return; }
+    var to = fitBox(b);
+    if (viewAnim) { cancelAnimationFrame(viewAnim); viewAnim = 0; }
+    if (!view || !animate || !motion.on()) { setView(to); return; }
     var from = view.slice(), t0 = 0;
-    if (viewAnim) cancelAnimationFrame(viewAnim);
     (function f(ts) {
       if (!t0) t0 = ts;
       var p = Math.min((ts - t0) / 600, 1), e = 1 - Math.pow(1 - p, 3);
@@ -165,58 +194,138 @@
     })(0);
   }
 
+  /* 화면 좌표 → 지도 좌표. preserveAspectRatio 가 xMidYMid meet 이라 여백을 빼야 합니다. */
+  function toUser(clientX, clientY) {
+    var r = svg.getBoundingClientRect();
+    var s = Math.min(r.width / view[2], r.height / view[3]);
+    var ox = (r.width - view[2] * s) / 2, oy = (r.height - view[3] * s) / 2;
+    return [view[0] + (clientX - r.left - ox) / s, view[1] + (clientY - r.top - oy) / s];
+  }
+
+  function zoomBy(f, ux, uy) {
+    if (viewAnim) { cancelAnimationFrame(viewAnim); viewAnim = 0; }
+    var nw = Math.max(MIN_W, Math.min(MAX_W, view[2] * f));
+    var k = nw / view[2];
+    if (ux == null) { ux = view[0] + view[2] / 2; uy = view[1] + view[3] / 2; }
+    setView([ux - (ux - view[0]) * k, uy - (uy - view[1]) * k, nw, view[3] * k]);
+  }
+
+  function bindZoom() {
+    var pts = {}, start = null, pinch = null;
+
+    svg.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var u = toUser(e.clientX, e.clientY);
+      zoomBy(e.deltaY > 0 ? 1.15 : 1 / 1.15, u[0], u[1]);
+    }, { passive: false });
+
+    svg.addEventListener('pointerdown', function (e) {
+      svg.setPointerCapture(e.pointerId);
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pts);
+      if (ids.length === 1) {
+        start = { x: e.clientX, y: e.clientY, view: view.slice() };
+        svg.classList.add('dragging');
+      } else if (ids.length === 2) {
+        var a = pts[ids[0]], b = pts[ids[1]];
+        pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), view: view.slice() };
+        start = null;
+      }
+    });
+
+    svg.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pts);
+
+      if (ids.length >= 2 && pinch) {          /* 두 손가락 — 벌리고 오므리기 */
+        var a = pts[ids[0]], b = pts[ids[1]];
+        var d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d > 4 && pinch.dist > 4) {
+          var mid = toUser((a.x + b.x) / 2, (a.y + b.y) / 2);
+          zoomBy(pinch.dist / d, mid[0], mid[1]);
+          pinch.dist = d;
+        }
+        return;
+      }
+      if (!start) return;                       /* 한 손가락 · 끌기 — 이동 */
+      var r = svg.getBoundingClientRect();
+      var s = Math.min(r.width / start.view[2], r.height / start.view[3]);
+      setView([start.view[0] - (e.clientX - start.x) / s,
+               start.view[1] - (e.clientY - start.y) / s,
+               start.view[2], start.view[3]]);
+    });
+
+    function up(e) {
+      delete pts[e.pointerId];
+      if (Object.keys(pts).length < 2) pinch = null;
+      if (!Object.keys(pts).length) { start = null; svg.classList.remove('dragging'); }
+    }
+    svg.addEventListener('pointerup', up);
+    svg.addEventListener('pointercancel', up);
+
+    $('zoomIn').addEventListener('click', function () { zoomBy(1 / 1.3); });
+    $('zoomOut').addEventListener('click', function () { zoomBy(1.3); });
+    $('zoomFit').addEventListener('click', function () { fitTo(boxOfEra(eraId), true); });
+  }
+
   /* ── 프레임 보이기 ───────────────────────────────────────── */
-  /* fresh = true 이면 이전 영토를 물려받지 않고 바닥부터 다시 채웁니다 (시대를 바꿀 때). */
+  /* fresh = true 이면 이전 모양을 물려받지 않고 새로 그립니다 (다시 재생). */
   function showFrame(i, animate, fresh) {
     var f = T.frames[i];
     if (!f) return;
     var prev = frameIdx >= 0 ? T.frames[frameIdx] : null;
     frameIdx = i;
 
+    /* 조선 전기부터 그 이후는 영토가 같아 전환을 두지 않습니다 (데이터의 still) */
+    var dur = (f.still || !animate || !motion.on()) ? 0 : motion.dur();
+
     var prevD = {};
-    if (prev) prev.nations.forEach(function (n) { prevD[n.id] = n.d; });
+    if (prev && !fresh) prev.nations.forEach(function (n) { prevD[n.id] = n.d; });
     var here = {};
     f.nations.forEach(function (n) { here[n.id] = n.d; });
 
-    /* 이름이 사라진 나라 — 물이 빠지며 사라집니다 */
+    /* 이름이 사라진 나라 — 오므라들며 사라집니다 */
     Object.keys(live).forEach(function (id) {
       if (here[id]) return;
       var o = live[id];
-      o.keep.setAttribute('d', '');
       o.g.classList.add('going');
-      if (!animate) { dropNation(id); return; }
-      var box = o.dim.getBBox();
-      anims.push(window.Tide.run({
-        box: box, dir: 'out',
-        onFrame: function (w) { paintWave(o, w); },
+      if (!dur) { dropNation(id); return; }
+      anims.push(window.Morph.run({
+        from: o.d, to: '', duration: dur,
+        onFrame: function (d, u) {
+          o.fill.setAttribute('d', d);
+          o.label.setAttribute('opacity', (1 - u).toFixed(2));
+        },
         onDone: function () { dropNation(id); }
       }));
     });
 
-    /* 이번 시대의 나라 */
+    /* 이번 장면의 나라 — 같은 이름이면 이전 모양에서 흘러갑니다 */
     f.nations.forEach(function (n) {
       var o = ensureNation(n.id);
       o.g.classList.remove('going');
-      o.dim.setAttribute('d', n.d);
-      o.lit.setAttribute('d', n.d);
-      o.edge.setAttribute('d', n.d);
-      o.shape.setAttribute('d', n.d);
-      /* 같은 이름이 이어지면 이전 영토는 켜진 채로 두고, 넓어진 곳만 차오르게 합니다.
-         clipPath 는 자식 도형의 합집합이라 이것만으로 됩니다. 영토가 줄어든 경우에는
-         켜진 겹 자체가 새 영토라 이전 영역이 되살아나지 않습니다. */
-      o.keep.setAttribute('d', fresh ? '' : (prevD[n.id] || ''));
-
-      var box = o.dim.getBBox();
-      if (!animate) {
-        paintWave(o, window.Tide.fill(box));
-        o.line.setAttribute('d', '');
+      /* 같은 나라라도 장면마다 이름표가 다를 수 있습니다 (7세기 신라 → 통일신라) */
+      o.label.textContent = n.as || (T.nations[n.id] || {}).name || n.id;
+      var from = prevD[n.id] || o.d || '';
+      var pTo = labelPos(n.d);
+      if (!dur) {
+        o.fill.setAttribute('d', n.d);
+        moveLabel(o, pTo);
+        o.d = n.d;
         return;
       }
-      anims.push(window.Tide.run({
-        box: box, dir: 'in',
-        onFrame: function (w) { paintWave(o, w); },
-        onDone: function () { o.line.setAttribute('d', ''); }   /* 다 차면 수면 줄을 지웁니다 */
+      var pFrom = from ? labelPos(from) : pTo;
+      anims.push(window.Morph.run({
+        from: from, to: n.d, duration: dur,
+        onFrame: function (d, u) {
+          o.fill.setAttribute('d', d);
+          var t = window.Morph.ease(u);
+          moveLabel(o, [pFrom[0] + (pTo[0] - pFrom[0]) * t, pFrom[1] + (pTo[1] - pFrom[1]) * t]);
+          if (!from) o.label.setAttribute('opacity', u.toFixed(2));
+        }
       }));
+      o.d = n.d;
     });
 
     paintChrome(f);
@@ -229,7 +338,7 @@
     return out;
   }
 
-  function playEra(id, fromIdx) {
+  function playEra(id, fresh) {
     stopAnims();
     var had = !!view;
     eraId = id;
@@ -238,10 +347,15 @@
 
     if (!queue.length) {              // 구석기·신석기 — 나라가 없던 때
       Object.keys(live).forEach(function (nid) {
-        var o = live[nid], box = o.dim.getBBox();
-        anims.push(window.Tide.run({
-          box: box, dir: 'out',
-          onFrame: function (d) { o.wave.setAttribute('d', d); },
+        var o = live[nid];
+        o.g.classList.add('going');
+        if (!motion.on()) { dropNation(nid); return; }
+        anims.push(window.Morph.run({
+          from: o.d, to: '', duration: motion.dur(),
+          onFrame: function (d, u) {
+            o.fill.setAttribute('d', d);
+            o.label.setAttribute('opacity', (1 - u).toFixed(2));
+          },
           onDone: function () { dropNation(nid); }
         }));
       });
@@ -249,23 +363,17 @@
       paintChrome(null);
       return;
     }
-
-    var start = 0;
-    if (fromIdx != null) {
-      var at = queue.indexOf(fromIdx);
-      if (at >= 0) start = at;
-    }
-    queue = queue.slice(start);
-    step(true);
+    step(fresh);
   }
 
-  /* 시대의 첫 장면은 바닥부터 차오르고, 그 다음 세기는 넓어진 곳만 이어서 찹니다. */
+  /* 시대 안에 세기가 여럿이면 (삼국 4→5→6, 고려 11→12) 이어서 흘러갑니다. */
   function step(fresh) {
     var i = queue.shift();
     if (i == null) return;
     showFrame(i, true, fresh);
     if (queue.length) {
-      timer = setTimeout(function () { step(false); }, window.Tide.dur() + 900);
+      var wait = (T.frames[i].still ? 0 : motion.dur()) + 900;
+      timer = setTimeout(function () { step(false); }, wait);
     }
   }
 
@@ -282,14 +390,8 @@
     $('eraSpan').textContent = e ? e.span : '';
 
     var cent = $('centLabel');
-    if (f) {
-      cent.textContent = f.label;
-      cent.hidden = false;
-      cent.classList.toggle('borrowed', !!f.src);
-      cent.title = f.src ? f.src + ' 자료를 그대로 씁니다' : '';
-    } else {
-      cent.hidden = true;
-    }
+    if (f) { cent.textContent = f.label; cent.hidden = false; }
+    else { cent.hidden = true; }
 
     var legend = $('legend');
     legend.innerHTML = '';
@@ -299,7 +401,7 @@
         var b = document.createElement('span');
         b.className = 'lg';
         b.style.setProperty('--nat', info.color);
-        b.textContent = info.name;
+        b.textContent = n.as || info.name;
         legend.appendChild(b);
       });
     } else {
@@ -349,66 +451,82 @@
 
   /* ── 자기 검사 ───────────────────────────────────────────── */
   function selftest() {
-    var out = { frames: T.frames.length, nations: Object.keys(T.nations).length, rows: [], bad: [] };
+    var bad = [], rows = [];
     T.frames.forEach(function (f, i) {
       showFrame(i, false);
       var got = f.nations.map(function (n) {
-        if (!n.d || n.d.length < 20) out.bad.push(f.key + '/' + n.id + ' — 경로가 비었습니다');
-        if (!T.nations[n.id]) out.bad.push(f.key + '/' + n.id + ' — 나라 정의가 없습니다');
-        var box = live[n.id] ? live[n.id].dim.getBBox() : null;
-        if (!box || !box.width || !box.height) out.bad.push(f.key + '/' + n.id + ' — 그려지지 않았습니다');
+        if (!n.d || n.d.length < 20) bad.push(f.key + '/' + n.id + ' — 경로가 비었습니다');
+        if (!T.nations[n.id]) bad.push(f.key + '/' + n.id + ' — 나라 정의가 없습니다');
+        var box = live[n.id] ? live[n.id].fill.getBBox() : null;
+        if (!box || !box.width || !box.height) bad.push(f.key + '/' + n.id + ' — 그려지지 않았습니다');
         return n.id + '(' + (n.d.match(/M/g) || []).length + '조각)';
       });
-      out.rows.push(f.key + ' ' + f.label + ' [' + f.eras.join(',') + '] ' + got.join(' '));
+      rows.push(f.key + ' ' + f.label + (f.still ? ' [전환없음]' : '') +
+                ' [' + f.eras.join(',') + '] ' + got.join(' '));
     });
+
+    /* 모핑 계획이 실제로 짝을 찾는지 — 이어지는 나라마다 확인합니다 */
+    var morphRows = [];
+    for (var i = 1; i < T.frames.length; i++) {
+      var a = {}, f0 = T.frames[i - 1], f1 = T.frames[i];
+      f0.nations.forEach(function (n) { a[n.id] = n.d; });
+      f1.nations.forEach(function (n) {
+        if (!a[n.id]) return;
+        var p = window.Morph.plan(a[n.id], n.d);
+        if (!p.pairs.length) bad.push(f0.key + '→' + f1.key + '/' + n.id + ' — 짝지어진 조각이 없습니다');
+        morphRows.push(f0.key + '→' + f1.key + ' ' + n.id +
+                       ' 짝 ' + p.pairs.length + ' · 사라짐 ' + p.gone.length + ' · 생김 ' + p.born.length);
+      });
+    }
     ERAS.forEach(function (e) {
       if (!framesOfEra(e.id).length && e.id !== 'paleo' && e.id !== 'neo') {
-        out.bad.push('시대 ' + e.id + ' 에 영토 프레임이 없습니다');
+        bad.push('시대 ' + e.id + ' 에 영토 프레임이 없습니다');
       }
     });
-    out.rows.forEach(function (r) { console.log('  ' + r); });
-    console.log('[SELFTEST] ' + JSON.stringify({ frames: out.frames, nations: out.nations, bad: out.bad }));
-    return out;
+
+    rows.forEach(function (r) { console.log('  ' + r); });
+    morphRows.forEach(function (r) { console.log('  · ' + r); });
+    console.log('[SELFTEST] ' + JSON.stringify({
+      frames: T.frames.length, nations: Object.keys(T.nations).length, bad: bad
+    }));
   }
 
   /* ── 시작 ────────────────────────────────────────────────── */
   function start() {
-    if (!T || !window.ERAS || !window.KOREA) {
+    if (!T || !window.ERAS || !window.KOREA || !window.Morph) {
       console.error('[map2] 자료가 없습니다 — script 순서를 확인하세요');
       return;
     }
     drawBase();
+    window.addEventListener('resize', function () { rectCache = null; paintLabelScale(); });
+    setView([0, 0, M.w, M.h]);
     buildTrack();
+    bindZoom();
 
-    $('replay').addEventListener('click', function () { playEra(eraId); });
+    $('replay').addEventListener('click', function () { playEra(eraId, true); });
 
     var q = new URLSearchParams(location.search);
-
-    /* 윈도우에서 「애니메이션 효과」를 꺼 두면 브라우저가 prefers-reduced-motion 을 알려 주고,
-       그러면 차오름 없이 즉시 채워집니다. 그럴 때도 직접 켤 수 있게 단추를 둡니다. */
     var m = q.get('motion');
-    if (m === 'on') window.Tide.force = true;
-    else if (m === 'off') window.Tide.force = false;
-    console.log('[map2] 움직임 ' + window.Tide.mode() +
-                ' · 시스템 prefers-reduced-motion=' + window.Tide.systemReduced);
+    if (m === 'on') motion.force = true;
+    else if (m === 'off') motion.force = false;
+    console.log('[map2] 모핑 ' + (motion.on() ? '켜짐' : '꺼짐') +
+                ' · 시스템 prefers-reduced-motion=' + systemReduced);
 
     var mb = $('motion');
     function paintMotion() {
-      var full = window.Tide.mode() === 'full';
-      mb.textContent = full ? '물결 끄기' : '물결 켜기';
-      mb.classList.toggle('on', full);
-      mb.title = full ? '물결 없이 잔잔하게 차오릅니다' : '물결치며 차오릅니다';
+      mb.textContent = motion.on() ? '모핑 끄기' : '모핑 켜기';
+      mb.classList.toggle('on', motion.on());
     }
     mb.addEventListener('click', function () {
-      window.Tide.force = window.Tide.calm();    // 잔잔하면 물결로, 물결이면 잔잔하게
+      motion.force = !motion.on();
       paintMotion();
-      playEra(eraId);
+      playEra(eraId, true);
     });
     paintMotion();
 
     if (q.get('selftest')) { eraId = 'three'; selftest(); return; }
 
-    var want = q.get('era') || 'three';       // 처음에는 삼국시대 — 4→5세기가 이어집니다
+    var want = q.get('era') || 'three';       // 처음에는 삼국시대 — 4→5→6세기가 이어집니다
     playEra(eraOf(want) ? want : 'three');
   }
 
