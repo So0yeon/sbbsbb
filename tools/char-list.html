@@ -1,0 +1,161 @@
+<!-- © 2026 김용현 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>길잡이 후보 — Kenney 미니 캐릭터 12명</title>
+<link rel="stylesheet" href="../vendor/font/pretendard.css">
+<style>
+  body{ margin:0; font-family:'Pretendard Variable',Pretendard,sans-serif; background:#EDE9DC; overflow:hidden; }
+  #c{ display:block; width:100vw; height:100vh; position:absolute; inset:0; }
+  .top{ position:absolute; left:0; right:0; top:0; text-align:center; padding:14px 0 0;
+        font-size:16px; font-weight:700; color:#3A3126; z-index:2; }
+  .top small{ display:block; font-weight:500; font-size:12.5px; color:#6E6A5E; margin-top:3px; }
+  .labels{ position:absolute; left:0; right:0; bottom:26px; display:grid; z-index:2;
+           grid-template-columns:repeat(6,1fr); }
+  .labels div{ text-align:center; }
+  .labels b{ display:block; font-size:15px; color:#191919; }
+  .labels span{ display:block; font-size:12px; color:#6E6A5E; margin-top:2px; line-height:1.4; }
+  #err{ position:absolute; left:12px; bottom:4px; font-size:12px; color:#A8534F; z-index:3; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="top" id="title">불러오는 중…</div>
+<div class="labels" id="labels"></div>
+<div id="err"></div>
+
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/build/three.module.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const q = new URLSearchParams(location.search);
+const PAGE = q.get('page') || '1';
+const TINT = q.get('tint');                 // 몸통을 우리 색으로 물들여 볼 때
+const POSE = q.get('pose') || 'idle';
+
+const MALE   = ['a','b','c','d','e','f'].map(k => ({ file:'character-male-'   + k, label:'남 ' + k.toUpperCase(), id:'male-'   + k }));
+const FEMALE = ['a','b','c','d','e','f'].map(k => ({ file:'character-female-' + k, label:'여 ' + k.toUpperCase(), id:'female-' + k }));
+const LIST = PAGE === '2' ? FEMALE : MALE;
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#EDE9DC');
+
+/* 정사영 카메라 — 세로 범위를 고정하고 가로를 화면 비율로 잡는다.
+   그래야 발끝부터 머리까지 잘리지 않고, 이름표도 3D 위치와 정확히 맞는다 */
+const TOP = 2.45, BOTTOM = -0.30;            // 캐릭터 키 2 를 넉넉히 담는 세로 범위
+let SPACING = 2.0;
+let camera = new THREE.OrthographicCamera(-1, 1, TOP, BOTTOM, .1, 100);
+camera.position.set(0, 0, 20);
+camera.lookAt(0, 0, 0);
+
+scene.add(new THREE.HemisphereLight('#EAF2EF', '#B9A98A', 1.05));
+const sun = new THREE.DirectionalLight('#FFF3DD', 1.35); sun.position.set(6, 14, 12); scene.add(sun);
+const fill = new THREE.DirectionalLight('#CFE3FF', .55); fill.position.set(-8, 6, 6); scene.add(fill);
+
+const matCache = new Map();
+const mat = c => { if (!matCache.has(c)) matCache.set(c, new THREE.MeshStandardMaterial({ color:c, flatShading:true, roughness:.93 })); return matCache.get(c); };
+const box = (w,h,d,c,x,y,z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c)); m.position.set(x,y,z); return m; };
+
+THREE.Cache.enabled = true;   // 같은 파일(특히 colormap.png)을 여러 번 받지 않게
+const loader = new GLTFLoader();
+const mixers = [];
+
+/** 유물 가방 — 수첩은 가방 안에 있으므로 따로 들지 않는다 */
+function makeBag(){
+  const g = new THREE.Group();
+  const body = box(.34, .28, .17, '#9C7A54', .30, -.02, -.10);
+  const flap = box(.36, .10, .19, '#8A6E52', .30, .11, -.10);
+  const buckle = box(.07, .07, .03, '#C9A24B', .30, .04, -.02);
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(.30, .038, 5, 14), mat('#8A6E52'));
+  strap.rotation.set(Math.PI/2, 0, .52); strap.position.set(0, .06, 0);
+  g.add(body, flap, buckle, strap);
+  return g;
+}
+
+async function one(entry, i){
+  const g = await loader.loadAsync('../assets/kenney/characters/' + entry.file + '.glb');
+  const root = g.scene;
+
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    const isHead = /head/i.test(o.name);
+    o.material = new THREE.MeshStandardMaterial({
+      map: o.material.map || null,
+      color: (TINT && !isHead) ? TINT : '#FFFFFF',
+      flatShading: true, roughness: .95, metalness: 0
+    });
+  });
+
+  const b3 = new THREE.Box3().setFromObject(root);
+  const s = 2.0 / (b3.max.y - b3.min.y);          // 키를 2로 (MASTER §6-3)
+  root.scale.setScalar(s);
+  root.position.set((i - 2.5) * SPACING, 0, 0);
+  root.userData.slot = i;
+  root.rotation.y = -0.55;                         // 오른쪽 어깨의 가방이 보이게 돌린다
+
+  const torso = root.getObjectByName('torso') || root;
+  // 뼈는 저마다 배율이 달라서, 세상 기준 배율로 나눠 줘야 가방이 제 크기로 붙는다
+  root.updateWorldMatrix(true, true);
+  const ws = new THREE.Vector3();
+  torso.getWorldScale(ws);
+  const bag = makeBag();
+  bag.scale.setScalar(1 / (ws.x || 1));
+  torso.add(bag);
+
+  const mixer = new THREE.AnimationMixer(root);
+  const clip = THREE.AnimationClip.findByName(g.animations, POSE) || g.animations[0];
+  mixer.clipAction(clip).play();
+  mixer.update(0.4);                               // 대기 자세를 살짝 진행시켜 자연스럽게
+  mixers.push(mixer);
+  scene.add(root);
+}
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  const width = (TOP - BOTTOM) * (w / h);
+  SPACING = width / 6.2;
+  camera.left = -width/2; camera.right = width/2;
+  camera.top = TOP; camera.bottom = BOTTOM;
+  camera.updateProjectionMatrix();
+  scene.traverse(o => { if (o.userData.slot != null) o.position.x = (o.userData.slot - 2.5) * SPACING; });
+}
+addEventListener('resize', resize); resize();
+
+document.getElementById('labels').innerHTML = LIST.map(e =>
+  `<div><b>${e.label}</b><span>${e.id}</span></div>`).join('');
+
+(async () => {
+  try {
+    // 12개 GLB 가 모두 같은 colormap.png 를 가리킨다 — 먼저 한 번 받아 캐시에 넣어 둔다
+    await new THREE.ImageLoader().loadAsync('../assets/kenney/characters/Textures/colormap.png');
+    await Promise.all(LIST.map((e, i) => one(e, i)));
+    document.getElementById('title').innerHTML =
+      (PAGE === '2' ? '길잡이 후보 — 여자 여섯' : '길잡이 후보 — 남자 여섯') +
+      `<small>키를 2로 맞추고 유물 가방을 어깨에 걸었습니다 · 자세 ${POSE}` +
+      (TINT ? ` · 몸통을 ${TINT} 로 물들임` : ' · 원본 색 그대로') + '</small>';
+    resize();
+    renderer.render(scene, camera);
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const d = clock.getDelta();
+      mixers.forEach(m => m.update(d));
+      renderer.render(scene, camera);
+    });
+  } catch(e){
+    document.getElementById('err').textContent = '오류: ' + e.message;
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
