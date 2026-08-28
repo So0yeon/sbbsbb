@@ -55,6 +55,7 @@ export function updateAnim(dt){
   }
 
   const LA = ST.leftArm, RA = ST.rightArm, LL = ST.leftLeg, RL = ST.rightLeg;
+  const LE = ST.leftElbow, RE = ST.rightElbow, LK = ST.leftKnee, RK = ST.rightKnee;
   const head = ST.head, crest = ST.crest, torso = ST.torso;
 
   // 기본값으로 되돌린 뒤 상태별로 덧입힌다
@@ -62,6 +63,10 @@ export function updateAnim(dt){
   if (RA) { RA.rotation.set(0,0,0); RA.position.y = RA.userData.y0; }
   if (LL) LL.rotation.set(0,0,0);
   if (RL) RL.rotation.set(0,0,0);
+  if (LE) LE.rotation.set(0,0,0);
+  if (RE) RE.rotation.set(0,0,0);
+  if (LK) LK.rotation.set(0,0,0);
+  if (RK) RK.rotation.set(0,0,0);
   if (head) head.rotation.set(0,0,0);
   if (torso) torso.rotation.set(0,0,0);
   rig.position.y = 0;
@@ -79,6 +84,14 @@ export function updateAnim(dt){
       if (RL) RL.rotation.x = -s;
       if (LA) LA.rotation.x = -s * 0.72;
       if (RA) RA.rotation.x =  s * 0.72;
+      // 무릎 — 다리가 앞으로 흔들려 나가는 동안(허벅지 각이 늘어나는 구간)에 굽는다
+      const kneeAmp = 0.85 + A.speed * 0.55;
+      if (LK) LK.rotation.x = Math.max(0, Math.cos(A.walkPhase)) * kneeAmp;
+      if (RK) RK.rotation.x = Math.max(0, -Math.cos(A.walkPhase)) * kneeAmp;
+      // 팔꿈치 — 다리와 반대쪽 리듬으로 살짝
+      const elbowAmp = 0.30 + A.speed * 0.22;
+      if (LE) LE.rotation.x = Math.max(0, -Math.cos(A.walkPhase)) * elbowAmp;
+      if (RE) RE.rotation.x = Math.max(0, Math.cos(A.walkPhase)) * elbowAmp;
       rig.position.y = Math.abs(Math.sin(A.walkPhase)) * 0.055;
       if (torso) torso.rotation.z = Math.sin(A.walkPhase) * 0.03;
       break;
@@ -91,6 +104,11 @@ export function updateAnim(dt){
       if (head) head.rotation.x = Math.sin(A.t * 1.9 + .5) * 0.05;
       if (LA) LA.rotation.z =  Math.sin(A.t * 1.6) * 0.06;
       if (RA) RA.rotation.z = -Math.sin(A.t * 1.6) * 0.06;
+      // 뻣뻣하게 잠기지 않도록 팔꿈치·무릎을 살짝 풀어 둔다
+      if (LK) LK.rotation.x = 0.06;
+      if (RK) RK.rotation.x = 0.06;
+      if (LE) LE.rotation.x = 0.12 + Math.sin(A.t * 1.6) * 0.03;
+      if (RE) RE.rotation.x = 0.12 - Math.sin(A.t * 1.6) * 0.03;
       break;
     }
 
@@ -102,6 +120,10 @@ export function updateAnim(dt){
       if (RA) RA.rotation.x = -1.1 * ease(Math.min(1, p * 1.6));
       if (LL) LL.rotation.x = -0.45 * (1 - p);
       if (RL) RL.rotation.x = -0.45 * (1 - p);
+      if (LE) LE.rotation.x = 0.9 * ease(Math.min(1, p * 1.6));
+      if (RE) RE.rotation.x = 0.9 * ease(Math.min(1, p * 1.6));
+      if (LK) LK.rotation.x = 1.0 * (1 - p);
+      if (RK) RK.rotation.x = 1.0 * (1 - p);
       break;
     }
 
@@ -112,6 +134,10 @@ export function updateAnim(dt){
       const up = -2.15 * ease(Math.min(1, p * 3));
       if (LA) { LA.rotation.x = up; LA.rotation.z =  0.28; }
       if (RA) { RA.rotation.x = up; RA.rotation.z = -0.28; }
+      if (LE) LE.rotation.x = 0.18;
+      if (RE) RE.rotation.x = 0.18;
+      if (LK) LK.rotation.x = Math.abs(Math.sin(p * Math.PI * 2)) * 0.5 * (1 - p * .4);
+      if (RK) RK.rotation.x = Math.abs(Math.sin(p * Math.PI * 2)) * 0.5 * (1 - p * .4);
       if (head) head.rotation.x = -0.22;
       if (crest) crest.rotation.z = Math.sin(A.t * 16) * 0.3 - 0.16;
       break;
@@ -123,6 +149,7 @@ export function updateAnim(dt){
       if (head) { head.rotation.z = k * 0.42; head.rotation.y = k * 0.18; }
       if (torso) torso.rotation.z = k * 0.08;
       if (LA) LA.rotation.x = k * 0.5;
+      if (LE) LE.rotation.x = k * 0.4;
       break;
     }
 
@@ -134,6 +161,7 @@ export function updateAnim(dt){
       else if (p < .5)  arm = -1.5 + 1.9 * ((p - .35) / .15);
       else              arm = 0.4;
       if (RA) RA.rotation.x = arm;
+      if (RE) RE.rotation.x = Math.abs(arm) * 0.4 + 0.15;
       if (torso) torso.rotation.x = p > .35 ? 0.16 : 0;
       rig.position.y = p > .35 && p < .55 ? -0.06 : 0;
       if (head) head.rotation.x = 0.14;
@@ -147,6 +175,7 @@ export function updateAnim(dt){
         RA.rotation.x = -2.25 * fade;
         RA.rotation.z = Math.sin(A.t * 11) * 0.42 * fade;
       }
+      if (RE) RE.rotation.x = 1.3 * fade;
       if (head) head.rotation.y = 0.16 * fade;
       break;
     }
@@ -158,6 +187,10 @@ export function updateAnim(dt){
       if (head) head.rotation.x = k * 0.34;
       if (LA) LA.rotation.x = k * 0.5;
       if (RA) RA.rotation.x = k * 0.5;
+      if (LE) LE.rotation.x = k * 0.7;
+      if (RE) RE.rotation.x = k * 0.7;
+      if (LK) LK.rotation.x = k * 0.25;
+      if (RK) RK.rotation.x = k * 0.25;
       rig.position.y = -k * 0.08;
       break;
     }

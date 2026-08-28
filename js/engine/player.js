@@ -30,10 +30,75 @@ const PITCH_MAX = 1.24;                    // 거의 바로 위에서 내려다�
 const ZOOM_MIN = 0.42, ZOOM_MAX = 2.8;     // 가까이서 크게 ~ 멀리서 넓게
 const pitchOf = () => (ST.camPitch == null ? (ST.camPitch = PITCH_DEFAULT) : ST.camPitch);
 
+/* 두 점을 잇는 가는 막대 — 배낭끈처럼 비스듬한 부재에 쓴다 */
+function strapSeg(a, b, w, color){
+  const dx = b[0]-a[0], dy = b[1]-a[1], dz = b[2]-a[2];
+  const len = Math.hypot(dx, dy, dz);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, len, w), mat(color));
+  m.position.set((a[0]+b[0])/2, (a[1]+b[1])/2, (a[2]+b[2])/2);
+  m.quaternion.setFromUnitVectors(
+    new THREE.Vector3(0,1,0),
+    new THREE.Vector3(dx,dy,dz).normalize()
+  );
+  return m;
+}
+
+/* 위팔+아래팔(팔꿈치) 한 쪽을 만든다. side: 왼쪽 -1, 오른쪽 +1 */
+function buildArm(side){
+  const UP = .30, LOW = .28;
+  const shoulder = new THREE.Group();
+  shoulder.position.set(side*.3, 1.16, 0);
+  shoulder.userData.y0 = 1.16;
+
+  const upper = new THREE.Mesh(new THREE.CylinderGeometry(.082,.075,UP,7), mat(AVATAR.shirtColor));
+  upper.geometry.translate(0, -UP/2, 0);
+  shoulder.add(upper);
+
+  const elbow = new THREE.Group();
+  elbow.position.set(0, -UP, 0);
+  shoulder.add(elbow);
+
+  const lower = new THREE.Mesh(new THREE.CylinderGeometry(.07,.065,LOW,7), mat(AVATAR.skinColor));
+  lower.geometry.translate(0, -LOW/2, 0);
+  elbow.add(lower);
+
+  const hand = new THREE.Mesh(new THREE.SphereGeometry(.075, 6, 5), mat(AVATAR.skinColor));
+  hand.position.set(0, -LOW, 0);
+  elbow.add(hand);
+
+  return { shoulder, elbow };
+}
+
+/* 넓적다리+정강이(무릎) 한 쪽을 만든다 */
+function buildLeg(side){
+  const UP = .30, LOW = .26;
+  const hip = new THREE.Group();
+  hip.position.set(side*.15, .56, 0);
+
+  const thigh = new THREE.Mesh(new THREE.CylinderGeometry(.10,.09,UP,6), mat(AVATAR.pantsColor));
+  thigh.geometry.translate(0, -UP/2, 0);
+  hip.add(thigh);
+
+  const knee = new THREE.Group();
+  knee.position.set(0, -UP, 0);
+  hip.add(knee);
+
+  const shin = new THREE.Mesh(new THREE.CylinderGeometry(.085,.075,LOW,6), mat(AVATAR.pantsColor));
+  shin.geometry.translate(0, -LOW/2, 0);
+  knee.add(shin);
+
+  const shoe = new THREE.Mesh(new THREE.BoxGeometry(.15, .1, .22), mat(AVATAR.shoeColor));
+  shoe.position.set(0, -LOW-.02, .05);
+  knee.add(shoe);
+
+  return { hip, knee };
+}
+
 /* ══════════════════════════════════════════════════════════════
    아바타 — 가방 멘 소년 (학생 자신, 길잡이가 아니다)
    발밑 y=0, 머리 꼭대기 y≈1.8, +z 를 바라본다
    등에 멘 배낭이 뒤통수 쪽에 붙어 있어 앞뒤를 구분해 준다 (§6-1)
+   팔꿈치·무릎이 따로 굽어 뻣뻣해 보이지 않는다
    ══════════════════════════════════════════════════════════════ */
 export function buildPlayer(){
   const player = new THREE.Group();     // 위치·회전을 담당
@@ -51,19 +116,9 @@ export function buildPlayer(){
   bodyMesh.position.y = .86;
   torso.add(bodyMesh);
 
-  // 팔 — 소매 끝에 손을 붙인다
-  const armGeo = new THREE.CylinderGeometry(.085, .075, .58, 7);
-  const leftArm = new THREE.Mesh(armGeo, mat(AVATAR.shirtColor));
-  leftArm.position.set(-.3, 1.16, 0);
-  leftArm.geometry.translate(0, -.29, 0);   // 어깨를 회전축으로
-  leftArm.userData.y0 = 1.16;
-  const hand = new THREE.Mesh(new THREE.SphereGeometry(.08, 6, 5), mat(AVATAR.skinColor));
-  hand.position.y = -.58;
-  leftArm.add(hand);
-  const rightArm = leftArm.clone();
-  rightArm.position.set(.3, 1.16, 0);
-  rightArm.userData.y0 = 1.16;
-  torso.add(leftArm); torso.add(rightArm);
+  // 팔
+  const armL = buildArm(-1), armR = buildArm(1);
+  torso.add(armL.shoulder); torso.add(armR.shoulder);
 
   // 목 + 머리
   const head = new THREE.Group();
@@ -78,48 +133,63 @@ export function buildPlayer(){
   skull.position.y = .34;
   head.add(skull);
 
-  // 머리카락 — 정수리와 뒤통수를 덮는다 (뒤가 두터워 앞뒤 구분도 된다)
-  const hair = new THREE.Mesh(new THREE.IcosahedronGeometry(.28, 0), mat(AVATAR.hairColor));
-  hair.scale.set(1, .78, 1.05);
-  hair.position.set(0, .43, -.02);
+  // 머리카락 — 정수리·뒤통수만 덮는다. 눈보다 뒤에 머물러야 얼굴과 안 겹친다
+  const hair = new THREE.Mesh(new THREE.IcosahedronGeometry(.27, 0), mat(AVATAR.hairColor));
+  hair.scale.set(1, .82, .88);
+  hair.position.set(0, .47, -.09);
   head.add(hair);
 
+  // 앞머리 — 이마 위에서 눈 위쪽까지만, 눈에 닿지 않는다
+  const bangs = box(.30, .09, .07, AVATAR.hairColor, 0, .44, .21);
+  head.add(bangs);
+
+  // 눈썹
+  const browGeo = new THREE.BoxGeometry(.09, .022, .03);
+  const browMat = mat(AVATAR.hairColor);
+  const b1 = new THREE.Mesh(browGeo, browMat); b1.position.set(-.1, .405, .22);
+  const b2 = new THREE.Mesh(browGeo, browMat); b2.position.set( .1, .405, .22);
+  head.add(b1); head.add(b2);
+
   // 눈 — +z 를 향한다 (앞을 알려 주는 표시)
-  const eyeGeo = new THREE.SphereGeometry(.04, 6, 5);
+  const eyeGeo = new THREE.SphereGeometry(.038, 6, 5);
   const eyeMat = mat('#2B2620');
-  const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-.1, .36, .21);
-  const e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set( .1, .36, .21);
+  const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-.1, .36, .22);
+  const e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set( .1, .36, .22);
   head.add(e1); head.add(e2);
 
-  // 다리 — 발을 밑단에 붙인다
-  const legGeo = new THREE.CylinderGeometry(.095, .085, .56, 6);
-  const leftLeg = new THREE.Mesh(legGeo, mat(AVATAR.pantsColor));
-  leftLeg.geometry.translate(0, -.28, 0);
-  leftLeg.position.set(-.15, .56, 0);
-  const shoe = new THREE.Mesh(new THREE.BoxGeometry(.15, .1, .22), mat(AVATAR.shoeColor));
-  shoe.position.set(0, -.55, .05);
-  leftLeg.add(shoe);
-  const rightLeg = leftLeg.clone();
-  rightLeg.position.set(.15, .56, 0);
-  rig.add(leftLeg); rig.add(rightLeg);
+  // 입 — 옅은 한 줄, 살짝 웃는 인상
+  const mouth = box(.09, .018, .02, '#A8695C', 0, .245, .245);
+  head.add(mouth);
+
+  // 다리
+  const legL = buildLeg(-1), legR = buildLeg(1);
+  rig.add(legL.hip); rig.add(legR.hip);
 
   // 등에 멘 배낭 — 유물 주머니와 도장 수첩이 그 안에 들어 있다 (요구 6 — 시작할 때부터 지니고 있다)
-  const strap = new THREE.Mesh(new THREE.TorusGeometry(.27, .035, 5, 12), mat(AVATAR.strapColor));
-  strap.rotation.set(Math.PI/2, 0, .4);
-  strap.position.set(0, 1.04, 0);
-  torso.add(strap);
   const backpack = box(.36, .4, .2, AVATAR.bagColor, 0, .92, -.26);
   torso.add(backpack);
   // 배낭 겉주머니 — 도장 수첩이 삐죽 든 자리
   const pocket = box(.22, .16, .05, AVATAR.bookColor, 0, .84, -.34);
   torso.add(pocket);
 
+  // 배낭끈 — 양 어깨를 넘어가야 진짜 멘 것처럼 보인다.
+  // 어깨 위(견봉) → 앞가슴/뒤 배낭 꼭대기, 두 부재로 어깨에서 꺾인다.
+  [-1, 1].forEach(side => {
+    const shoulderPt = [side*.19, 1.20, .01];
+    const frontPt    = [side*.15, .80, .17];
+    const backPt     = [side*.13, 1.03, -.24];
+    torso.add(strapSeg(frontPt, shoulderPt, .045, AVATAR.strapColor));
+    torso.add(strapSeg(shoulderPt, backPt, .045, AVATAR.strapColor));
+  });
+
   ST.player = player;
   ST.rig = rig;
   ST.torso = torso;
   ST.head = head;
-  ST.leftArm = leftArm; ST.rightArm = rightArm;
-  ST.leftLeg = leftLeg; ST.rightLeg = rightLeg;
+  ST.leftArm = armL.shoulder; ST.rightArm = armR.shoulder;
+  ST.leftElbow = armL.elbow; ST.rightElbow = armR.elbow;
+  ST.leftLeg = legL.hip; ST.rightLeg = legR.hip;
+  ST.leftKnee = legL.knee; ST.rightKnee = legR.knee;
 
   player.rotation.y = Math.PI;   // 처음에는 카메라 쪽을 본다
   ST.scene.add(player);

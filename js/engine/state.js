@@ -26,6 +26,7 @@ export const ST = {
 
   player: null, rig: null,
   leftLeg: null, rightLeg: null, leftArm: null, rightArm: null,
+  leftKnee: null, rightKnee: null, leftElbow: null, rightElbow: null,
   head: null, crest: null, torso: null,
 
   activeMarker: null, questOpen: false, moving: false,
