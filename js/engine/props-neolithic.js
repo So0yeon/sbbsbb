@@ -12,7 +12,7 @@
    에셋 — Kenney Brick Kit (CC0). 색은 우리 팔레트를 입힌다 (§8-5).
    ══════════════════════════════════════════════════════════════════════ */
 import { ST } from './state.js';
-import { brick, ring, pad, flushBricks, STUD, BRICK_H, PLATE_H } from './bricks.js';
+import { brick, ring, pad, STUD, BRICK_H, PLATE_H } from './bricks.js';
 import { scatterTreesArea } from './scene-helpers.js';
 import { buildWetPatch } from './props.js';   // 되돌이 import — 부를 때에는 이미 다 실려 있다
 
@@ -39,6 +39,9 @@ const C = {
 /* ══════════════════════════════════════════════════════════════
    자리 고르기 — 임무 마커와 겹치지 않게
    ══════════════════════════════════════════════════════════════ */
+/** 낮은 사양이면 성기게 짓는다 — 모양은 그대로, 조각 수만 줄인다 */
+function lod(){ return ST.lowSpec ? 0.6 : 1; }
+
 function seedRng(seed){
   let s = 0;
   for (let i = 0; i < String(seed).length; i++) s = (s * 31 + String(seed).charCodeAt(i)) >>> 0;
@@ -117,7 +120,7 @@ export function pitHouse(cx, cz, opts){
 
   /* ② 지붕 — 얇은 켜를 촘촘히 올린다.
      두꺼운 켜로 쌓으면 층이 크게 져 벌집이나 케이크처럼 보인다. */
-  const courses = levels * 3;                      // 켜 수 (플레이트 높이)
+  const courses = Math.max(9, Math.round(levels * 3 * lod()));   // 켜 수 (플레이트 높이)
   const topY = PLATE_H * courses;
   for (let lv = 0; lv < courses; lv++){
     const t = lv / courses;
@@ -137,7 +140,7 @@ export function pitHouse(cx, cz, opts){
   }
 
   /* ②-b 서까래 — 이엉 위로 드러난 나무. 이것이 있어야 움집으로 보인다 */
-  const rafters = 9;
+  const rafters = ST.lowSpec ? 6 : 9;
   for (let i = 0; i < rafters; i++){
     const a = (i / rafters) * Math.PI * 2 + 0.17;
     // 출입구 쪽은 비운다
@@ -291,10 +294,12 @@ export function shellMound(){
           rng() < .5 ? C.shell : C.shellD, rng() * 3, [1.2, 1, 1.2]);
   }
   // 깨진 토기 조각도 함께 나온다 — 조개더미가 신석기 쓰레기터였다는 표시
-  for (let i = 0; i < 6; i++){
-    const a = rng() * Math.PI * 2, r = R * .5 + rng() * R * .6;
-    brick('none-hq-plate-1x2', s.x + Math.cos(a) * r, H * .35 + rng() * .4,
-          s.z + Math.sin(a) * r, C.clay, rng() * 3, [1, 1, .8]);
+  for (let i = 0; i < 7; i++){
+    const a = rng() * Math.PI * 2, r = R * .25 + rng() * R * .6;
+    const d = r / R;
+    const top = H * Math.pow(Math.cos(d * Math.PI / 2), .7);   // 그 자리의 둔덕 높이
+    brick('none-hq-plate-1x2', s.x + Math.cos(a) * r, top, s.z + Math.sin(a) * r,
+          C.clay, rng() * 3, [1, 1, .8]);
   }
   claim(s.x, s.z, R + 1.2);
   return s;
@@ -313,7 +318,7 @@ export function rocksNeo(){
     for (let i = 0; i < n; i++){
       const a = rng() * Math.PI * 2, r = rng() * 1.1;
       const lv = Math.floor(rng() * 2);
-      brick(rng() < .5 ? 'brick-2x2' : 'brick-1x2',
+      brick(rng() < .5 ? 'none-hq-brick-2x2' : 'none-hq-brick-1x2',
             s.x + Math.cos(a) * r, lv * BRICK_H * .6, s.z + Math.sin(a) * r,
             rng() < .5 ? C.stone : C.stoneD, rng() * 3, [1, .55 + rng() * .5, 1]);
     }
@@ -337,15 +342,17 @@ export function kilnNeo(){
 
   // 흙 둔덕
   ring('none-hq-plate-1x2', s.x, s.z, 1.9, 0, C.dirt, 14, { jitter: .06 });
-  // 돔
-  for (let lv = 0; lv < 5; lv++){
-    const r = 1.6 * Math.pow(1 - lv / 5, .6);
-    if (r < STUD) break;
+  // 돔 — 얇은 켜를 촘촘히 올려야 매끈한 흙가마로 보인다
+  const kc = Math.max(8, Math.round(11 * lod()));
+  for (let lv = 0; lv < kc; lv++){
+    const r = 1.7 * Math.pow(1 - lv / kc, .58);
+    if (r < STUD * .6) break;
+    const y = lv * PLATE_H;
     const n = Math.max(5, Math.round((2 * Math.PI * r) / (STUD * 2)));
-    ring('brick-1x2', s.x, s.z, r, PLATE_H + lv * BRICK_H, lv % 2 ? C.clay : '#9C6E52', n, {
-      offset: lv * .3,
-      gapFrom: lv < 2 ? face - .5 : null,
-      gapTo:   lv < 2 ? face + .5 : null
+    ring('plate-1x2', s.x, s.z, r, y, (lv % 4 < 2) ? C.clay : '#9C6E52', n, {
+      offset: lv * .27,
+      gapFrom: y < BRICK_H * 1.4 ? face - .55 : null,
+      gapTo:   y < BRICK_H * 1.4 ? face + .55 : null
     });
   }
   // 아궁이 앞 재와 불
@@ -366,28 +373,45 @@ export function kilnNeo(){
    ══════════════════════════════════════════════════════════════ */
 export function shrineNeo(){
   const s = findSpot('neo:shrine', { angle: 1.9, radius: .62, size: 4 });
+  const rng = s.rng;
 
-  // 돌을 깐 단
-  pad(s.x, s.z, 1.3, 1.3, 0, C.stone);
-  pad(s.x, s.z, .85, .85, PLATE_H, C.stoneD);
+  /* 단 — 네모반듯한 포장이 아니라 크기가 제각각인 돌을 둥글게 깐 자리 */
+  for (let k = 0; k < 34; k++){
+    const a = rng() * Math.PI * 2, r = rng() * 1.55;
+    brick(rng() < .5 ? 'none-hq-brick-2x2' : 'none-hq-brick-1x2',
+          s.x + Math.cos(a) * r, 0, s.z + Math.sin(a) * r,
+          rng() < .5 ? C.stone : C.stoneD, rng() * 3,
+          [.7 + rng() * .5, .28 + rng() * .22, .7 + rng() * .5]);
+  }
+  // 둘레를 두른 돌
+  ring('none-hq-brick-1x2', s.x, s.z, 1.75, 0, C.stoneD, 16, { jitter: .16, scale: [1, .5, 1] });
 
-  // 가운데 세운 돌
-  for (let lv = 0; lv < 4; lv++){
-    brick('brick-1x1', s.x, PLATE_H * 2 + lv * BRICK_H, s.z, C.stoneD, lv * .4, [1.2, 1, 1.2]);
+  /* 가운데 선돌 — 위로 갈수록 가늘어진다 */
+  const sel = [1.35, 1.2, 1.05, .9, .78];
+  for (let lv = 0; lv < sel.length; lv++){
+    brick('none-hq-brick-2x2', s.x, PLATE_H + lv * BRICK_H * .82, s.z, lv % 2 ? C.stone : C.stoneD,
+          lv * .5 + .2, [sel[lv], .5, sel[lv] * .8]);
   }
 
-  // 솟대 — 긴 장대 위의 새
-  for (const off of [[-1.9, .6, 5], [1.7, -1.1, 6]]){
+  /* 제물 — 선돌 앞에 놓인 토기와 곡식 */
+  brick('brick-1x1-round', s.x + .95, PLATE_H, s.z + .75, C.clay, 0, [1.2, 1.1, 1.2]);
+  brick('none-hq-plate-1x2', s.x + .55, PLATE_H, s.z + 1.05, '#C6B586', .6, [1.2, 1, 1.2]);
+
+  /* 솟대 — 긴 장대 위의 새. 마을을 지켜 달라는 뜻이다 */
+  for (const off of [[-2.6, .7, 7], [2.3, -1.4, 8]]){
     const px = s.x + off[0], pz = s.z + off[1], h = off[2];
     for (let lv = 0; lv < h; lv++){
-      brick('brick-1x1', px, lv * BRICK_H, pz, C.timber, 0, [.55, 1, .55]);
+      brick('brick-1x1', px + Math.sin(lv * .7) * .04, lv * BRICK_H, pz,
+            lv % 2 ? C.timber : C.timberD, lv * .3, [.5, 1, .5]);
     }
     const topY = h * BRICK_H;
-    brick('none-hq-plate-1x2', px, topY, pz, C.timberD, .3, [1.6, 1, 1]);      // 몸
-    brick('none-hq-plate-1x1', px + .18, topY + PLATE_H, pz, C.timberD, 0);     // 머리
-    brick('none-hq-plate-1x1', px - .26, topY, pz, C.timberD, 0, [1.4, 1, .7]); // 꼬리
+    const dir = rng() < .5 ? 1 : -1;
+    brick('brick-1x2', px, topY, pz, C.timberD, dir > 0 ? .25 : Math.PI + .25, [1.15, .55, .8]);   // 몸
+    brick('brick-1x1', px + dir * .34, topY + BRICK_H * .35, pz + .08, C.timberD, .25, [.7, .7, .55]); // 머리
+    brick('brick-1x1', px + dir * .55, topY + BRICK_H * .38, pz + .08, '#C08A4A', .25, [.45, .3, .3]); // 부리
+    brick('none-hq-plate-1x2', px - dir * .46, topY + BRICK_H * .1, pz, C.timber, dir > 0 ? .25 : Math.PI + .25, [1.3, 1, .6]); // 꼬리
   }
-  claim(s.x, s.z, 3);
+  claim(s.x, s.z, 3.4);
   return s;
 }
 
@@ -504,7 +528,7 @@ export function reedsNeo(){
   const rng = seedRng('neo:reeds');
   const bank = -b * 0.55;                      // 강가 (buildRiverBand 는 -b*0.72 를 가운데로 둔다)
 
-  for (let i = 0; i < 54; i++){
+  for (let i = 0; i < Math.round(54 * lod()); i++){
     const z = (rng() - .5) * b * 1.7;
     const x = bank + (rng() - .5) * 4.2;
     const h = 3 + Math.floor(rng() * 4);
@@ -590,26 +614,27 @@ export function pottersSpotNeo(){
   const rng = s.rng;
 
   // 모래밭
-  pad(s.x, s.z, 1.6, 1.6, 0, '#D6C9A6');
+  pad(s.x, s.z, 2.5, 2.2, 0, '#D6C9A6');
 
   // 모래에 반쯤 박아 세운 토기 넷
   for (let i = 0; i < 4; i++){
     const a = i / 4 * Math.PI * 2 + .3;
     const px = s.x + Math.cos(a) * 1.0, pz = s.z + Math.sin(a) * 1.0;
-    // 몸통 — 위로 갈수록 벌어진다
-    for (let lv = 0; lv < 4; lv++){
-      const w = .55 + lv * .18;
-      brick('brick-1x1-round', px, PLATE_H + lv * BRICK_H * .55, pz,
-            lv === 3 ? '#B0805F' : C.clay, rng() * 3, [w, .6, w]);
+    // 몸통 — 위로 갈수록 벌어지다가 아가리에서 살짝 오므라든다
+    const prof = [.8, 1.15, 1.45, 1.7, 1.86, 1.76];   // 아래가 좁고 위가 벌어진 빗살무늬토기
+    for (let lv = 0; lv < prof.length; lv++){
+      brick('brick-1x1-round', px, PLATE_H + lv * BRICK_H * .62, pz,
+            lv >= prof.length - 2 ? '#B0805F' : C.clay, rng() * 3, [prof[lv], .7, prof[lv]]);
     }
     // 뾰족한 아래는 모래 밑으로 들어가 보이지 않는다
   }
   // 아직 박지 못해 옆으로 누운 것 하나 — 세울 수 없다는 것을 눈으로 보여 준다
-  const lx = s.x + 2.1, lz = s.z - 1.4;
-  for (let k = 0; k < 4; k++){
-    const w = .55 + k * .18;
-    brick('brick-1x1-round', lx + k * .3, BRICK_H * .35, lz, k === 3 ? '#B0805F' : C.clay,
-          Math.PI / 2, [.6, w, w]);
+  const lx = s.x + .5, lz = s.z + 1.75;
+  const prof2 = [.8, 1.15, 1.45, 1.7, 1.86, 1.76];
+  for (let k = 0; k < prof2.length; k++){
+    brick('brick-1x1-round', lx + k * .42, BRICK_H * .48, lz,
+          k >= prof2.length - 2 ? '#B0805F' : C.clay,
+          Math.PI / 2, [.7, prof2[k], prof2[k]]);
   }
   return s;
 }
@@ -623,28 +648,34 @@ export function bushesNeo(){
   const b = ST.BOUND || 38;
   const rng = seedRng('neo:bush');
 
-  for (let i = 0; i < 26; i++){
+  // 덤불 — 스터드가 보이면 장난감 블록처럼 읽힌다. 민민한 조각과 둥근 것만 쓴다
+  for (let i = 0; i < Math.round(26 * lod()); i++){
     const a = rng() * Math.PI * 2, r = 8 + rng() * (b - 12);
     const cx = Math.cos(a) * r, cz = Math.sin(a) * r;
     const tone = rng() < .5 ? C.green : '#8AA57C';
-    // 낮게 뭉친 덩이
-    for (let k = 0; k < 5 + Math.floor(rng() * 4); k++){
-      const aa = rng() * Math.PI * 2, rr = rng() * .55;
-      brick('brick-2x2', cx + Math.cos(aa) * rr, rng() * BRICK_H * .5, cz + Math.sin(aa) * rr,
-            tone, rng() * 3, [.55 + rng() * .4, .5 + rng() * .35, .55 + rng() * .4]);
+    const dark = rng() < .5 ? '#6E8C63' : '#7F9A72';
+    const n = 7 + Math.floor(rng() * 5);
+    for (let k = 0; k < n; k++){
+      const aa = rng() * Math.PI * 2, rr = rng() * .62;
+      const up = rng();
+      brick('none-hq-brick-1x1-round',
+            cx + Math.cos(aa) * rr, up * .38, cz + Math.sin(aa) * rr,
+            up > .55 ? tone : dark, rng() * 3,
+            [1.1 + rng() * .8, .75 + rng() * .6, 1.1 + rng() * .8]);
     }
   }
 
   // 억새 포기 — 가늘고 긴 것 몇 대씩
-  for (let i = 0; i < 22; i++){
+  for (let i = 0; i < Math.round(22 * lod()); i++){
     const a = rng() * Math.PI * 2, r = 9 + rng() * (b - 13);
     const cx = Math.cos(a) * r, cz = Math.sin(a) * r;
-    for (let k = 0; k < 4; k++){
-      const aa = rng() * Math.PI * 2, rr = rng() * .3;
+    for (let k = 0; k < 5; k++){
+      const aa = rng() * Math.PI * 2, rr = rng() * .34;
       const h = 2 + Math.floor(rng() * 2);
       for (let lv = 0; lv < h; lv++){
-        brick('brick-1x1', cx + Math.cos(aa) * rr, lv * BRICK_H * .75, cz + Math.sin(aa) * rr,
-              rng() < .5 ? C.reed : '#A8B080', rng() * 3, [.22, .9, .22]);
+        brick('none-hq-brick-1x1', cx + Math.cos(aa) * rr, lv * BRICK_H * .72,
+              cz + Math.sin(aa) * rr, rng() < .5 ? C.reed : '#A8B080',
+              rng() * 3, [.2, .95, .2]);
       }
     }
   }
@@ -661,9 +692,9 @@ export function treesNeo(){
     const cx = Math.cos(a) * r, cz = Math.sin(a) * r, rot = rng() * Math.PI;
     // 쓰러진 통나무
     for (let k = -2; k <= 2; k++){
-      brick('brick-1x4', cx + Math.cos(rot) * k * .55, BRICK_H * .25,
+      brick('none-hq-brick-1x4', cx + Math.cos(rot) * k * .55, BRICK_H * .2,
             cz + Math.sin(rot) * k * .55, rng() < .5 ? C.timber : C.timberD,
-            rot + Math.PI / 2, [1, .55, .95]);
+            rot + Math.PI / 2, [1, .6, .95]);
     }
     // 버섯과 낙엽
     for (let k = 0; k < 4; k++){
@@ -719,8 +750,3 @@ export const NEO_PROPS = {
   buildBushesNeo:     () => { bushesNeo(); },
   buildTreesNeo:      () => { treesNeo(); }
 };
-
-/** 신석기 지역을 다 세운 뒤 브릭을 한 번에 내보낸다 */
-export function flushNeolithic(scene){
-  return flushBricks(scene || ST.scene);
-}

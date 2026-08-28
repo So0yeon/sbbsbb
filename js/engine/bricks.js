@@ -37,7 +37,10 @@ const CORE = [
   'bevel-hq-brick-slope-inverted-1x2',
   'none-hq-plate-1x1', 'none-hq-plate-1x1-round', 'none-hq-plate-1x2',
   'none-hq-plate-1x4', 'none-hq-plate-2x2', 'none-hq-plate-2x4',
-  'none-hq-brick-1x1', 'none-hq-brick-1x2', 'none-hq-brick-2x2'
+  'none-hq-brick-1x1', 'none-hq-brick-1x2', 'none-hq-brick-2x2',
+  // 스터드 없는 것 — 풀·바위·통나무처럼 '쌓은 티'가 나면 안 되는 곳에 쓴다
+  'none-hq-brick-1x1-round', 'none-hq-brick-1x4', 'none-hq-brick-2x4',
+  'none-hq-brick-slope-2x2'
 ];
 
 const GEO = {};                          // 이름 → BufferGeometry (바닥 가운데가 원점)
