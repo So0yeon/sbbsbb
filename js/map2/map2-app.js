@@ -24,8 +24,10 @@
      그때는 모핑 없이 바로 바꿉니다. 머리말 단추로 되돌릴 수 있습니다. */
   var systemReduced = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* 기본은 모핑 켜짐입니다. 모핑은 「영토가 어떻게 바뀌었나」를 보여 주는 내용 자체라
+     시스템의 움직임 줄이기 설정이 있어도 켜 두고, 대신 단추와 ?motion=off 로 끌 수 있습니다. */
   var motion = {
-    force: null,
+    force: true,
     on: function () { return motion.force === null ? !systemReduced : motion.force; },
     dur: function () { return motion.on() ? 1600 : 0; }
   };
@@ -110,18 +112,31 @@
     setView([p2x(at[1]) - view[2] / 2, p2y(at[0]) - view[3] / 2, view[2], view[3]]);
   }
 
-  /* 라벨 자리 — 가장 큰 조각의 중심입니다 (섬이 아니라 본토에 붙습니다) */
+  /* 라벨 자리 — 가장 큰 조각의 무게중심(면적 중심)입니다.
+     꼭짓점 평균을 쓰면 해안선처럼 점이 촘촘한 쪽으로 라벨이 끌려갑니다. */
+  function ringCentroid(r) {
+    var a = 0, cx = 0, cy = 0, i, x1, y1, x2, y2, f;
+    for (i = 0; i < r.length; i++) {
+      x1 = r[i][0]; y1 = r[i][1];
+      x2 = r[(i + 1) % r.length][0]; y2 = r[(i + 1) % r.length][1];
+      f = x1 * y2 - x2 * y1;
+      a += f;
+      cx += (x1 + x2) * f;
+      cy += (y1 + y2) * f;
+    }
+    if (Math.abs(a) < 1e-6) {                 /* 넓이가 0에 가까우면 꼭짓점 평균으로 */
+      var sx = 0, sy = 0;
+      for (i = 0; i < r.length; i++) { sx += r[i][0]; sy += r[i][1]; }
+      return { c: [sx / r.length, sy / r.length], a: 0 };
+    }
+    return { c: [cx / (3 * a), cy / (3 * a)], a: Math.abs(a / 2) };
+  }
+
   function labelPos(d) {
     var rings = window.Morph.parseRings(d), best = null, bestA = -1;
     rings.forEach(function (r) {
-      var a = 0, cx = 0, cy = 0, i;
-      for (i = 0; i < r.length; i++) {
-        var q = r[(i + 1) % r.length];
-        a += r[i][0] * q[1] - q[0] * r[i][1];
-        cx += r[i][0]; cy += r[i][1];
-      }
-      a = Math.abs(a / 2);
-      if (a > bestA) { bestA = a; best = [cx / r.length, cy / r.length]; }
+      var o = ringCentroid(r);
+      if (o.a > bestA) { bestA = o.a; best = o.c; }
     });
     return best;
   }
@@ -634,8 +649,11 @@
 
     if (q.get('selftest')) { eraId = 'three'; selftest(); return; }
 
-    var want = q.get('era') || 'three';       // 처음에는 삼국시대에서 시작해 끝까지 이어집니다
-    playEra(eraOf(want) ? want : 'three');
+    /* 열자마자 저절로 흘러가지 않습니다 — 첫 장면만 보여 주고 멈춰 있습니다.
+       「처음부터」나 시대를 누르면 그때부터 이어서 재생합니다. */
+    var want = q.get('era') || 'three';
+    showEra(eraOf(want) ? want : 'three');
+    if (q.get('play')) playEra(eraId, true);
     paintPlay();
   }
 
