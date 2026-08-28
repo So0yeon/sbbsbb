@@ -12,7 +12,7 @@ import { runMinigame, onPress, MINIGAME_LABELS } from './minigames.js';
 import { setAnim } from './anim.js';
 import { onQuestDone, esc } from './collect.js';
 import { refreshMarkerStates } from './markers.js';
-import { setAuraDone } from './scene-helpers.js';
+import { setAuraDone, DONE_COLOR } from './scene-helpers.js';
 import { icon, iconForQuest, stripEmoji } from './icons.js';
 import { artSVG, hasArt } from './artifact-art.js';
 import { pushPopup, popPopup, anyOpen, closeTop } from './popups.js';
@@ -506,7 +506,9 @@ export function pickFindItem(group){
   questState[key] = 'done';
   saveQuestState();
   group.userData.got = true;
-  group.userData.sprite.material.opacity = .4;
+  // 표지는 3차원 패다 (marker3d.js) — 재질을 직접 만지지 않고 setTone 으로 받는다
+  group.userData.sprite.userData.setTone(DONE_COLOR, .45, true);
+  group.userData.tone = '';
   setAuraDone(group.userData.aura, true);      // 주운 자리는 회색이 된다 (요구 3)
   bumpAxis('collect', 1);
   setAnim('cheer');

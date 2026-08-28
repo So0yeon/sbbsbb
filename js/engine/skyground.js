@@ -162,10 +162,12 @@ export function installSky(scene, bg, seed){
   if (!cloudMat){
     cloudMat = new THREE.MeshStandardMaterial({
       color:'#FFFFFF', flatShading:true, roughness:1, metalness:0,
-      transparent:true, opacity:.9, fog:false
+      // 자체발광을 조금 준다 — 각진 구름은 빛을 등진 면이 잿빛으로 죽는다
+      emissive:'#FFFFFF', emissiveIntensity:.45,
+      transparent:true, opacity:.97, fog:false
     });
   }
-  cloudMat.color.copy(mix('#FFFFFF', mid, .22));
+  cloudMat.color.copy(mix('#FFFFFF', mid, .06));   // 하늘빛을 아주 조금만 머금는다
 
   if (cloudGroup) { cloudGroup.parent && cloudGroup.parent.remove(cloudGroup); }
   cloudGroup = new THREE.Group();
