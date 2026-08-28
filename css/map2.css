@@ -14,7 +14,7 @@
 
   --terr-dim:#DAD6CA;        /* 꺼진 영토 */
   --terr-dim-line:#C6C1B2;
-  --tide-edge:#4A7BC8;
+  --tide-edge:#3A3126;   /* 수면 줄 — 나라 색(파랑·초록·금색)과 겹치지 않는 먹색 */
 
   --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,
          'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
@@ -64,6 +64,7 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   transition:background var(--ease) 180ms;
 }
 .ghost:hover{ background:var(--bg); color:var(--text); }
+.ghost.on{ border-color:var(--accent); color:#3F6B63; }
 
 /* ── 지도 ───────────────────────────────────────────────── */
 .stage{ position:relative; min-height:0; padding:10px 14px; }
@@ -80,6 +81,8 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 .nat-edge{ fill:none; stroke:var(--nat); stroke-width:1.1; stroke-opacity:.85;
            stroke-linejoin:round; }
 .nat{ transition:opacity 420ms var(--ease); }
+/* 차오르는 동안 수면 줄. 그 나라 안쪽에서만 보이게 잘라 둡니다. */
+.nat-tide{ fill:none; stroke:var(--tide-edge); stroke-width:2.2; stroke-linecap:round; stroke-opacity:.42; }
 .nat.going{ opacity:.55; }
 
 /* ── 아래 ───────────────────────────────────────────────── */

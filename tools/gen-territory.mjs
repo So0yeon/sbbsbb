@@ -57,9 +57,9 @@ const FRAMES = [
     ['goguryeo', '5goguryeo.geojson'], ['baekje', '5baekje.geojson'],
     ['silla', '5silla.geojson'], ['gaya', '5gaya.geojson'], ['tamna', '5tamna.geojson'] ] },
 
-  // 6세기(신라 전성기)는 아직 자료가 없습니다. GeoJSON 이 들어오면 아래 두 줄을 풀면 됩니다.
-  // { key:'c6', century:6, label:'6세기', eras:['three'], dir:'6세기(신라 전성기)', use:[
-  //   ['silla','6silla.geojson'], ['goguryeo','6goguryeo.geojson'], ['baekje','6baekje.geojson'] ] },
+  // 6세기는 신라 전성기입니다. 가야(562년 병합)와 탐라는 자료가 없어 이 장면에서 빠집니다.
+  { key: 'c6', century: 6, label: '6세기', eras: ['three'], dir: '6세기(신라 전성기)', use: [
+    ['goguryeo', '6goguryeo.geojson'], ['baekje', '6baekje.geojson'], ['silla', '6silla.geojson'] ] },
 
   { key: 'c7', century: 7, label: '7세기', eras: ['unified'], dir: '7세기', use: [
     ['balhae', '7balhae.geojson'], ['silla', '7silla.geojson'] ] },
@@ -71,9 +71,8 @@ const FRAMES = [
   { key: 'c11', century: 11, label: '11세기', eras: ['goryeo'], dir: '', use: [
     ['korea', '11koea.geojson'] ] },
 
-  // 12세기 GeoJSON 이 없어 11세기 자료를 그대로 씁니다. 파일이 생기면 이름만 바꾸세요.
-  { key: 'c12', century: 12, label: '12세기', eras: ['goryeo'], dir: '', src: '11koea', use: [
-    ['korea', '11koea.geojson'] ] },
+  { key: 'c12', century: 12, label: '12세기', eras: ['goryeo'], dir: '', use: [
+    ['korea', '12korea.geojson'] ] },
 
   { key: 'c14', century: 14, label: '조선', dir: '', use: [ ['choseon', '14choseon.geojson'] ],
     eras: ['joseon_e', 'joseon_l', 'open', 'colonial', 'liberation', 'war'] },

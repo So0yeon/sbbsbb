@@ -88,16 +88,26 @@
     clip.appendChild(wave);
     defs.appendChild(clip);
 
+    /* 수면 줄을 그 나라 안쪽에서만 보이게 자를 클립 */
+    var shape = el('path', { d: '' });
+    var shapeClip = el('clipPath', { id: 'shape-' + id, clipPathUnits: 'userSpaceOnUse' });
+    shapeClip.appendChild(shape);
+    defs.appendChild(shapeClip);
+
     var g = el('g', { 'class': 'nat', 'data-id': id });
     /* 색은 CSS 규칙으로만 씁니다. fill 속성에 var() 를 쓰면 브라우저가 무시합니다. */
     g.style.setProperty('--nat', info.color);
     var dim = el('path', { 'class': 'nat-dim', d: '' });
     var lit = el('path', { 'class': 'nat-lit', d: '', 'clip-path': 'url(#clip-' + id + ')' });
     var edge = el('path', { 'class': 'nat-edge', d: '' });
-    g.appendChild(dim); g.appendChild(lit); g.appendChild(edge);
+    var line = el('path', { 'class': 'nat-tide', d: '', 'clip-path': 'url(#shape-' + id + ')' });
+    g.appendChild(dim); g.appendChild(lit); g.appendChild(edge); g.appendChild(line);
     gTerr.appendChild(g);
 
-    return (live[id] = { g: g, dim: dim, lit: lit, edge: edge, keep: keep, wave: wave, clip: clip });
+    return (live[id] = {
+      g: g, dim: dim, lit: lit, edge: edge, line: line,
+      keep: keep, wave: wave, clip: clip, shape: shape, shapeClip: shapeClip
+    });
   }
 
   function dropNation(id) {
@@ -105,7 +115,14 @@
     if (!o) return;
     if (o.g.parentNode) o.g.parentNode.removeChild(o.g);
     if (o.clip.parentNode) o.clip.parentNode.removeChild(o.clip);
+    if (o.shapeClip.parentNode) o.shapeClip.parentNode.removeChild(o.shapeClip);
     delete live[id];
+  }
+
+  /* 물결 한 장면을 그 나라에 칠합니다 */
+  function paintWave(o, w) {
+    o.wave.setAttribute('d', w.area);
+    o.line.setAttribute('d', w.line);
   }
 
   function stopAnims() {
@@ -137,7 +154,7 @@
     var w = b.x1 - b.x0, h = b.y1 - b.y0;
     var padX = w * 0.10 + 24, padY = h * 0.10 + 24;
     var to = [b.x0 - padX, b.y0 - padY, w + padX * 2, h + padY * 2];
-    if (!view || !animate || window.Tide.reduced) { setView(to); return; }
+    if (!view || !animate || window.Tide.calm()) { setView(to); return; }
     var from = view.slice(), t0 = 0;
     if (viewAnim) cancelAnimationFrame(viewAnim);
     (function f(ts) {
@@ -171,7 +188,7 @@
       var box = o.dim.getBBox();
       anims.push(window.Tide.run({
         box: box, dir: 'out',
-        onFrame: function (d) { o.wave.setAttribute('d', d); },
+        onFrame: function (w) { paintWave(o, w); },
         onDone: function () { dropNation(id); }
       }));
     });
@@ -183,6 +200,7 @@
       o.dim.setAttribute('d', n.d);
       o.lit.setAttribute('d', n.d);
       o.edge.setAttribute('d', n.d);
+      o.shape.setAttribute('d', n.d);
       /* 같은 이름이 이어지면 이전 영토는 켜진 채로 두고, 넓어진 곳만 차오르게 합니다.
          clipPath 는 자식 도형의 합집합이라 이것만으로 됩니다. 영토가 줄어든 경우에는
          켜진 겹 자체가 새 영토라 이전 영역이 되살아나지 않습니다. */
@@ -190,12 +208,14 @@
 
       var box = o.dim.getBBox();
       if (!animate) {
-        o.wave.setAttribute('d', window.Tide.fill(box));
+        paintWave(o, window.Tide.fill(box));
+        o.line.setAttribute('d', '');
         return;
       }
       anims.push(window.Tide.run({
         box: box, dir: 'in',
-        onFrame: function (d) { o.wave.setAttribute('d', d); }
+        onFrame: function (w) { paintWave(o, w); },
+        onDone: function () { o.line.setAttribute('d', ''); }   /* 다 차면 수면 줄을 지웁니다 */
       }));
     });
 
@@ -245,7 +265,7 @@
     if (i == null) return;
     showFrame(i, true, fresh);
     if (queue.length) {
-      timer = setTimeout(function () { step(false); }, window.Tide.CFG.duration + 900);
+      timer = setTimeout(function () { step(false); }, window.Tide.dur() + 900);
     }
   }
 
@@ -363,6 +383,29 @@
     $('replay').addEventListener('click', function () { playEra(eraId); });
 
     var q = new URLSearchParams(location.search);
+
+    /* 윈도우에서 「애니메이션 효과」를 꺼 두면 브라우저가 prefers-reduced-motion 을 알려 주고,
+       그러면 차오름 없이 즉시 채워집니다. 그럴 때도 직접 켤 수 있게 단추를 둡니다. */
+    var m = q.get('motion');
+    if (m === 'on') window.Tide.force = true;
+    else if (m === 'off') window.Tide.force = false;
+    console.log('[map2] 움직임 ' + window.Tide.mode() +
+                ' · 시스템 prefers-reduced-motion=' + window.Tide.systemReduced);
+
+    var mb = $('motion');
+    function paintMotion() {
+      var full = window.Tide.mode() === 'full';
+      mb.textContent = full ? '물결 끄기' : '물결 켜기';
+      mb.classList.toggle('on', full);
+      mb.title = full ? '물결 없이 잔잔하게 차오릅니다' : '물결치며 차오릅니다';
+    }
+    mb.addEventListener('click', function () {
+      window.Tide.force = window.Tide.calm();    // 잔잔하면 물결로, 물결이면 잔잔하게
+      paintMotion();
+      playEra(eraId);
+    });
+    paintMotion();
+
     if (q.get('selftest')) { eraId = 'three'; selftest(); return; }
 
     var want = q.get('era') || 'three';       // 처음에는 삼국시대 — 4→5세기가 이어집니다
