@@ -106,6 +106,9 @@
     var gT = $('gTerr'), gR = $('gRel'), gL = $('gLabel'), gM = $('gMk');
     [gT, gR, gL, gM].forEach(function (g) { g.innerHTML = ''; });
 
+    fitTo(era.view);                 // 라벨 크기를 정하려면 화면 범위가 먼저 있어야 한다
+    var u = unitsPerPx();
+
     /* 나라 영역 */
     (era.terr || []).forEach(function (t) {
       var rings = normRings(t.pts);
@@ -120,12 +123,14 @@
       });
       if (t.at) add(gL, 'text', {
         x: px(t.at[1]), y: py(t.at[0]), class: 'terr-label',
-        fill: t.c || '#7B6A55', 'text-anchor': 'middle'
+        fill: t.c || '#7B6A55', 'text-anchor': 'middle',
+        'font-size': (14 * u).toFixed(2), 'stroke-width': 4 * u
       }, t.n);
       if (t.cap && t.cap.at) {
-        add(gL, 'circle', { cx: px(t.cap.at[1]), cy: py(t.cap.at[0]), r: 3.4, fill: '#191919' });
+        add(gL, 'circle', { cx: px(t.cap.at[1]), cy: py(t.cap.at[0]), r: 3.4 * u, fill: '#191919' });
         add(gL, 'text', {
-          x: px(t.cap.at[1]), y: py(t.cap.at[0]) - 7, class: 'cap-label', 'text-anchor': 'middle'
+          x: px(t.cap.at[1]), y: py(t.cap.at[0]) - 8 * u, class: 'cap-label', 'text-anchor': 'middle',
+          'font-size': (12 * u).toFixed(2), 'stroke-width': 3.4 * u
         }, '◉ ' + t.cap.n);
       }
     });
@@ -133,7 +138,8 @@
     /* 이웃 나라 라벨 */
     (era.nb || []).forEach(function (n) {
       if (!n.at) return;
-      add(gL, 'text', { x: px(n.at[1]), y: py(n.at[0]), class: 'nb-label', 'text-anchor': 'middle' }, n.n);
+      add(gL, 'text', { x: px(n.at[1]), y: py(n.at[0]), class: 'nb-label', 'text-anchor': 'middle',
+                        'font-size': (12 * u).toFixed(2), 'stroke-width': 3 * u }, n.n);
     });
 
     /* 교류선 */
@@ -153,7 +159,6 @@
     });
 
     drawMarkers();
-    fitTo(era.view);
     drawTimeline();
     drawFilter();
     drawList();
@@ -179,10 +184,26 @@
   var CAT_LABEL = { relic: '유물·유적', person: '인물', culture: '문화',
                     event: '사건', exchange: '교류', life: '생활문화' };
 
+  /** SVG 한 단위가 화면에서 몇 픽셀인지 — 라벨 크기와 간격을 이걸로 맞춘다.
+      viewBox 는 가로세로 중 더 빡빡한 쪽에 맞춰 들어가므로(preserveAspectRatio meet)
+      너비만 보면 안 된다. 세로가 짧은 태블릿에서 글자가 깨알같이 작아졌던 원인이다. */
+  function unitsPerPx() {
+    if (!view || !svg) return 1;
+    var r = svg.getBoundingClientRect();
+    var w = r.width || svg.clientWidth || 800;
+    var h = r.height || svg.clientHeight || 902;
+    var scale = Math.min(w / view.w, h / view.h);
+    return scale > 0 ? 1 / scale : 1;
+  }
+
   function drawMarkers() {
     var gM = $('gMk');
     gM.innerHTML = '';
     var placed = [];
+    var upp = unitsPerPx();
+    var fs = (11 * upp).toFixed(2);          // 화면에서 11px 로 보이게
+    var gapX = 48 * upp, gapY = 13 * upp;
+    var rHit = 15 * upp, rDot = 5 * upp;
 
     itemsOfEra().forEach(function (c) {
       if (!c.at) return;
@@ -192,22 +213,27 @@
 
       var g = add(gM, 'g', { class: 'mk' + (got ? ' got' : ''), tabindex: '0',
                              role: 'button', 'aria-label': c.t });
-      add(g, 'circle', { class: 'hit', cx: x, cy: y, r: 14 });          // 터치 영역을 크게 (§8-2)
-      add(g, 'circle', { class: 'dot', cx: x, cy: y, r: got ? 6 : 5,
-                         fill: got ? col : '#FDFDFB', stroke: col });
+      add(g, 'circle', { class: 'hit', cx: x, cy: y, r: rHit });        // 터치 영역을 크게 (§8-2)
+      add(g, 'circle', { class: 'dot', cx: x, cy: y, r: got ? rDot * 1.2 : rDot,
+                         fill: got ? col : '#FDFDFB', stroke: col, 'stroke-width': 1.6 * upp });
 
       // 라벨은 겹치면 뺀다. 점은 남긴다 (§7-4)
-      var slot = [[0, -11], [0, 17], [0, -21]];
       var ok = null;
+      var half = (c.t.length * 5.6 + 10) * upp;      // 글자 폭을 대충 잡는다
+      var slot = [[0, -12 * upp], [0, 19 * upp], [0, -25 * upp], [0, 32 * upp],
+                  [half + 8 * upp, 4 * upp], [-half - 8 * upp, 4 * upp],
+                  [half + 8 * upp, -16 * upp], [-half - 8 * upp, -16 * upp]];
       for (var i = 0; i < slot.length; i++) {
         var lx = x + slot[i][0], ly = y + slot[i][1];
-        if (!placed.some(function (p) { return Math.abs(p[0] - lx) < 46 && Math.abs(p[1] - ly) < 12; })) {
-          ok = [lx, ly]; break;
-        }
+        var clash = placed.some(function (p) {
+          return Math.abs(p[0] - lx) < (p[2] + half) && Math.abs(p[1] - ly) < gapY;
+        });
+        if (!clash) { ok = [lx, ly, half]; break; }
       }
       if (ok) {
         placed.push(ok);
-        add(g, 'text', { x: ok[0], y: ok[1], 'text-anchor': 'middle' }, c.t);
+        add(g, 'text', { x: ok[0], y: ok[1], 'text-anchor': 'middle',
+                         'font-size': fs, 'stroke-width': 3 * upp }, c.t);
       }
 
       g.addEventListener('click', function () { openItem(c); });
@@ -300,10 +326,14 @@
     view = { x: x, y: y, w: w, h: h };
     applyView(true);
   }
+  var relabelTimer = 0;
   function applyView(animate) {
     if (!view) return;
     svg.style.transition = animate ? 'none' : '';
     svg.setAttribute('viewBox', [view.x, view.y, view.w, view.h].map(function (n) { return n.toFixed(1); }).join(' '));
+    // 배율이 바뀌면 라벨 크기와 겹침이 달라진다 — 잠시 뒤 다시 배치한다
+    clearTimeout(relabelTimer);
+    relabelTimer = setTimeout(function () { if (started) drawMarkers(); }, 160);
   }
   function zoom(k, cx, cy) {
     if (!view) return;

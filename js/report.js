@@ -24,9 +24,10 @@
     return d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '.';
   }
 
-  /** 머리말 — 이름이 있으면 넣고, 없으면 빈칸으로 인쇄한다 */
-  function head(title, sub) {
-    var name = S.displayName();
+  /** 머리말 — 이름이 있으면 넣고, 없으면 빈칸으로 인쇄한다.
+      교사가 나눠 주는 학습지는 언제나 빈칸이어야 하므로 withName=false 로 부른다 */
+  function head(title, sub, withName) {
+    var name = withName === false ? '' : S.displayName();
     return '<div class="pr-head">' +
       '<div class="pr-title">' + esc(title) + '</div>' +
       '<div class="pr-meta">' +
@@ -48,17 +49,19 @@
     return '<div class="pr-foot">' + lines.map(esc).join('<br>') + '</div>';
   }
 
-  function paint(html) {
+  /** 만들기와 인쇄하기를 나눈다 — 만들어 둔 것을 검사할 수 있게 */
+  function paint(html, doPrint) {
     var area = document.getElementById('printArea');
-    if (!area) return;
+    if (!area) return '';
     area.innerHTML = html;
-    setTimeout(function () { g.print(); }, 60);
+    if (doPrint !== false) setTimeout(function () { g.print(); }, 60);
+    return html;
   }
 
   /* ══════════════════════════════════════════════════════════
      ① 탐험 기록지 (학생용)
      ══════════════════════════════════════════════════════════ */
-  function printRecord() {
+  function printRecord(doPrint) {
     var r = S.currentRank();
     var t = S.typeOf();
     var answers = S.answers();
@@ -126,13 +129,13 @@
 
       foot();
 
-    paint(html);
+    return paint(html, doPrint);
   }
 
   /* ══════════════════════════════════════════════════════════
      ② 스탬프 수첩
      ══════════════════════════════════════════════════════════ */
-  function printStampBook() {
+  function printStampBook(doPrint) {
     var worlds = g.AtlasExplore ? g.AtlasExplore.worldList() : [];
     var html = head('스탬프 수첩', '받은 도장 ' + S.stampCount() + '개');
 
@@ -148,15 +151,15 @@
     });
 
     html += foot();
-    paint(html);
+    return paint(html, doPrint);
   }
 
   /* ══════════════════════════════════════════════════════════
      ③ 학습지 · 문제지 · 정답지 (교사용)
      ══════════════════════════════════════════════════════════ */
-  function printWorksheet(era, items) {
+  function printWorksheet(era, items, doPrint) {
     items = items || [];
-    var html = head(era.name + ' 조사 학습지', era.years || '');
+    var html = head(era.name + ' 조사 학습지', era.years || '', false);
 
     html += '<div class="pr-sec"><h3>1. 무엇을 찾아볼까요</h3>' +
       '<table class="pr-table"><tr><th style="width:22%">이름</th><th style="width:38%">어떤 것인가요</th><th>내가 알아낸 것</th></tr>' +
@@ -172,7 +175,7 @@
 
     html += '<div class="pr-page-break"></div>';
 
-    html += head(era.name + ' 오려 쓰는 카드', '잘라서 분류·배열 활동에 씁니다');
+    html += head(era.name + ' 오려 쓰는 카드', '잘라서 분류·배열 활동에 씁니다', false);
     html += '<div class="pr-sec"><table class="pr-table">' +
       items.map(function (c, i) {
         if (i % 2) return '';
@@ -185,7 +188,7 @@
 
     html += '<div class="pr-page-break"></div>';
 
-    html += head(era.name + ' 정답지', '교사용 · 배부 전 확인하세요');
+    html += head(era.name + ' 정답지', '교사용 · 배부 전 확인하세요', false);
     html += '<div class="pr-sec"><h3>항목별 핵심</h3><table class="pr-table">' +
       '<tr><th style="width:22%">이름</th><th>본문 요약</th></tr>' +
       items.map(function (c) {
@@ -193,13 +196,17 @@
       }).join('') + '</table></div>';
 
     html += foot('교사용 정답지 — 학생에게 배부하지 마세요.');
-    paint(html);
+    return paint(html, doPrint);
   }
 
   g.AtlasReport = {
     printRecord: printRecord,
     printStampBook: printStampBook,
-    printWorksheet: printWorksheet
+    printWorksheet: printWorksheet,
+    /* 인쇄 대화상자를 열지 않고 만들기만 한다 (검사용) */
+    previewRecord: function () { return printRecord(false); },
+    previewStampBook: function () { return printStampBook(false); },
+    previewWorksheet: function (era, items) { return printWorksheet(era, items, false); }
   };
 
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -381,6 +381,11 @@
         say('해안선점', (window.KOREA || []).reduce(function (n, r) { return n + r.length; }, 0));
         say('제주점', (window.JEJU || []).length);
         say('사진출처', window.AtlasCredits ? window.AtlasCredits.PHOTOS.length : -1);
+        var ext = performance.getEntriesByType('resource')
+          .map(function (r) { return r.name; })
+          .filter(function (n) { return n.indexOf(location.origin) !== 0 && n.indexOf('data:') !== 0 && n.indexOf('blob:') !== 0; });
+        say('외부요청', ext.length + (ext.length ? ' — ' + ext.slice(0, 3).join(' ') : '건'));
+        say('저장가능', S.available() ? 'O' : 'X');
 
         if (STOP === 'intro') { console.log('[SELFTEST] ' + JSON.stringify(out)); return; }
         toMap();
@@ -414,6 +419,57 @@
                 // 이야기 카드를 닫고 실제 월드를 보인다
                 var go = document.getElementById('exStoryGo');
                 if (go) go.click();
+
+                if (STOP === 'gate') {
+                  // 관문으로 지역을 옮기고 돌아올 수 있는지 (MASTER §12-5)
+                  var go3 = document.getElementById('exStoryGo'); if (go3) go3.click();
+                  var Wg = window.AtlasExplore.WORLDS['samguk'];
+                  var gate = Wg.quests.find(function (x) { return x.kind === 'gate'; });
+                  say('첫관문', gate ? gate.title + ' → ' + gate.to : '없음');
+                  var rail2 = document.querySelectorAll('#exRailList .rail-item');
+                  for (var g2 = 0; g2 < rail2.length; g2++) {
+                    if (rail2[g2].textContent.indexOf(gate.title) >= 0) { rail2[g2].click(); break; }
+                  }
+                  setTimeout(function () {
+                    var goBtn = document.querySelector('#questCard #qGo');
+                    say('관문카드', goBtn ? goBtn.textContent : '없음');
+                    if (goBtn) goBtn.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
+                    setTimeout(function () {
+                      say('도착지역', document.getElementById('exMiniLabel').textContent);
+                      say('그지역임무', document.querySelectorAll('#exRailList .rail-item').length);
+                      say('방문도장', S.stampHas('visit:samguk:' + gate.to) ? '찍힘' : '없음');
+                      console.log('[SELFTEST] ' + JSON.stringify(out));
+                    }, 900);
+                  }, 500);
+                  return;
+                }
+
+                if (STOP === 'print') {
+                  // 임무 몇 개를 마쳐 기록을 만든 뒤 인쇄물을 그린다
+                  var Wp = window.AtlasExplore.WORLDS['samguk'];
+                  var picks = Wp.quests.filter(function (x) { return x.kind !== 'gate'; }).slice(0, 6);
+                  picks.forEach(function (x, i) {
+                    S.doneAdd('samguk', x.id);
+                    S.logAnswer({ world:'samguk', questId:x.id, title:x.title,
+                      question:(x.q && x.q.text) || (x.capstone && x.capstone.text) || '살펴본 임무',
+                      answer:'보기 ' + (i + 1), correct: i % 3 !== 2, tries: (i % 2) + 1, kind:'choice' });
+                  });
+                  S.logAnswer({ world:'samguk', questId:'essay-demo', title:'고구려의 힘은 어디에서 왔는가',
+                    question:'광개토대왕이 영토를 넓힐 수 있었던 까닭을 두 가지 이상 적어 보시오.',
+                    answer:'튼튼한 기병과 성을 쌓는 기술이 있었고, 여러 부족을 하나로 묶어 군사를 크게 모을 수 있었기 때문이다.',
+                    correct:true, tries:1, kind:'essay' });
+                  S.stampAdd('visit:samguk:goguryeo'); S.stampAdd('clear:samguk:goguryeo');
+                  S.stampAdd('era:samguk'); S.relicAdd('r-gwanggaeto');
+                  var which = new URLSearchParams(location.search).get('doc') || 'record';
+                  if (which === 'stamp') window.AtlasReport.previewStampBook();
+                  else if (which === 'sheet') window.AtlasReport.previewWorksheet(window.ERAS[3], window.AtlasMap.itemsOfEra().slice(0, 10));
+                  else window.AtlasReport.previewRecord();
+                  document.body.classList.add('print-preview');
+                  say('인쇄물', which);
+                  say('인쇄길이', document.getElementById('printArea').innerHTML.length);
+                  console.log('[SELFTEST] ' + JSON.stringify(out));
+                  return;
+                }
 
                 if (STOP === 'inspect') {
                   // 조사형 + 놀이가 붙은 임무를 끝까지 눌러 본다 (빗살무늬토기)

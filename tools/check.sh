@@ -16,6 +16,7 @@ URL="http://127.0.0.1:8765${URLPATH}"
 mkdir -p tools/.out
 "$CHROME" --headless=new --disable-gpu --no-first-run --no-default-browser-check \
   --user-data-dir="$PROFILE" --enable-logging=stderr --v=0 \
+  --disk-cache-size=1 --media-cache-size=1 \
   --use-angle=swiftshader --enable-unsafe-swiftshader \
   --window-size=1400,900 --virtual-time-budget=9000 \
   --dump-dom "$URL" > tools/.out/dom.html 2> tools/.out/log.txt

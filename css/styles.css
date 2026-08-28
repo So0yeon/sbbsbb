@@ -240,10 +240,11 @@ b{ font-weight:700; }
 .mk circle.hit{ fill:transparent; }
 .mk circle.dot{ stroke:#fff; stroke-width:1.6; }
 .mk.got circle.dot{ stroke-width:2.6; }
-.mk text{ font-size:11px; fill:var(--text); paint-order:stroke; stroke:#FDFDFB; stroke-width:3px; }
-.cap-label{ font-size:12px; font-weight:700; fill:var(--ink); paint-order:stroke; stroke:#FDFDFB; stroke-width:3.4px; }
-.terr-label{ font-size:14px; font-weight:700; paint-order:stroke; stroke:#FDFDFB; stroke-width:4px; }
-.nb-label{ font-size:12px; fill:var(--text3); paint-order:stroke; stroke:#FDFDFB; stroke-width:3px; }
+/* 글자 크기와 외곽선 두께는 map-app.js 가 화면 배율에 맞춰 넣습니다 (CSS 로 고정하면 덮어씁니다) */
+.mk text{ fill:var(--text); paint-order:stroke; stroke:#FDFDFB; }
+.cap-label{ font-weight:700; fill:var(--ink); paint-order:stroke; stroke:#FDFDFB; }
+.terr-label{ font-weight:700; paint-order:stroke; stroke:#FDFDFB; }
+.nb-label{ fill:var(--text3); paint-order:stroke; stroke:#FDFDFB; }
 
 /* 지도 상세 시트 */
 #mapScrim, #exScrim, #exScrim2, #eraCompleteScrim, #exMiniScrim, #sheetScrim{
@@ -856,6 +857,40 @@ b{ font-weight:700; }
    ══════════════════════════════════════════════════════════════ */
 #printArea{ display:none; }
 
+/* ══════════════════════════════════════════════════════════════
+   인쇄 (§7-6) — PDF 라이브러리 없이 window.print()
+   .pr-* 는 화면에서도 쓸 수 있게 밖에 두었습니다 (#printArea 가 숨어 있어 보이지 않습니다).
+   body.print-preview 를 켜면 화면에서 인쇄물을 그대로 볼 수 있습니다 (검사용).
+   ══════════════════════════════════════════════════════════════ */
+.pr-head{ border-bottom:2px solid #191919; padding-bottom:8px; margin-bottom:14px; }
+.pr-title{ font-size:18pt; font-weight:700; }
+.pr-meta{ margin-top:6px; font-size:10pt; display:flex; gap:18px; flex-wrap:wrap; }
+.pr-meta b{ font-weight:600; }
+.pr-sec{ margin:16px 0; break-inside:avoid; }
+.pr-sec h3{ font-size:13pt; border-left:4px solid #6E9B94; padding-left:8px; margin-bottom:8px; }
+.pr-table{ width:100%; border-collapse:collapse; font-size:10pt; }
+.pr-table th, .pr-table td{ border:1px solid #999; padding:5px 7px; text-align:left; vertical-align:top; }
+.pr-table th{ background:#F0F0EC; font-weight:600; }
+.pr-blank{ border-bottom:1px solid #666; display:inline-block; min-width:120px; }
+.pr-answer-box{ border:1px solid #999; min-height:60px; padding:6px; }
+.pr-stamps{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+.pr-stamp{ border:1px dashed #999; border-radius:50%; aspect-ratio:1; display:grid; place-items:center;
+           font-size:8pt; text-align:center; padding:4px; line-height:1.25; color:#777; }
+.pr-stamp.on{ border:2px solid #A8534F; color:#A8534F; font-weight:700; }
+.pr-foot{ margin-top:20px; padding-top:8px; border-top:1px solid #CCC; font-size:8.5pt; color:#555; }
+.pr-page-break{ break-after:page; }
+
+body.print-preview{ background:#fff; }
+body.print-preview #intro,
+body.print-preview #app,
+body.print-preview #explore,
+body.print-preview .big-sheet,
+body.print-preview #sheetScrim,
+body.print-preview #toast{ display:none !important; }
+body.print-preview #printArea{
+  display:block !important; max-width:720px; margin:0 auto; padding:28px 24px 60px;
+}
+
 @media print{
   @page{ size:A4; margin:14mm 12mm; }
   body{ background:#fff; font-size:11pt; }
@@ -863,21 +898,4 @@ b{ font-weight:700; }
   #questModal, #eventSheet, #eraCompleteModal, #eraCompleteScrim, #exMiniModal,
   #exMiniScrim, #toast, #stampFx{ display:none !important; }
   #printArea{ display:block !important; }
-
-  .pr-head{ border-bottom:2px solid #191919; padding-bottom:8px; margin-bottom:14px; }
-  .pr-title{ font-size:18pt; font-weight:700; }
-  .pr-meta{ margin-top:6px; font-size:10pt; display:flex; gap:18px; flex-wrap:wrap; }
-  .pr-meta b{ font-weight:600; }
-  .pr-sec{ margin:16px 0; break-inside:avoid; }
-  .pr-sec h3{ font-size:13pt; border-left:4px solid #6E9B94; padding-left:8px; margin-bottom:8px; }
-  .pr-table{ width:100%; border-collapse:collapse; font-size:10pt; }
-  .pr-table th, .pr-table td{ border:1px solid #999; padding:5px 7px; text-align:left; vertical-align:top; }
-  .pr-table th{ background:#F0F0EC; font-weight:600; }
-  .pr-blank{ border-bottom:1px solid #666; display:inline-block; min-width:120px; }
-  .pr-answer-box{ border:1px solid #999; min-height:60px; padding:6px; }
-  .pr-stamps{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
-  .pr-stamp{ border:1px dashed #999; border-radius:50%; aspect-ratio:1; display:grid; place-items:center; font-size:8pt; text-align:center; padding:4px; }
-  .pr-stamp.on{ border:2px solid #A8534F; color:#A8534F; font-weight:700; }
-  .pr-foot{ margin-top:20px; padding-top:8px; border-top:1px solid #CCC; font-size:8.5pt; color:#555; }
-  .pr-page-break{ break-after:page; }
 }
