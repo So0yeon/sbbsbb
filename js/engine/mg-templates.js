@@ -59,6 +59,8 @@ function finish(ui, quality, spec, done){
   tell(ui, WORD[quality]);
   ui.skip.style.display = 'none';
   ui.go.textContent = '다음으로 →';
+  ui.go.style.display = '';         // 템플릿이 처음에 걸어 둔 인라인 display:none 을 지운다 —
+                                     // 안 지우면 .on 클래스(display:block)가 있어도 안 보인다
   ui.go.classList.add('on');
   const fresh = ui.go.cloneNode(true);
   ui.go.replaceWith(fresh);
