@@ -10,7 +10,7 @@
   var ERAS = window.ERAS || [];
   var $ = function (id) { return document.getElementById(id); };
 
-  var svg, defs, gTerr, gLabels, rectCache = null;
+  var svg, defs, gTerr, gLabels, gRel, gCap, gMk, rectCache = null;
   var live = {};          // 화면에 올라와 있는 나라 — id → { g, fill }
   var anims = [];         // 돌고 있는 모핑
   var timer = null;       // 다음 세기 예약
@@ -83,8 +83,31 @@
 
     gTerr = el('g', { id: 'gTerr' });
     svg.appendChild(gTerr);
-    gLabels = el('g', { id: 'gLabels' });      /* 라벨은 언제나 영토 위에 */
+    gRel = el('g', { id: 'gRel' });            /* 교류선 */
+    svg.appendChild(gRel);
+    gCap = el('g', { id: 'gCap' });            /* 수도 · 이웃 나라 */
+    svg.appendChild(gCap);
+    gLabels = el('g', { id: 'gLabels' });      /* 나라 이름 */
     svg.appendChild(gLabels);
+    gMk = el('g', { id: 'gMk' });              /* 항목 마커 — 언제나 맨 위 */
+    svg.appendChild(gMk);
+  }
+
+  /* SVG 한 단위가 화면에서 몇 픽셀인지. viewBox 는 가로세로 중 빡빡한 쪽에 맞춰 들어가므로
+     너비만 보면 세로가 짧은 태블릿에서 글자가 깨알같이 작아집니다. */
+  function unitsPerPx() {
+    if (!view) return 1;
+    var r = svgRect();
+    var w = r.width || 800, h = r.height || 902;
+    var s = Math.min(w / view[2], h / view[3]);
+    return s > 0 ? 1 / s : 1;
+  }
+
+  /* 항목 하나를 화면 가운데로 */
+  function focusOn(at) {
+    if (!at || !view) return;
+    if (viewAnim) { cancelAnimationFrame(viewAnim); viewAnim = 0; }
+    setView([p2x(at[1]) - view[2] / 2, p2y(at[0]) - view[3] / 2, view[2], view[3]]);
   }
 
   /* 라벨 자리 — 가장 큰 조각의 중심입니다 (섬이 아니라 본토에 붙습니다) */
@@ -153,10 +176,16 @@
   var view = null, viewAnim = 0;
   var MIN_W = 60, MAX_W = M.w * 2.4;
 
+  var relabelTimer = 0;
   function setView(v) {
     view = v;
     svg.setAttribute('viewBox', v.map(function (n) { return n.toFixed(1); }).join(' '));
     paintLabelScale();
+    /* 배율이 바뀌면 마커 글자 크기와 겹침이 달라집니다 — 잠시 뒤 다시 배치합니다 */
+    clearTimeout(relabelTimer);
+    relabelTimer = setTimeout(function () {
+      if (window.Map2Panel) window.Map2Panel.relabel();
+    }, 160);
   }
   function moveLabel(o, p) {
     if (!p) { o.label.setAttribute('opacity', 0); return; }
@@ -221,6 +250,7 @@
     }, { passive: false });
 
     svg.addEventListener('pointerdown', function (e) {
+      if (e.target.closest && e.target.closest('.mk')) return;   /* 마커를 누른 것은 이동이 아닙니다 */
       svg.setPointerCapture(e.pointerId);
       pts[e.pointerId] = { x: e.clientX, y: e.clientY };
       var ids = Object.keys(pts);
@@ -278,17 +308,25 @@
     var prev = frameIdx >= 0 ? T.frames[frameIdx] : null;
     frameIdx = i;
 
-    /* 조선 전기부터 그 이후는 영토가 같아 전환을 두지 않습니다 (데이터의 still) */
-    var dur = (f.still || !animate || !motion.on()) ? 0 : motion.dur();
+    /* still 은 「같은 장면을 나눠 쓰는 시대끼리 오갈 때」만 전환을 없앱니다.
+       조선 전기 ↔ 후기 ↔ 개항 ↔ 일제 ↔ 광복 ↔ 6·25 는 그대로 있고,
+       고려 → 조선처럼 장면이 실제로 바뀔 때는 모핑합니다. */
+    var sameFrame = !!(prev && prev.key === f.key);
+    var dur = (!animate || !motion.on() || (f.still && sameFrame)) ? 0 : motion.dur();
 
     var prevD = {};
     if (prev && !fresh) prev.nations.forEach(function (n) { prevD[n.id] = n.d; });
     var here = {};
     f.nations.forEach(function (n) { here[n.id] = n.d; });
 
+    /* 이어받는 나라 (조선 ← 고려). 앞선 나라는 따로 사라지지 않고 그대로 흘러갑니다. */
+    var eaten = {};
+    f.nations.forEach(function (n) { if (n.after && prevD[n.after]) eaten[n.after] = n.id; });
+
     /* 이름이 사라진 나라 — 오므라들며 사라집니다 */
     Object.keys(live).forEach(function (id) {
       if (here[id]) return;
+      if (eaten[id]) { dropNation(id); return; }   /* 뒤 나라가 이어받았습니다 */
       var o = live[id];
       o.g.classList.add('going');
       if (!dur) { dropNation(id); return; }
@@ -308,7 +346,13 @@
       o.g.classList.remove('going');
       /* 같은 나라라도 장면마다 이름표가 다를 수 있습니다 (7세기 신라 → 통일신라) */
       o.label.textContent = n.as || (T.nations[n.id] || {}).name || n.id;
-      var from = prevD[n.id] || o.d || '';
+      var from = prevD[n.id] || (n.after ? prevD[n.after] : '') || o.d || '';
+      /* 이어받을 때는 앞선 나라 색에서 제 색으로 물들입니다 */
+      if (!prevD[n.id] && n.after && prevD[n.after] && T.nations[n.after]) {
+        o.g.style.setProperty('--nat', T.nations[n.after].color);
+        var own = (T.nations[n.id] || {}).color;
+        requestAnimationFrame(function () { o.g.style.setProperty('--nat', own); });
+      }
       var pTo = labelPos(n.d);
       if (!dur) {
         o.fill.setAttribute('d', n.d);
@@ -330,6 +374,7 @@
     });
 
     paintChrome(f);
+    return dur;
   }
 
   /* ── 시대 재생 ───────────────────────────────────────────── */
@@ -359,13 +404,23 @@
     var era = (eraId && f.eras.indexOf(eraId) >= 0) ? eraId : f.eras[0];
     if (era !== eraId) { var had = !!view; eraId = era; fitTo(boxOfEra(era), had); }
 
-    showFrame(i, true, fresh);
+    var dur = showFrame(i, true, fresh);
     if (queue.length) {
-      timer = setTimeout(function () { stepAll(false); }, (f.still ? 0 : motion.dur()) + 900);
+      timer = setTimeout(function () { stepAll(false); }, dur + 900);
     } else {
       playing = false;
       paintPlay();
     }
+  }
+
+  /* 다른 시대의 이야기로 건너뛸 때 — 재생하지 않고 그 장면만 보여 줍니다 */
+  function showEra(id) {
+    var list = framesOfEra(id);
+    stopPlay();
+    eraId = id;
+    fitTo(boxOfEra(id), !!view);
+    if (list.length) showFrame(list[0], true);
+    else { frameIdx = -1; paintChrome(null); }
   }
 
   function stopPlay() {
@@ -449,6 +504,7 @@
     [].forEach.call(document.querySelectorAll('#track .tl-btn'), function (b) {
       b.classList.toggle('on', b.dataset.era === eraId);
     });
+    if (window.Map2Panel) window.Map2Panel.setEra(eraId);
   }
 
   function paintDots() {
@@ -568,6 +624,14 @@
     });
     paintMotion();
 
+    if (window.Map2Panel) {
+      window.Map2Panel.init(
+        { unitsPerPx: unitsPerPx, focusOn: focusOn, showEra: showEra,
+          nationLabelBoxes: nationLabelBoxes },
+        { rel: gRel, cap: gCap, mk: gMk }
+      );
+    }
+
     if (q.get('selftest')) { eraId = 'three'; selftest(); return; }
 
     var want = q.get('era') || 'three';       // 처음에는 삼국시대에서 시작해 끝까지 이어집니다
@@ -578,5 +642,20 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 
-  window.Map2 = { showFrame: showFrame, playEra: playEra, selftest: selftest };
+  /* 나라 이름이 차지한 자리 — 마커 라벨이 그 위에 겹치지 않도록 알려 줍니다 */
+  function nationLabelBoxes() {
+    var upp = unitsPerPx(), out = [];
+    Object.keys(live).forEach(function (id) {
+      var t = live[id].label;
+      if (!t || t.getAttribute('opacity') === '0') return;
+      var n = (t.textContent || '').length;
+      out.push([+t.getAttribute('x'), +t.getAttribute('y'), (n * 7.5 + 8) * upp]);
+    });
+    return out;
+  }
+
+  window.Map2 = {
+    showFrame: showFrame, playEra: playEra, showEra: showEra, selftest: selftest,
+    unitsPerPx: unitsPerPx, focusOn: focusOn, nationLabelBoxes: nationLabelBoxes
+  };
 })();

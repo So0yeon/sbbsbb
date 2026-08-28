@@ -16,6 +16,10 @@
          'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --r-sm:10px; --r-md:14px;
   --ease:cubic-bezier(.22,.8,.36,1);
+  --t-fast:180ms; --t:280ms;
+  --ink:#3A3126;
+  --accent-line:rgba(110,155,148,.34);
+  --sh-2: 0 2px 6px rgba(25,25,25,.05), 0 12px 34px rgba(25,25,25,.10);
 }
 
 *,*::before,*::after{ box-sizing:border-box; }
@@ -60,7 +64,9 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 .ghost.on{ border-color:var(--accent); color:#3F6B63; }
 
 /* ── 지도 ───────────────────────────────────────────────── */
-.stage{ position:relative; min-height:0; padding:10px 14px; }
+.stage{ display:grid; grid-template-columns:1fr 330px; grid-template-rows:100%;
+         min-height:0; overflow:hidden; }
+.map-wrap{ position:relative; min-width:0; min-height:0; overflow:hidden; padding:10px 14px; }
 #mapSvg{
   width:100%; height:100%; display:block;
   touch-action:none;                 /* 두 손가락 확대를 브라우저에 뺏기지 않게 */
@@ -77,6 +83,8 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 .nat-fill{
   fill:var(--nat); fill-opacity:.78;
   stroke:var(--nat); stroke-width:1; stroke-linejoin:round; stroke-opacity:.9;
+  /* 나라를 이어받을 때(고려 → 조선) 색이 물들도록 */
+  transition:fill 1.2s var(--ease), stroke 1.2s var(--ease);
 }
 .nat{ transition:opacity 300ms var(--ease); }
 
@@ -86,6 +94,13 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   text-anchor:middle; dominant-baseline:middle;
   fill:#2F2E2A;
   paint-order:stroke; stroke:var(--bg); stroke-width:.3em; stroke-linejoin:round;
+}
+
+/* 분류 필터 — 지도 왼쪽 위에 얹습니다 */
+.map-filter{
+  position:absolute; left:22px; top:18px; z-index:2; max-width:min(360px, 60%);
+  background:rgba(255,255,255,.93); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:8px; box-shadow:0 1px 2px rgba(25,25,25,.06);
 }
 
 /* 확대·축소 단추 */
@@ -130,4 +145,88 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   .era-span{ display:none; }
   .legend{ margin-left:0; width:100%; }
   .zoomers{ right:16px; bottom:14px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   기존 지도 모드에서 옮겨 온 것 — 옆 패널 · 마커 · 상세 시트
+   원본 css/styles.css 는 건드리지 않았습니다.
+   ══════════════════════════════════════════════════════════ */
+
+.map-side{
+  border-left:1px solid var(--border); background:var(--card);
+  overflow-y:auto; padding:18px 18px 24px; display:flex; flex-direction:column; gap:14px;
+}
+.era-line{ font-size:14px; color:var(--text2); margin:0; line-height:1.6; }
+.list-head{ font-size:12px; color:var(--text3); font-weight:600; }
+.list-head span{ color:var(--accent); }
+.muted{ font-size:13px; color:var(--text3); }
+
+.cat-filter{ display:flex; flex-wrap:wrap; gap:6px; }
+.cat-chip{
+  min-height:34px; padding:0 12px; border-radius:999px; font-size:13px;
+  border:1px solid var(--border-strong); background:var(--card); color:var(--text2);
+  display:inline-flex; align-items:center; gap:5px;
+}
+.cat-chip.on{ color:#fff; border-color:transparent; }
+.cat-dot{ width:8px; height:8px; border-radius:50%; }
+
+.item-list{ display:flex; flex-direction:column; gap:8px; }
+.item-row{
+  display:flex; align-items:flex-start; gap:10px; text-align:left; width:100%;
+  min-height:44px; padding:10px 12px; border:1px solid var(--border); background:var(--card);
+  border-radius:var(--r-md); transition:background var(--t-fast) var(--ease);
+}
+.item-row:hover{ background:var(--accent-soft); }
+.item-row.got{ border-color:var(--accent-line); background:var(--accent-soft); }
+.item-bar{ width:4px; align-self:stretch; border-radius:2px; flex:0 0 4px; }
+.item-txt b{ display:block; font-size:15px; }
+.item-txt span{ display:block; font-size:13px; color:var(--text2); margin-top:2px; }
+
+/* 지도 위 — 글자 크기와 외곽선 두께는 js 가 배율에 맞춰 넣습니다 */
+.rel-line{ fill:none; stroke-dasharray:5 4; opacity:.75; }
+.mk{ cursor:pointer; }
+.mk circle.hit{ fill:transparent; }
+.mk circle.dot{ stroke:#fff; }
+.mk text{ fill:var(--text); paint-order:stroke; stroke:#FDFDFB; }
+.cap-label{ font-weight:700; fill:var(--ink); paint-order:stroke; stroke:#FDFDFB; }
+.nb-label{ fill:var(--text3); paint-order:stroke; stroke:#FDFDFB; }
+#gMk, #gCap{ font-family:var(--font); }
+
+/* 상세 시트 */
+#mapScrim{
+  position:fixed; inset:0; background:rgba(25,25,25,.34); opacity:0; visibility:hidden;
+  transition:opacity var(--t) var(--ease), visibility var(--t); z-index:70;
+}
+#mapScrim.on{ opacity:1; visibility:visible; }
+
+#mapSheet{
+  position:fixed; right:0; top:0; bottom:0; width:min(460px,100%); z-index:71;
+  opacity:0; visibility:hidden; transform:translateX(24px);
+  transition:opacity var(--t) var(--ease), visibility var(--t), transform var(--t) var(--ease);
+}
+#mapSheet.on{ opacity:1; visibility:visible; transform:none; }
+.sheet-x{ position:absolute; right:16px; top:16px; z-index:1; }
+.map-card{
+  height:100%; overflow-y:auto; background:var(--card); border-left:1px solid var(--border);
+  padding:22px 24px 40px; box-shadow:var(--sh-2);
+}
+.mc-photo{ width:100%; max-height:300px; object-fit:cover; border-radius:var(--r-md);
+           display:block; background:var(--land-far); }
+.mc-credit{ margin-top:6px; font-size:11.5px; color:var(--text3); }
+.mc-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+.mc-badge{ font-size:12px; padding:3px 10px; border-radius:999px; color:#fff; }
+.mc-title{ font-size:24px; margin-top:10px; }
+.mc-d{ font-size:15px; color:var(--text2); margin-top:8px; }
+.mc-b{ margin-top:16px; }
+.mc-b p{ margin:10px 0; font-size:15px; }
+.mc-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+.mc-tag{ font-size:12px; color:var(--text2); background:var(--bg);
+         border:1px solid var(--border); border-radius:999px; padding:3px 10px; }
+.mc-rel{ margin-top:20px; border-top:1px solid var(--border); padding-top:16px; }
+.mc-rel h4{ font-size:13px; color:var(--text2); margin:0 0 8px; font-weight:600; }
+
+@media (max-width:900px){
+  .stage{ grid-template-columns:1fr; grid-template-rows:1fr auto; }
+  .map-side{ border-left:0; border-top:1px solid var(--border); max-height:40vh; }
 }

@@ -77,7 +77,10 @@ const FRAMES = [
     ['korea', '12korea.geojson'] ] },
 
   /* 조선 전기부터 6·25 까지는 영토가 같아 전환(모핑)을 두지 않습니다 — still */
-  { key: 'c14', century: 14, label: '조선', dir: '', still: true, use: [ ['choseon', '14choseon.geojson'] ],
+  /* 조선은 고려를 이어받습니다 — 넷째 칸이 「이 나라의 앞선 나라」입니다.
+     고려 영토가 조선 영토로 흘러갑니다 (사라졌다 생기지 않습니다). */
+  { key: 'c14', century: 14, label: '조선', dir: '', still: true,
+    use: [ ['choseon', '14choseon.geojson', null, 'korea'] ],
     eras: ['joseon_e', 'joseon_l', 'open', 'colonial', 'liberation', 'war'] },
 ];
 
@@ -146,11 +149,11 @@ let totalRaw = 0, totalPts = 0;
 
 for (const f of FRAMES) {
   const nations = [];
-  for (const [id, file, as] of f.use) {
+  for (const [id, file, as, after] of f.use) {
     const full = path.join(SRC, f.dir, file);
     if (!fs.existsSync(full)) { console.warn('  건너뜀 — 파일 없음:', file); continue; }
     const o = pathOf(full);
-    nations.push({ id, d: o.d, as });
+    nations.push({ id, d: o.d, as, after });
     used.add(id);
     totalRaw += o.rawPts; totalPts += o.pts;
     console.log(`  ${f.key.padEnd(4)} ${id.padEnd(9)} 조각 ${String(o.rings).padStart(4)}  ${String(o.rawPts).padStart(6)}점 → ${String(o.pts).padStart(5)}점  ${(o.d.length / 1024).toFixed(0)}KB`);
@@ -173,7 +176,7 @@ window.TERRITORY = {
   frames: [
 ${frames.map(f => `    { key:'${f.key}', century:${f.century}, label:'${f.label}', eras:${JSON.stringify(f.eras)}${f.still ? ', still:true' : ''},
       nations:[
-${f.nations.map(n => `        { id:'${n.id}'${n.as ? `, as:'${n.as}'` : ''}, d:'${n.d}' }`).join(',\n')}
+${f.nations.map(n => `        { id:'${n.id}'${n.as ? `, as:'${n.as}'` : ''}${n.after ? `, after:'${n.after}'` : ''}, d:'${n.d}' }`).join(',\n')}
       ] }`).join(',\n')}
   ]
 };

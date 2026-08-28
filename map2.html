@@ -24,12 +24,21 @@
 </header>
 
 <main class="stage">
-  <svg id="mapSvg" role="img" aria-label="시대별 영토 지도"></svg>
-  <div class="zoomers">
-    <button class="icon-btn" id="zoomIn" type="button" aria-label="확대" title="확대">＋</button>
-    <button class="icon-btn" id="zoomOut" type="button" aria-label="축소" title="축소">－</button>
-    <button class="icon-btn" id="zoomFit" type="button" aria-label="시대 전체 보기" title="시대 전체 보기">⤢</button>
+  <div class="map-wrap">
+    <svg id="mapSvg" role="img" aria-label="시대별 영토 지도"></svg>
+    <div class="map-filter"><div class="cat-filter" id="catFilter"></div></div>
+    <div class="zoomers">
+      <button class="icon-btn" id="zoomIn" type="button" aria-label="확대" title="확대">＋</button>
+      <button class="icon-btn" id="zoomOut" type="button" aria-label="축소" title="축소">－</button>
+      <button class="icon-btn" id="zoomFit" type="button" aria-label="시대 전체 보기" title="시대 전체 보기">⤢</button>
+    </div>
   </div>
+
+  <aside class="map-side">
+    <p class="era-line" id="eraLine"></p>
+    <div class="list-head">이 시대의 이야기 <span id="itemCount"></span></div>
+    <div class="item-list" id="itemList"></div>
+  </aside>
 </main>
 
 <nav class="bottom">
@@ -37,13 +46,25 @@
   <div id="track"></div>
 </nav>
 
+<div id="mapScrim"></div>
+<div id="mapSheet" role="dialog" aria-modal="true" aria-label="항목 상세">
+  <button class="icon-btn sheet-x" id="sheetClose" type="button" aria-label="닫기">✕</button>
+  <div class="map-card" id="mapCard"></div>
+</div>
+
 <!-- 기존 파일 — 읽기만 합니다 (고치지 않습니다) -->
 <script src="js/atlas-geo.js"></script>
 <script src="js/map-data.js"></script>
+<script src="js/atlas-content.js"></script>
+<script src="js/atlas-photos.js"></script>
+<script src="js/asset-credits.js"></script>
+<script src="js/atlas-dedupe.js"></script>
+<script src="js/store.js"></script>
 
 <!-- v2 -->
 <script src="js/map2/territory-data.js"></script>
 <script src="js/map2/morph.js"></script>
+<script src="js/map2/panel.js"></script>
 <script src="js/map2/map2-app.js"></script>
 
 </body>
