@@ -29,15 +29,16 @@ export const WORLD_TO_ERA = Object.fromEntries(
   Object.entries(ERA_ID_MAP).map(([e,w]) => [w,e])
 );
 
-/* 마스코트 */
-export const MASCOT = {
-  name: '두루',
-  species: '두루미',
-  bodyColor: '#F4F1E6',
-  wingColor: '#D8D2C0',
-  crestColor: '#C25B4F',
-  beakColor: '#E0A64B',
-  legColor: '#6E6A5E'
+/* 아바타 — 가방 멘 소년, 길잡이가 아니라 학생 자신이다 */
+export const AVATAR = {
+  skinColor:  '#E8D3B8',
+  hairColor:  '#3A2E22',
+  shirtColor: '#6E9B94',
+  pantsColor: '#5B4B3A',
+  shoeColor:  '#3A2E22',
+  bagColor:   '#9C7A54',
+  strapColor: '#8A6E52',
+  bookColor:  '#C25B4F'
 };
 
 /* 하오체 UI 문구 — 탐험 모드 전용 (§D1) */

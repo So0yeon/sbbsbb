@@ -1,6 +1,6 @@
 // © 2026 김용현
 /* ══════════════════════════════════════════════════════════════════════
-   player.js — 두루 아바타 · 이동 · 카메라 · 입력 (MASTER.md §6-1)
+   player.js — 소년 아바타 · 이동 · 카메라 · 입력 (MASTER.md §6-1)
 
    부호 표 (유일한 출처)
      fwd    = +1  화면 안쪽 (W ↑)        fwd    = -1  화면 앞쪽 (S ↓)
@@ -14,12 +14,12 @@ import { ST } from './state.js';
 import { mat, cyl, sph, box, cone } from './scene-helpers.js';
 import { setAnim, setSpeed, updateAnim } from './anim.js';
 import { anyOpen } from './popups.js';
-import { MASCOT } from './constants.js';
+import { AVATAR } from './constants.js';
 
 const SPEED = 9;              // 초당 이동 거리
 const RUN_MULT = 1.85;        // Shift 를 누르고 있으면 이만큼 빨라진다
 const CAM_DIST = 13.5;
-const EYE_Y = 1.35;                        // 바라보는 높이 (아바타 가슴께)
+const EYE_Y = 1.05;                        // 바라보는 높이 (아바타 가슴께)
 const FOLLOW_LIMIT = 25 * Math.PI / 180;   // 25도
 
 /* 카메라는 '높이'가 아니라 '올려다본 각'으로 다룬다.
@@ -31,9 +31,9 @@ const ZOOM_MIN = 0.42, ZOOM_MAX = 2.8;     // 가까이서 크게 ~ 멀리서 �
 const pitchOf = () => (ST.camPitch == null ? (ST.camPitch = PITCH_DEFAULT) : ST.camPitch);
 
 /* ══════════════════════════════════════════════════════════════
-   아바타 — 두루 (어린 두루미)
-   발밑 y=0, 머리 꼭대기 y≈2.5, +z 를 바라본다
-   머리의 긴 깃털 하나가 앞뒤를 구분해 준다 (§6-1)
+   아바타 — 가방 멘 소년 (학생 자신, 길잡이가 아니다)
+   발밑 y=0, 머리 꼭대기 y≈1.8, +z 를 바라본다
+   등에 멘 배낭이 뒤통수 쪽에 붙어 있어 앞뒤를 구분해 준다 (§6-1)
    ══════════════════════════════════════════════════════════════ */
 export function buildPlayer(){
   const player = new THREE.Group();     // 위치·회전을 담당
@@ -43,89 +43,81 @@ export function buildPlayer(){
   const torso = new THREE.Group();
   rig.add(torso);
 
-  // 몸통
+  // 몸통 (셔츠)
   const bodyMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(.34, .42, 1.05, 9),
-    mat(MASCOT.bodyColor)
+    new THREE.BoxGeometry(.5, .6, .3),
+    mat(AVATAR.shirtColor)
   );
-  bodyMesh.position.y = 1.02;
+  bodyMesh.position.y = .86;
   torso.add(bodyMesh);
 
-  // 날개(팔)
-  const armGeo = new THREE.BoxGeometry(.16, .74, .34);
-  const leftArm = new THREE.Mesh(armGeo, mat(MASCOT.wingColor));
-  leftArm.position.set(-.46, 1.16, 0);
-  leftArm.geometry.translate(0, -.37, 0);   // 어깨를 회전축으로
+  // 팔 — 소매 끝에 손을 붙인다
+  const armGeo = new THREE.CylinderGeometry(.085, .075, .58, 7);
+  const leftArm = new THREE.Mesh(armGeo, mat(AVATAR.shirtColor));
+  leftArm.position.set(-.3, 1.16, 0);
+  leftArm.geometry.translate(0, -.29, 0);   // 어깨를 회전축으로
   leftArm.userData.y0 = 1.16;
+  const hand = new THREE.Mesh(new THREE.SphereGeometry(.08, 6, 5), mat(AVATAR.skinColor));
+  hand.position.y = -.58;
+  leftArm.add(hand);
   const rightArm = leftArm.clone();
-  rightArm.position.set(.46, 1.16, 0);
+  rightArm.position.set(.3, 1.16, 0);
   rightArm.userData.y0 = 1.16;
   torso.add(leftArm); torso.add(rightArm);
 
   // 목 + 머리
   const head = new THREE.Group();
-  head.position.set(0, 1.58, 0);
+  head.position.set(0, 1.16, 0);
   torso.add(head);
 
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.13, .17, .42, 8), mat(MASCOT.bodyColor));
-  neck.position.y = .1;
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .14, 6), mat(AVATAR.skinColor));
+  neck.position.y = .07;
   head.add(neck);
 
-  const skull = new THREE.Mesh(new THREE.IcosahedronGeometry(.3, 0), mat(MASCOT.bodyColor));
-  skull.position.y = .5;
+  const skull = new THREE.Mesh(new THREE.IcosahedronGeometry(.26, 0), mat(AVATAR.skinColor));
+  skull.position.y = .34;
   head.add(skull);
 
-  // 부리 — +z 를 향한다 (앞을 알려 주는 첫 번째 표시)
-  const beak = new THREE.Mesh(new THREE.ConeGeometry(.1, .46, 5), mat(MASCOT.beakColor));
-  beak.rotation.x = Math.PI / 2;
-  beak.position.set(0, .48, .34);
-  head.add(beak);
+  // 머리카락 — 정수리와 뒤통수를 덮는다 (뒤가 두터워 앞뒤 구분도 된다)
+  const hair = new THREE.Mesh(new THREE.IcosahedronGeometry(.28, 0), mat(AVATAR.hairColor));
+  hair.scale.set(1, .78, 1.05);
+  hair.position.set(0, .43, -.02);
+  head.add(hair);
 
-  // 눈
-  const eyeGeo = new THREE.SphereGeometry(.052, 6, 5);
+  // 눈 — +z 를 향한다 (앞을 알려 주는 표시)
+  const eyeGeo = new THREE.SphereGeometry(.04, 6, 5);
   const eyeMat = mat('#2B2620');
-  const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-.16, .56, .21);
-  const e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set( .16, .56, .21);
+  const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-.1, .36, .21);
+  const e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set( .1, .36, .21);
   head.add(e1); head.add(e2);
 
-  // 붉은 정수리 깃털 — 뒤로 길게 뻗어 앞뒤를 확실히 구분한다
-  const crest = new THREE.Group();
-  crest.position.set(0, .70, -.06);
-  const feather = new THREE.Mesh(new THREE.ConeGeometry(.075, .62, 5), mat(MASCOT.crestColor));
-  feather.geometry.translate(0, .31, 0);
-  crest.add(feather);
-  const feather2 = new THREE.Mesh(new THREE.ConeGeometry(.055, .42, 5), mat(MASCOT.crestColor));
-  feather2.geometry.translate(0, .21, 0);
-  feather2.rotation.z = .34;
-  crest.add(feather2);
-  crest.rotation.z = -.16;
-  head.add(crest);
-
-  // 다리
-  const legGeo = new THREE.CylinderGeometry(.075, .075, .58, 6);
-  const leftLeg = new THREE.Mesh(legGeo, mat(MASCOT.legColor));
-  leftLeg.geometry.translate(0, -.29, 0);
-  leftLeg.position.set(-.16, .58, 0);
+  // 다리 — 발을 밑단에 붙인다
+  const legGeo = new THREE.CylinderGeometry(.095, .085, .56, 6);
+  const leftLeg = new THREE.Mesh(legGeo, mat(AVATAR.pantsColor));
+  leftLeg.geometry.translate(0, -.28, 0);
+  leftLeg.position.set(-.15, .56, 0);
+  const shoe = new THREE.Mesh(new THREE.BoxGeometry(.15, .1, .22), mat(AVATAR.shoeColor));
+  shoe.position.set(0, -.55, .05);
+  leftLeg.add(shoe);
   const rightLeg = leftLeg.clone();
-  rightLeg.position.set(.16, .58, 0);
+  rightLeg.position.set(.15, .56, 0);
   rig.add(leftLeg); rig.add(rightLeg);
 
-  // 어깨에 멘 유물 가방 (요구 6 — 시작할 때부터 지니고 있다)
-  const bagStrap = new THREE.Mesh(new THREE.TorusGeometry(.36, .045, 5, 12), mat('#8A6E52'));
-  bagStrap.rotation.set(Math.PI/2, 0, .5);
-  bagStrap.position.set(0, 1.16, 0);
-  torso.add(bagStrap);
-  const satchel = box(.34, .3, .2, '#9C7A54', .38, .82, -.12);
-  torso.add(satchel);
-  // 스탬프 수첩
-  const bookie = box(.22, .28, .07, '#C25B4F', -.4, .86, -.1);
-  torso.add(bookie);
+  // 등에 멘 배낭 — 유물 주머니와 도장 수첩이 그 안에 들어 있다 (요구 6 — 시작할 때부터 지니고 있다)
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(.27, .035, 5, 12), mat(AVATAR.strapColor));
+  strap.rotation.set(Math.PI/2, 0, .4);
+  strap.position.set(0, 1.04, 0);
+  torso.add(strap);
+  const backpack = box(.36, .4, .2, AVATAR.bagColor, 0, .92, -.26);
+  torso.add(backpack);
+  // 배낭 겉주머니 — 도장 수첩이 삐죽 든 자리
+  const pocket = box(.22, .16, .05, AVATAR.bookColor, 0, .84, -.34);
+  torso.add(pocket);
 
   ST.player = player;
   ST.rig = rig;
   ST.torso = torso;
   ST.head = head;
-  ST.crest = crest;
   ST.leftArm = leftArm; ST.rightArm = rightArm;
   ST.leftLeg = leftLeg; ST.rightLeg = rightLeg;
 

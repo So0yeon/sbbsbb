@@ -1,9 +1,10 @@
 // © 2026 김용현
 /* ══════════════════════════════════════════════════════════════════════
-   anim.js — 두루 애니메이션 상태 기계
+   anim.js — 아바타 애니메이션 상태 기계
 
    추가 에셋 0. 전부 절차적 트윈이다.
-   ST.rig / head / crest / leftArm / rightArm / leftLeg / rightLeg 를 움직인다.
+   ST.rig / head / leftArm / rightArm / leftLeg / rightLeg 를 움직인다.
+   crest 는 두루(구 마스코트) 시절 흔적 — 지금 아바타는 쓰지 않는다.
 
    상태
      idle   숨쉬기 · 깃털 흔들림        (기본)
