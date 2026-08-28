@@ -137,6 +137,12 @@ const GRIND_STAGE =
   + '<div class="neo-meter"><span class="neo-meter-cap">뗀석기</span>'
   +   '<div class="neo-meter-bar"><i id="gnPolish"></i></div>'
   +   '<span class="neo-meter-cap">간석기</span></div>'
+  /* 다 갈리면 실물 사진을 보여줍니다 — 그림은 조작에 쓰이므로 그대로 두고,
+     완성되었을 때만 진짜 간석기가 어떻게 생겼는지 사진으로 확인합니다 */
+  + '<div class="neo-photo-reveal" id="gnPhoto">'
+  +   '<img src="assets/photos/gansingi.jpg" alt="갈아서 날을 세운 진짜 간석기">'
+  +   '<p class="neo-photo-cap">이렇게 갈아 날을 세웠소 · 국립중앙박물관 · 공공누리 제1유형</p>'
+  + '</div>'
   + '</div>';
 
 function grindGame(ctx) {
@@ -163,7 +169,8 @@ function grindGame(ctx) {
         zb:    mount.querySelector('#gnZoneB'),
         dust:  mount.querySelector('#gnDust'),
         wear:  mount.querySelector('#gnWear'),
-        bar:   mount.querySelector('#gnPolish')
+        bar:   mount.querySelector('#gnPolish'),
+        photo: mount.querySelector('#gnPhoto')
       };
       el.blade.setAttribute('points', bladePoints(0));
     },
@@ -193,6 +200,7 @@ function grindGame(ctx) {
         el.blade.setAttribute('fill', mixStone(shown));
         el.sheen.setAttribute('opacity', (shown * .62).toFixed(3));
         el.bar.style.width = (shown * 100) + '%';
+        if (el.photo) el.photo.classList.toggle('on', shown > .92);
       }
     },
 
