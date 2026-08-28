@@ -5,6 +5,20 @@
    순백/순흑을 배경·본문에 쓰지 않는다 · 8pt 미만 본문 금지 · 터치 44×44
    ══════════════════════════════════════════════════════════════════════ */
 
+@font-face {
+    font-family: 'ShillaCulture';
+    src: url('../assets/fonts/Shilla_Culture(M).ttf') format('truetype');
+    font-weight: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'ShillaCulture';
+    src: url('../assets/fonts/Shilla_Culture(B).ttf') format('truetype');
+    font-weight: bold;
+    font-display: swap;
+}
+
 :root{
   /* 색 (§8-1) */
   --bg:#F7F7F5;      --card:#FFFFFF;
@@ -26,7 +40,7 @@
   --ink:#3A3126;
 
   /* 글자·모양 (§8-2) */
-  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,
+  --font:'ShillaCulture','Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,
          'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:26px;
   --sh-1: 0 1px 2px rgba(25,25,25,.04), 0 4px 14px rgba(25,25,25,.06);
