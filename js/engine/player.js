@@ -143,23 +143,12 @@ export function buildPlayer(){
   const bangs = box(.30, .09, .07, AVATAR.hairColor, 0, .44, .21);
   head.add(bangs);
 
-  // 눈썹
-  const browGeo = new THREE.BoxGeometry(.09, .022, .03);
-  const browMat = mat(AVATAR.hairColor);
-  const b1 = new THREE.Mesh(browGeo, browMat); b1.position.set(-.1, .405, .22);
-  const b2 = new THREE.Mesh(browGeo, browMat); b2.position.set( .1, .405, .22);
-  head.add(b1); head.add(b2);
-
   // 눈 — +z 를 향한다 (앞을 알려 주는 표시)
   const eyeGeo = new THREE.SphereGeometry(.038, 6, 5);
   const eyeMat = mat('#2B2620');
   const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-.1, .36, .22);
   const e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set( .1, .36, .22);
   head.add(e1); head.add(e2);
-
-  // 입 — 옅은 한 줄, 살짝 웃는 인상
-  const mouth = box(.09, .018, .02, '#A8695C', 0, .245, .245);
-  head.add(mouth);
 
   // 다리
   const legL = buildLeg(-1), legR = buildLeg(1);
@@ -172,14 +161,21 @@ export function buildPlayer(){
   const pocket = box(.22, .16, .05, AVATAR.bookColor, 0, .84, -.34);
   torso.add(pocket);
 
-  // 배낭끈 — 양 어깨를 넘어가야 진짜 멘 것처럼 보인다.
-  // 어깨 위(견봉) → 앞가슴/뒤 배낭 꼭대기, 두 부재로 어깨에서 꺾인다.
+  // 배낭끈 — 상의 속에 파묻히지 않도록, 몸통 겉면에 바짝 붙여
+  // 앞가슴 → 어깨 앞 → 어깨 꼭대기 → 어깨 뒤 → 배낭 꼭대기, 짧은 부재를
+  // 여러 번 이어 어깨의 굴곡을 따라가게 한다 (직선 하나면 몸통을 뚫고 지나간다).
+  const STRAP_W = .05;
   [-1, 1].forEach(side => {
-    const shoulderPt = [side*.19, 1.20, .01];
-    const frontPt    = [side*.15, .80, .17];
-    const backPt     = [side*.13, 1.03, -.24];
-    torso.add(strapSeg(frontPt, shoulderPt, .045, AVATAR.strapColor));
-    torso.add(strapSeg(shoulderPt, backPt, .045, AVATAR.strapColor));
+    const pts = [
+      [side*.20, .88, .16],    // 앞가슴 — 셔츠 앞면 바로 겉
+      [side*.21, 1.15, .155],  // 어깨 앞쪽 모서리
+      [side*.20, 1.22, 0],     // 어깨 꼭대기 — 봉우리
+      [side*.18, 1.13, -.155], // 어깨 뒤쪽 모서리
+      [side*.15, 1.02, -.22]   // 배낭 꼭대기
+    ];
+    for (let i = 0; i < pts.length - 1; i++){
+      torso.add(strapSeg(pts[i], pts[i+1], STRAP_W, AVATAR.strapColor));
+    }
   });
 
   ST.player = player;
