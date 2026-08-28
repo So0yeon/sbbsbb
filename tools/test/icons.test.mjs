@@ -83,10 +83,13 @@ test('strip() 이 이모지를 걷어낸다', () => {
   assert.equal(A.strip(null), '');
 });
 
-test('strip() 은 활자 화살표를 남긴다 (그림이 아니라 글자다)', () => {
+test('strip() 은 활자 기호를 남긴다 (그림이 아니라 글자다)', () => {
   assert.equal(A.strip('알겠소 →'), '알겠소 →');
   assert.equal(A.strip('← 돌아가기'), '← 돌아가기');
   assert.equal(A.strip('↺ 비우기'), '↺ 비우기');
+  assert.equal(A.strip('══ 머리글 ══'), '══ 머리글 ══');   // 괘선
+  assert.equal(A.strip('◉ 왕검성'), '◉ 왕검성');           // 기하 도형
+  assert.equal(A.strip('© 2026'), '© 2026');               // 저작권 기호
 });
 
 test('strip() 이 한글·한자·기호는 건드리지 않는다', () => {

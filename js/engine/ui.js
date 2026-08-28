@@ -15,6 +15,7 @@ import { refreshMarkerStates } from './markers.js';
 import { setAuraDone } from './scene-helpers.js';
 import { icon, iconForQuest, stripEmoji } from './icons.js';
 import { pushPopup, popPopup, anyOpen, closeTop } from './popups.js';
+import { noticeQuestOpened } from './quest-engine.js';
 
 let hooks = {};            // { onGate, onEraComplete, onRankUp, refreshRail }
 
@@ -178,6 +179,8 @@ export function openQuest(q){
   else if (q.kind === 'inspect')    renderInspect(q, card);
   else if (q.stages && q.stages.length) renderStages(q, card);
   else                              renderRole(q, card);
+
+  noticeQuestOpened(q.id);      // 미션 시퀀스가 이 표지를 기다리고 있을 수 있다
 
   // 사진은 눌러서 크게 볼 수 있다
   const ph = card.querySelector('.q-photo');

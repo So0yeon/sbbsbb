@@ -398,6 +398,7 @@
      ══════════════════════════════════════════════════════════ */
   function selftest() {
     var STOP = new URLSearchParams(location.search).get('stop') || '';
+    var ERA = new URLSearchParams(location.search).get('era') || 'three';   // ?era=neolithic
     var out = { 단계: [] };
     var say = function (k, v) { out[k] = v; out.단계.push(k); };
 
@@ -425,11 +426,11 @@
           try {
             say('지도마커', document.querySelectorAll('#gMk .mk').length);
             say('지도영역', document.querySelectorAll('#gTerr path').length);
-            window.AtlasMap.setEraById('three');
-            say('삼국마커', document.querySelectorAll('#gMk .mk').length);
+            try { window.AtlasMap.setEraById(ERA); } catch(e){}   // 지도 시대 id는 탐험 id와 다를 수 있다
+            say('시대마커', document.querySelectorAll('#gMk .mk').length);
 
             if (STOP === 'map') { say('지도영역2', document.querySelectorAll('#gTerr path').length); console.log('[SELFTEST] ' + JSON.stringify(out)); return; }
-            toExplore('three');
+            toExplore(ERA);
             setTimeout(function () {
               try {
                 var E = window.AtlasExplore;
@@ -479,6 +480,40 @@
                 // 이야기 카드를 닫고 실제 월드를 보인다
                 var go = document.getElementById('exStoryGo');
                 if (go) go.click();
+
+                if (STOP === 'scene') {
+                  // 지형지물만 눈으로 확인할 때 — ?px=&pz=&yaw= 로 서는 자리를 정한다
+                  var A4 = window.__atlas3d;
+                  if (A4 && A4.ST.player) {
+                    if (qp.get('px')) A4.ST.player.position.x = parseFloat(qp.get('px'));
+                    if (qp.get('pz')) A4.ST.player.position.z = parseFloat(qp.get('pz'));
+                    if (qp.get('yaw')) A4.ST.camYaw = parseFloat(qp.get('yaw'));
+                  }
+                  if (A4) {
+                    var bk = A4.scene.children.filter(function (o) { return o.name === 'bricks'; });
+                    say('브릭덩어리', bk.length + '개 · ' +
+                        bk.reduce(function (n, g) { return n + (g.userData.count || 0); }, 0) + '조각 · ' +
+                        bk.reduce(function (n, g) { return n + g.children.length; }, 0) + '드로우콜');
+                    var sp = (A4.ST.propSpots || []);
+                    say('소품자리', sp.length + '곳 · ' + sp.slice(0, 8).map(function (q) {
+                      return q[0].toFixed(0) + ',' + q[1].toFixed(0);
+                    }).join(' '));
+                  }
+                  setTimeout(function () {
+                    if (qp.get('bare')) {
+                      // 캔버스만 남기고 다 감춘다 — 지형지물을 눈으로 볼 때
+                      var ex = document.getElementById('explore');
+                      if (ex) Array.prototype.forEach.call(ex.children, function (e) {
+                        if (e.id !== 'exCanvas') e.style.display = 'none';
+                      });
+                      document.querySelectorAll('body > *').forEach(function (e) {
+                        if (e.id !== 'explore' && e.tagName !== 'SCRIPT') e.style.display = 'none';
+                      });
+                    }
+                    console.log('[SELFTEST] ' + JSON.stringify(out));
+                  }, 2500);
+                  return;
+                }
 
                 if (STOP === 'gate') {
                   // 관문으로 지역을 옮기고 돌아올 수 있는지 (MASTER §12-5)
@@ -531,12 +566,75 @@
                   return;
                 }
 
+                if (STOP === 'mission') {
+                  /* 신석기 미션 시퀀스 — 관찰 화면을 실제로 눌러 본다 */
+                  var EMO2 = /(?![©®™])\p{Extended_Pictographic}/u;
+                  var scan2 = function () {
+                    var n = 0, w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), nd;
+                    while ((nd = w.nextNode())) if (EMO2.test(nd.nodeValue)) n++;
+                    return n;
+                  };
+                  // 시대를 판별하는 두 번째 걸음부터 보이게 상태를 심는다
+                  try {
+                    localStorage.setItem('neolithicChain_v1', JSON.stringify({
+                      at: 1, flags: {}, inventory: ['stone'], relations: {},
+                      kept: [], observed: [], done: false
+                    }));
+                  } catch (e) {}
+
+                  window.AtlasExplore.switchWorld('neolithic');
+                  setTimeout(function () {
+                    var g5 = document.getElementById('exStoryGo'); if (g5) g5.click();
+                    setTimeout(function () {
+                      var modal = document.getElementById('mqModal');
+                      say('미션창', modal && modal.classList.contains('on') ? '열림' : '안열림');
+                      say('이번걸음', (document.querySelector('.mq-goal') || {}).textContent || '없음');
+                      say('속마음', (document.querySelector('.mq-inner') || {}).textContent || '없음');
+
+                      var plates = document.querySelectorAll('.ob-plate');
+                      say('관찰자료수', plates.length);
+                      say('출처표기', (document.querySelector('.ob-credit') || {}).textContent || '없음');
+                      say('지점미리표시', document.querySelectorAll('.ob-mark').length);   // 0 이어야 한다
+                      say('이름미리공개', document.querySelector('.ob-rv-name') ? '새어나감' : '감춰짐');
+
+                      // 관찰 지점 두 곳을 짚어 본다 (왼쪽 자료의 50,88 과 34,32)
+                      var hit = function (pl, xp, yp) {
+                        var r = pl.getBoundingClientRect();
+                        pl.dispatchEvent(new MouseEvent('click', {
+                          bubbles: true,
+                          clientX: r.left + r.width * xp / 100,
+                          clientY: r.top + r.height * yp / 100
+                        }));
+                      };
+                      if (plates[0]) { hit(plates[0], 50, 88); hit(plates[0], 34, 32); }
+
+                      setTimeout(function () {
+                        say('관찰노트', document.querySelectorAll('.ob-note').length);
+                        say('찾은표시', document.querySelectorAll('.ob-mark').length);
+                        say('이름공개', (document.querySelector('.ob-rv-name') || {}).textContent || '아직');
+                        say('미션이모지', scan2());
+
+                        // 다음으로 넘어가면 정리 카드가 뜬다
+                        var nb = document.getElementById('obNext');
+                        if (nb) nb.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                        setTimeout(function () {
+                          say('다음걸음', (document.querySelector('.mq-goal') || {}).textContent ||
+                                          (document.querySelector('.mq-after-title') || {}).textContent || '없음');
+                          say('지도개방', S.bagHas('ganseok') ? 'O' : 'X');
+                          console.log('[SELFTEST] ' + JSON.stringify(out));
+                        }, 350);
+                      }, 350);
+                    }, 900);
+                  }, 900);
+                  return;
+                }
+
                 if (STOP === 'newui') {
                   /* 이번에 고친 것들을 실제 화면에서 확인한다
                      1 시대 안내의 학습 목표·성취기준 · 2 이모지 0개 · 3 마법진
                      4 팝업 닫기 · 5 핵심 탐구질문 · 7 지도 모드 이동 · 8 사진 비율 */
                   // 활자 화살표(→ ←)는 이모지가 아니므로 세지 않는다 — js/icons.js 와 같은 기준
-                  var EMO = /[\u{1F000}-\u{1FAFF}\u{2300}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
+                  var EMO = /(?![©®™])\p{Extended_Pictographic}/u;
                   var scanEmoji = function () {
                     var n = 0, w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
                     var node, hits = [];

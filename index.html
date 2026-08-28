@@ -217,6 +217,10 @@
     <button class="found" id="stampBtn" type="button"><span class="btn-ic" data-icon="book" data-icon-size="16"></span> 수첩</button>
     <button class="found" id="bagBtn" type="button"><span class="btn-ic" data-icon="bag" data-icon-size="16"></span> 역사 가방</button>
     <button class="found" id="exFoundBtn" type="button" aria-label="발견한 임무 수. 시대를 마쳤으면 눌러 마무리 질문을 다시 봅니다">발견 <b id="exFoundN">0</b> / <span id="exFoundT">0</span></button>
+    <button class="found mq-btn" id="mqBtn" type="button" hidden>
+      <span class="btn-ic" data-icon="flag" data-icon-size="16"></span>
+      <span class="mq-btn-t">지금 할 일</span>
+    </button>
     <button class="found" id="toMapBtn" type="button"><span class="btn-ic" data-icon="map" data-icon-size="16"></span> 지도 모드</button>
   </div>
 
@@ -260,6 +264,12 @@
       <div class="ecc-inq" id="eccInquiry" hidden></div>
       <button class="intro-btn" id="eccClose" type="button">탐험 계속하기</button>
     </div>
+  </div>
+
+  <!-- 미션 시퀀스 (js/engine/quest-engine.js) -->
+  <div id="mqScrim"></div>
+  <div id="mqModal" role="dialog" aria-modal="true" aria-label="지금 할 일">
+    <div class="mq-card" id="mqCard"></div>
   </div>
 
   <nav id="exTimeline"><div id="exTrack"></div></nav>

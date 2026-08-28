@@ -17,6 +17,8 @@ import { dressArea, updateSky, preloadNature } from './skyground.js';
 import { applyBrief } from './era-briefs.js';
 import { icon } from './icons.js';
 import { pushPopup, popPopup } from './popups.js';
+import { chainOf } from './chains.js';
+import { initQuestEngine, setChain, openChain, tickChain, hasChain, chainDone } from './quest-engine.js';
 
 let canvas, renderer, scene, camera, clock;
 let running = false;
@@ -59,6 +61,14 @@ export function bootExplore(startWorldId){
     refreshRail: () => renderRail(q => openQuest(q))
   });
   initCollect({ toast: showToast, onChange: refreshCollectViews });
+
+  /* 미션 시퀀스 — 기존 코드를 고치지 않고 위에 얹는다 (요청서 §1-4) */
+  initQuestEngine({
+    pause: v => { ST.paused = !!v; if (v) clearKeys(); },
+    player: () => ST.player ? { x: ST.player.position.x, z: ST.player.position.z } : null,
+    toast: showToast,
+    onUnlock: () => refreshCollectViews()
+  });
 
   bindInput(canvas, { onInteract: interact });
   bindChrome();
@@ -122,6 +132,7 @@ export function switchWorld(id){
   const areaId = w.startArea || Object.keys(ST.AREAS)[0] || null;
   goArea(areaId, null, true);
 
+  setChain(chainOf(id));          // 그 시대의 미션 시퀀스 (없으면 자유 탐험)
   buildTimeline();
   showStory(w);
 }
@@ -329,6 +340,8 @@ function bindChrome(){
     document.getElementById('exIntroStory').classList.remove('on');
     ST.paused = false;
     clearKeys();
+    // 미션이 있는 시대는 곧바로 첫 걸음으로 들어간다 (요청서 §3 빙의 연출)
+    if (hasChain() && !chainDone()) setTimeout(openChain, 260);
   };
   on('exStoryGo', startStory);
   on('exStoryX', startStory);
@@ -337,6 +350,8 @@ function bindChrome(){
     r.classList.toggle('closed');
     document.getElementById('exRailToggle').textContent = r.classList.contains('closed') ? '›' : '‹';
   });
+  on('mqBtn', openChain);
+  on('mqScrim', () => { const m = document.getElementById('mqModal'); if (m) m.classList.remove('on'); });
   on('exMinimap', openMiniModal);
   on('exMiniScrim', closeMiniModal);
 
@@ -429,6 +444,7 @@ function tick(){
   updatePlayer(dt);
   updateSky(dt);
   updateMarkers(t);            // ST.activeNear 를 갱신한다
+  tickChain();                 // 미션의 '둘러보기' 걸음을 지켜본다
 
   // 조사하기 버튼 — 판정은 interact() 와 똑같은 기준을 쓴다.
   // 두 기준이 어긋나면 버튼은 떴는데 눌리지 않는 자리가 생긴다.
