@@ -156,7 +156,7 @@
      ══════════════════════════════════════════════════════════ */
   function printStampBook(doPrint) {
     var worlds = g.AtlasExplore ? g.AtlasExplore.worldList() : [];
-    var html = head('스탬프 수첩', '받은 도장 ' + S.stampCount() + '개');
+    var html = head('도장 수첩', '받은 도장 ' + S.stampCount() + '개');
 
     worlds.forEach(function (w) {
       var cells = [];

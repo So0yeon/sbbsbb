@@ -43,7 +43,7 @@ export const MASCOT = {
 /* 하오체 UI 문구 — 탐험 모드 전용 (§D1) */
 export const SAY = {
   bagAdded:      (t) => `"${t}"을(를) 역사 가방에 담았소`,
-  relicAdded:    (n) => `${n}을(를) 유물 가방에 넣었소`,
+  relicAdded:    (n) => `${n}을(를) 유물 주머니에 넣었소`,
   stampVisit:    (n) => `${n}에 발을 디딘 도장을 찍었소`,
   stampClear:    (n) => `${n}을(를) 모두 둘러본 도장을 찍었소`,
   stampEra:      (n) => `${n}을(를) 마친 도장을 찍었소`,

@@ -158,12 +158,6 @@ b{ font-weight:700; }
 .kit-icon{ font-size:45px; line-height:1; }
 .kit-item h3{ margin-top:10px; font-size:20px; }
 .kit-item p{ margin-top:8px; font-size:15px; color:var(--text2); }
-.kit-mascot{
-  margin-top:22px; font-size:16px; color:var(--text2);
-  display:inline-flex; align-items:center; gap:10px;
-  background:var(--accent-soft); border-radius:999px; padding:10px 20px;
-}
-.kit-mascot-icon{ font-size:23px; }
 
 /* 모드 선택 */
 .mode-row{ margin-top:26px; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }

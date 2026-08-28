@@ -95,26 +95,23 @@
       </div>
     </section>
 
-    <!-- 4) 꾸러미 지급 — 유물 가방 + 스탬프 수첩 -->
+    <!-- 4) 꾸러미 지급 — 역사 가방(유물 주머니 + 도장 수첩) -->
     <section class="intro-step" id="stepKit" data-step="kit">
       <p class="intro-eyebrow">떠나기 전에</p>
-      <h2 class="intro-h2"><span id="kitGreetName">그대</span>에게 두 가지를 내어 주오</h2>
+      <h2 class="intro-h2"><span id="kitGreetName">그대</span>에게 역사 가방을 내어 주오</h2>
+      <p class="intro-body small">가방 안에는 두 가지가 들어 있소.</p>
       <div class="kit-row">
         <div class="kit-item" id="kitBag">
           <div class="kit-icon" data-icon="relic" data-icon-size="26"></div>
-          <h3>유물 가방</h3>
+          <h3>유물 주머니</h3>
           <p>시대마다 손에 넣은 도구와 유물을 여기에 담으시오.<br>비어 있는 칸은 아직 찾지 못한 것이오.</p>
         </div>
         <div class="kit-item" id="kitBook">
           <div class="kit-icon" data-icon="book" data-icon-size="26"></div>
-          <h3>스탬프 수첩</h3>
+          <h3>도장 수첩</h3>
           <p>발을 디딘 고을마다, 다 둘러본 고을마다,<br>그리고 시대를 마칠 때마다 도장이 찍히오.</p>
         </div>
       </div>
-      <p class="kit-mascot">
-        <span class="kit-mascot-icon" data-icon="dove" data-icon-size="22"></span>
-        길잡이 <b>두루</b>가 그대와 함께 가오. 시간의 틈을 넘나드는 어린 두루미라오.
-      </p>
       <div class="intro-actions">
         <button class="intro-btn" id="kitNext" type="button">받았소</button>
       </div>
@@ -225,8 +222,8 @@
             data-icon="house" data-icon-size="18"></button>
     <div class="brand" id="exBrand"></div>
     <div class="spacer"></div>
-    <button class="found" id="relicBtn" type="button"><span class="btn-ic" data-icon="relic" data-icon-size="16"></span> 유물 가방</button>
-    <button class="found" id="stampBtn" type="button"><span class="btn-ic" data-icon="book" data-icon-size="16"></span> 수첩</button>
+    <button class="found" id="relicBtn" type="button"><span class="btn-ic" data-icon="relic" data-icon-size="16"></span> 유물 주머니</button>
+    <button class="found" id="stampBtn" type="button"><span class="btn-ic" data-icon="book" data-icon-size="16"></span> 도장 수첩</button>
     <button class="found" id="bagBtn" type="button"><span class="btn-ic" data-icon="bag" data-icon-size="16"></span> 역사 가방</button>
     <button class="found" id="exFoundBtn" type="button" aria-label="발견한 임무 수. 시대를 마쳤으면 눌러 마무리 질문을 다시 봅니다">발견 <b id="exFoundN">0</b> / <span id="exFoundT">0</span></button>
     <button class="found mq-btn" id="mqBtn" type="button" hidden>
@@ -291,22 +288,22 @@
 
 
 <!-- ══════════════════════════════════════════════════════════════
-     공용 시트 — 유물 가방 · 스탬프 수첩 · 탐험 기록 · 출처 · 설정
+     공용 시트 — 유물 주머니 · 도장 수첩 · 탐험 기록 · 출처 · 설정
      ══════════════════════════════════════════════════════════════ -->
 <div id="sheetScrim"></div>
 
-<div id="relicSheet" class="big-sheet" role="dialog" aria-modal="true" aria-label="유물 가방">
+<div id="relicSheet" class="big-sheet" role="dialog" aria-modal="true" aria-label="유물 주머니">
   <div class="big-sheet-head">
-    <span><span class="btn-ic" data-icon="relic" data-icon-size="16"></span> 유물 가방</span>
+    <span><span class="btn-ic" data-icon="relic" data-icon-size="16"></span> 유물 주머니</span>
     <span class="bs-count" id="relicCount"></span>
     <button class="sheet-x" data-close-sheet type="button" aria-label="닫기" data-icon="close" data-icon-size="16"></button>
   </div>
   <div class="big-sheet-body" id="relicBody"></div>
 </div>
 
-<div id="stampSheet" class="big-sheet" role="dialog" aria-modal="true" aria-label="스탬프 수첩">
+<div id="stampSheet" class="big-sheet" role="dialog" aria-modal="true" aria-label="도장 수첩">
   <div class="big-sheet-head">
-    <span><span class="btn-ic" data-icon="book" data-icon-size="16"></span> 스탬프 수첩</span>
+    <span><span class="btn-ic" data-icon="book" data-icon-size="16"></span> 도장 수첩</span>
     <span class="bs-count" id="stampCount"></span>
     <button class="bs-print" id="stampPrint" type="button"><span class="btn-ic" data-icon="print" data-icon-size="15"></span> 인쇄</button>
     <button class="sheet-x" data-close-sheet type="button" aria-label="닫기" data-icon="close" data-icon-size="16"></button>
