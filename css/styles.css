@@ -160,23 +160,25 @@ b{ font-weight:700; }
 }
 .kit-item:hover{ border-color:#C9BB94; }
 .kit-item:active{ transform:scale(.99); }
-.kit-item.got{ cursor:default; animation:kitGot 420ms var(--ease-spring); }
-/* 두 칸이 저마다 다른 물건이니 받았을 때 색도 다르게 — 유물은 흙빛, 수첩은 도장 빛 */
-#kitBag.got{ background:rgba(123,106,85,.14); border-color:rgba(123,106,85,.45);
-             box-shadow:0 0 0 3px rgba(123,106,85,.14), var(--sh-1); }
-#kitBook.got{ background:rgba(194,91,79,.12); border-color:rgba(194,91,79,.45);
-              box-shadow:0 0 0 3px rgba(194,91,79,.12), var(--sh-1); }
+/* 받으면 사라지는 대신, 딸깍 눌려 납작해지고 색이 바래는 느낌으로 —
+   입체감(그림자)을 없애고 채도를 낮춰 "이미 받았다"는 게 한눈에 보이게 */
+.kit-item.got{
+  cursor:default; animation:kitGot 380ms var(--ease) forwards;
+  background:var(--paper-line); border-color:var(--paper-line);
+  box-shadow:none; filter:saturate(.4) brightness(.98); transform:scale(.98);
+}
+.kit-item.got .kit-icon{ opacity:.5; }
+.kit-item.got h3{ color:var(--text3); }
 #kitBook{ animation-delay:260ms; }
 @keyframes kitIn{ to{ opacity:1; transform:none; } }
 @keyframes kitGot{
-  0%{ transform:scale(1); }
-  35%{ transform:scale(.93); }
-  70%{ transform:scale(1.05); }
-  100%{ transform:scale(1); }
+  0%{ transform:scale(1); box-shadow:var(--sh-1); filter:saturate(1) brightness(1); }
+  40%{ transform:scale(.92); box-shadow:none; filter:saturate(.7) brightness(.98); }
+  100%{ transform:scale(.98); box-shadow:none; filter:saturate(.4) brightness(.98); }
 }
-.kit-icon{ flex:0 0 auto; font-size:38px; line-height:1; color:var(--ink); }
+.kit-icon{ flex:0 0 auto; font-size:38px; line-height:1; color:var(--ink); transition:opacity var(--t-fast) var(--ease); }
 .kit-body{ flex:1 1 auto; min-width:0; }
-.kit-item h3{ font-size:19px; }
+.kit-item h3{ font-size:19px; transition:color var(--t-fast) var(--ease); }
 .kit-item .kit-hint{ margin-top:4px; font-size:13px; color:var(--text3); text-align:left; }
 .kit-item.got .kit-hint{ display:none; }
 .kit-item .kit-desc{ margin-top:6px; font-size:14.5px; color:var(--text2); text-align:left; }
