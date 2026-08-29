@@ -128,6 +128,10 @@
     var gM = G.mk;
     gM.innerHTML = '';
     var upp = api.unitsPerPx();
+    /* 사진 크기는 점·글자와 달리 화면 픽셀 고정이 아니라 지도와 함께 커지고
+       작아지게 — sqrt 를 써서 완전히 비례하진 않게 눌러 둔다(다 확대하면
+       35배까지도 늘어나는 배율이라, 그대로 뒀다간 사진이 지도를 뒤덮는다) */
+    var uppImg = Math.sqrt(upp);
     /* 나라 이름·수도·이웃 나라가 이미 차지한 자리는 비켜 갑니다 */
     var placed = (api.nationLabelBoxes ? api.nationLabelBoxes() : []).concat(reserved);
     var fs = (11 * upp).toFixed(2);            // 화면에서 11px 로 보이게
@@ -146,17 +150,18 @@
                          fill: col, 'fill-opacity': got ? 1 : 0.4,
                          stroke: col, 'stroke-width': 1.6 * upp });
 
-      /* 실험: 모든 시대의 유물·인물·문화유산, 사진이 있으면 글자 대신 작은 사진으로 —
-         사건·교류는 그대로 글씨. 사진이 실제로 있을 때만 뜨니(photoFor 가 null 이면
-         안 뜸) 카테고리를 넓혀도 없는 사진이 생기진 않는다.
+      /* 실험: 모든 시대의 유물·인물·문화유산·사건, 사진이 있으면 글자 대신 작은
+         사진으로 — 교류(화살표로 이미 보여 줌)만 글씨로 남긴다. 사진이 실제로
+         있을 때만 뜨니(photoFor 가 null 이면 안 뜸) 카테고리를 넓혀도 없는
+         사진이 생기진 않는다.
          별로면 TEST_PHOTO_DOTS 를 false 로 바꾸거나 이 커밋을 되돌리면 그만이다 */
       var ph = TEST_PHOTO_DOTS &&
-               ['relic', 'person', 'culture', 'life'].indexOf((c.cat || [])[0]) >= 0 &&
+               ['relic', 'person', 'culture', 'life', 'event'].indexOf((c.cat || [])[0]) >= 0 &&
                window.AtlasPhotos && window.AtlasPhotos.photoFor(c.id);
 
       if (ph) {
-        var half = 15 * upp, side = 30 * upp;
-        var slot = [[0, -22 * upp], [0, 22 * upp], [half + 20 * upp, 0], [-half - 20 * upp, 0]];
+        var half = 15 * uppImg, side = 30 * uppImg;
+        var slot = [[0, -22 * uppImg], [0, 22 * uppImg], [half + 20 * uppImg, 0], [-half - 20 * uppImg, 0]];
         for (var j = 0; j < slot.length; j++) {
           var px = x + slot[j][0], py = y + slot[j][1];
           var pclash = placed.some(function (p) {
@@ -164,11 +169,11 @@
           });
           if (!pclash) {
             placed.push([px, py, half]);
-            add(g, 'rect', { x: px - side / 2 - 1.4 * upp, y: py - side / 2 - 1.4 * upp,
-                             width: side + 2.8 * upp, height: side + 2.8 * upp,
-                             rx: 5 * upp, class: 'mk-thumb-fr', stroke: col });
+            add(g, 'rect', { x: px - side / 2 - 1.4 * uppImg, y: py - side / 2 - 1.4 * uppImg,
+                             width: side + 2.8 * uppImg, height: side + 2.8 * uppImg,
+                             rx: 5 * uppImg, class: 'mk-thumb-fr', stroke: col });
             add(g, 'image', { x: px - side / 2, y: py - side / 2, width: side, height: side,
-                              rx: 4 * upp, class: 'mk-thumb', href: ph.src,
+                              rx: 4 * uppImg, class: 'mk-thumb', href: ph.src,
                               preserveAspectRatio: 'xMidYMid slice' });
             break;
           }
