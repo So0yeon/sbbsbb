@@ -39,7 +39,7 @@
 
   /* ── 프로필 ─────────────────────────────────────────────────── */
   var profile = Object.assign(
-    { name:'', mascot:'두루', agreedAt:'', startedAt:'' },
+    { name:'', mascot:'두루', agreedAt:'', startedAt:'', kitAt:'' },
     json(K.profile, {}) || {}
   );
   function saveProfile(){ set(K.profile, JSON.stringify(profile)); }
@@ -56,6 +56,10 @@
     saveProfile();
   }
   function hasAgreed(){ return !!profile.agreedAt; }
+  /* 유물 주머니·도장 수첩을 한 번 받으면, 다음부터는 새로고침해도
+     이름 입력부터가 아니라 모드 선택 화면부터 곧장 들어간다 */
+  function receiveKit(){ profile.kitAt = new Date().toISOString(); saveProfile(); }
+  function hasKit(){ return !!profile.kitAt; }
   /** 인쇄·화면에 쓸 이름. 없으면 빈 문자열(인쇄에서는 빈칸이 된다) */
   function displayName(){ return profile.name || ''; }
   function callName(){ return profile.name || '그대'; }
@@ -236,7 +240,7 @@
     Object.keys(stamps).forEach(function(k){ delete stamps[k]; });
     AXIS_IDS.forEach(function(id){ axes[id] = 0; });
     record.answers = []; record.seconds = 0;
-    profile.name = ''; profile.agreedAt = ''; profile.startedAt = '';
+    profile.name = ''; profile.agreedAt = ''; profile.startedAt = ''; profile.kitAt = '';
   }
 
   /* ── 내보내기 ───────────────────────────────────────────────── */
@@ -245,6 +249,7 @@
     get: get, set: set, del: del, json: json,
 
     profile: profile, setName: setName, agree: agree, hasAgreed: hasAgreed,
+    receiveKit: receiveKit, hasKit: hasKit,
     displayName: displayName, callName: callName,
 
     bag: bag, bagAdd: bagAdd, bagHas: bagHas, bagList: bagList,

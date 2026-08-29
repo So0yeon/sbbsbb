@@ -92,10 +92,13 @@
         var desc = el.querySelector('.kit-desc');
         if (desc) desc.hidden = false;
         var bothGot = $('kitBag').classList.contains('got') && $('kitBook').classList.contains('got');
-        $('kitNext').disabled = !bothGot;
+        if (bothGot) {
+          S.receiveKit();
+          /* 눌린 모습이 눈에 들어올 시간을 준 뒤 다음 화면으로 — kitGot 애니메이션(380ms) 다음 */
+          setTimeout(function () { step('mode'); }, 550);
+        }
       });
     });
-    $('kitNext').addEventListener('click', function () { step('mode'); });
 
     $('startExploreBtn').addEventListener('click', function () { toExplore(); });
     $('startMapBtn').addEventListener('click', function () { toMap(); });
@@ -430,8 +433,9 @@
     // 저사양 설정을 탐험 엔진에 전한다
     if (S.get('atlasLowSpec_v1') === '1') window.ATLAS_LOW_SPEC = true;
 
-    // 이미 고지를 확인한 이용자는 표지에서 바로 이름/모드로 갈 수 있다
-    step('cover');
+    // 유물 주머니·도장 수첩을 이미 받아 본 이용자는, 표지·동의·이름·꾸러미를
+    // 다시 거치지 않고 모드 선택 화면으로 곧장 들어간다
+    step(S.hasKit() ? 'mode' : 'cover');
 
     if (new URLSearchParams(location.search).get('selftest')) selftest();
   }
