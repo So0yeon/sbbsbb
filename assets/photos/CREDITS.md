@@ -25,7 +25,7 @@
 | `ganggamchan.jpg` | ganggamchan | `hb_65844808` | War Memorial of Korea Open Archives | KOGL Type 1 |
 | `ganghwa-dolmen.jpg` | ganghwa-dolmen | `hb_33610823` | ChongDae | CC BY-SA 3.0 |
 | `ganghwa-treaty.jpg` | ganghwa-treaty | `hb_25966186` | Unknown authorUnknown author | Public domain |
-| `gansingi.jpg` | — | `뒤지개(석기 세 점) 신수22887` | 국립중앙박물관 | 공공누리 제1유형 |
+| `gansingi.jpg` | tteon | `뒤지개(석기 세 점) 신수22887` | 국립중앙박물관 | 공공누리 제1유형 |
 | `garakbakwi.jpg` | ganseok | `가락바퀴 (신석기 시대)` | 국립중앙박물관 | 공공누리 제1유형 |
 | `gaya-iron.jpg` | gaya-iron | `hb_13193622` | Gary Lee Todd, Ph.D. | CC0 |
 | `geumdong.jpg` | geumdong | `hb_71497777` | Gary Todd from Xinzheng, China | CC0 |
@@ -54,7 +54,7 @@
 | `hb_70903956.jpg` | — | `hb_70903956` | Steve46814 | CC BY-SA 3.0 |
 | `hb_73347898.jpg` | — | `hb_73347898` | Wikimedia Commons | Public domain |
 | `hb_78111482.jpg` | — | `hb_78111482` | 정초(鄭招), 변효문(卞孝文) | Public domain |
-| `hb_83468505.jpg` | — | `hb_83468505` | Unknown artistUnknown artist | Public domain |
+| `hb_83468505.jpg` | hangeulsoseol | `hb_83468505` | Unknown artistUnknown artist | Public domain |
 | `hb_86380536.jpg` | — | `hb_86380536` | Academy of Korean Studies | KOGL Type 1 |
 | `hb_88642026.jpg` | — | `hb_88642026` | User:Gapo | CC BY-SA 3.0 |
 | `hb_89187976.jpg` | — | `hb_89187976` | Gyeongin Railway Co. Ltd., probably | Public domain |
@@ -122,9 +122,9 @@
 | `ssalsutal.jpg` | ssalsutal | — | Korea Tourism Organiazation (한국관광공사) | KOGL Type 1 |
 | `sinheung.jpg` | sinheung | — | Unknown authorUnknown author | Public domain |
 | `chongseongeo.jpg` | chongseongeo | — | Unknown authorUnknown author | Public domain |
-| `hangang-gyo.jpg` | hangang-gyo | — | Unknown authorUnknown author | Public domain |
+| `hangang-gyo.jpg` | incheon | — | Unknown authorUnknown author | Public domain |
 | `heungnam.jpg` | heungnam | — | Unknown authorUnknown author | Public domain |
-| `boatman.jpg` | boatman | — | Unknown authorUnknown author | Public domain |
+| `boatman.jpg` | heungnam | — | Unknown authorUnknown author | Public domain |
 | `pinanjip.jpg` | pinanjip | — | 한국저작권위원회 | CC BY 4.0 |
 | `muljigye.jpg` | muljigye | — | 국립민속박물관 | KOGL Type 1 |
 | `sijang.jpg` | sijang | — | Christophe95 | CC BY-SA 4.0 |
@@ -134,4 +134,4 @@
 | `armistice.jpg` | armistice | — | United States Department of State | Public domain |
 | `isan.jpg` | isan | — | Rbtjd0201(talk / Contributions) at the Korean Wikipedia | Public domain |
 | `ireumdoro.jpg` | ireumdoro | — | JoshBerglund19 | CC BY 2.0 |
-| `umjip.jpg` | umjip-yumul | Korea-Seoul-Amsadong-Neolithic.age-01.jpg | Jtm71 | CC BY-SA 2.0 KR |
+| `umjip.jpg` | amsadong | Korea-Seoul-Amsadong-Neolithic.age-01.jpg | Jtm71 | CC BY-SA 2.0 KR |

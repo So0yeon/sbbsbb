@@ -27,7 +27,7 @@ var ATLAS_CREDITS_PHOTOS = [
   { file:"ganggamchan.jpg", item:"ganggamchan", orig:"hb_65844808", author:"War Memorial of Korea Open Archives", license:"KOGL Type 1", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"ganghwa-dolmen.jpg", item:"ganghwa-dolmen", orig:"hb_33610823", author:"ChongDae", license:"CC BY-SA 3.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"ganghwa-treaty.jpg", item:"ganghwa-treaty", orig:"hb_25966186", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
-  { file:"gansingi.jpg", item:"—", orig:"뒤지개(석기 세 점) 신수22887", author:"국립중앙박물관", license:"공공누리 제1유형", source:'국립중앙박물관 소장품 검색', sourceUrl:'https://www.museum.go.kr/site/main/relic/search/view?relicId=4433' },
+  { file:"gansingi.jpg", item:"tteon", orig:"뒤지개(석기 세 점) 신수22887", author:"국립중앙박물관", license:"공공누리 제1유형", source:'국립중앙박물관 소장품 검색', sourceUrl:'https://www.museum.go.kr/site/main/relic/search/view?relicId=4433' },
   { file:"garakbakwi.jpg", item:"ganseok", orig:"가락바퀴 (신석기 시대)", author:"국립중앙박물관", license:"공공누리 제1유형", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"gaya-iron.jpg", item:"gaya-iron", orig:"hb_13193622", author:"Gary Lee Todd, Ph.D.", license:"CC0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"geumdong.jpg", item:"geumdong", orig:"hb_71497777", author:"Gary Todd from Xinzheng, China", license:"CC0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
@@ -56,7 +56,7 @@ var ATLAS_CREDITS_PHOTOS = [
   { file:"hb_70903956.jpg", item:"—", orig:"hb_70903956", author:"Steve46814", license:"CC BY-SA 3.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"hb_73347898.jpg", item:"—", orig:"hb_73347898", author:"Wikimedia Commons", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"hb_78111482.jpg", item:"—", orig:"hb_78111482", author:"정초(鄭招), 변효문(卞孝文)", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
-  { file:"hb_83468505.jpg", item:"—", orig:"hb_83468505", author:"Unknown artistUnknown artist", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
+  { file:"hb_83468505.jpg", item:"hangeulsoseol", orig:"hb_83468505", author:"Unknown artistUnknown artist", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"hb_86380536.jpg", item:"—", orig:"hb_86380536", author:"Academy of Korean Studies", license:"KOGL Type 1", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"hb_88642026.jpg", item:"—", orig:"hb_88642026", author:"User:Gapo", license:"CC BY-SA 3.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"hb_89187976.jpg", item:"—", orig:"hb_89187976", author:"Gyeongin Railway Co. Ltd., probably", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
@@ -114,9 +114,9 @@ var ATLAS_CREDITS_PHOTOS = [
   { file:"ssalsutal.jpg", item:"ssalsutal", orig:"—", author:"Korea Tourism Organiazation (한국관광공사)", license:"KOGL Type 1", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"sinheung.jpg", item:"sinheung", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"chongseongeo.jpg", item:"chongseongeo", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
-  { file:"hangang-gyo.jpg", item:"hangang-gyo", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
+  { file:"hangang-gyo.jpg", item:"incheon", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"heungnam.jpg", item:"heungnam", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
-  { file:"boatman.jpg", item:"boatman", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
+  { file:"boatman.jpg", item:"heungnam", orig:"—", author:"Unknown authorUnknown author", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"pinanjip.jpg", item:"pinanjip", orig:"—", author:"한국저작권위원회", license:"CC BY 4.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"muljigye.jpg", item:"muljigye", orig:"—", author:"국립민속박물관", license:"KOGL Type 1", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"sijang.jpg", item:"sijang", orig:"—", author:"Christophe95", license:"CC BY-SA 4.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
@@ -126,7 +126,7 @@ var ATLAS_CREDITS_PHOTOS = [
   { file:"armistice.jpg", item:"armistice", orig:"—", author:"United States Department of State", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"isan.jpg", item:"isan", orig:"—", author:"Rbtjd0201(talk / Contributions) at the Korean Wikipedia", license:"Public domain", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
   { file:"ireumdoro.jpg", item:"ireumdoro", orig:"—", author:"JoshBerglund19", license:"CC BY 2.0", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' },
-  { file:"umjip.jpg", item:"umjip-yumul", orig:"Korea-Seoul-Amsadong-Neolithic.age-01.jpg", author:"Jtm71", license:"CC BY-SA 2.0 KR", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' }
+  { file:"umjip.jpg", item:"amsadong", orig:"Korea-Seoul-Amsadong-Neolithic.age-01.jpg", author:"Jtm71", license:"CC BY-SA 2.0 KR", source:'위키미디어 공용', sourceUrl:'https://commons.wikimedia.org/' }
 ];
 
 var ATLAS_CREDITS_EXTRA = [
