@@ -165,21 +165,27 @@ b{ font-weight:700; }
    #intro .kit-item(테두리 그림 uipack 스킨, 199줄 부근)이 id 선택자라
    우선순위가 이 규칙보다 높아 box-shadow·background 를 덮어써서
    효과가 하나도 안 보이던 버그가 있었다 — 여기도 #intro 로 묶어
-   우선순위를 맞추고, 테두리 그림도 지워야 납작해 보인다. */
+   우선순위를 맞추고, 테두리 그림도 지워야 납작해 보인다.
+   진짜 원인은 따로 있었다: .kit-item 기본 규칙이 opacity:0(등장
+   전 상태)이고 kitIn 애니메이션이 forwards 로 opacity:1 을 붙들고
+   있는 건데, .got 에서 animation 이 kitGot 으로 바뀌면 kitIn 은
+   더는 적용되지 않고 kitGot 은 opacity 를 안 건드리니 기본값인
+   opacity:0 으로 되돌아가 상자가 통째로 사라져 보였다 — 그래서
+   opacity:1 을 여기와 keyframe 모두에 못박아 둔다. */
 #intro .kit-item.got{
   cursor:default; animation:kitGot 380ms var(--ease) forwards;
   border-style:solid; border-width:3px; border-image-source:none;
   background:var(--paper-line); border-color:var(--paper-line);
-  box-shadow:none; filter:saturate(.4) brightness(.98); transform:scale(.98);
+  box-shadow:none; filter:saturate(.4) brightness(.98); transform:scale(.98); opacity:1;
 }
 .kit-item.got .kit-icon{ opacity:.5; }
 .kit-item.got h3{ color:var(--text3); }
 #kitBook{ animation-delay:260ms; }
 @keyframes kitIn{ to{ opacity:1; transform:none; } }
 @keyframes kitGot{
-  0%{ transform:scale(1); box-shadow:var(--sh-1); filter:saturate(1) brightness(1); border-width:12px; }
-  40%{ transform:scale(.92); box-shadow:none; filter:saturate(.7) brightness(.98); border-width:4px; }
-  100%{ transform:scale(.98); box-shadow:none; filter:saturate(.4) brightness(.98); border-width:3px; }
+  0%{ opacity:1; transform:scale(1); box-shadow:var(--sh-1); filter:saturate(1) brightness(1); border-width:12px; }
+  40%{ opacity:1; transform:scale(.92); box-shadow:none; filter:saturate(.7) brightness(.98); border-width:4px; }
+  100%{ opacity:1; transform:scale(.98); box-shadow:none; filter:saturate(.4) brightness(.98); border-width:3px; }
 }
 .kit-icon{ flex:0 0 auto; font-size:38px; line-height:1; color:var(--ink); transition:opacity var(--t-fast) var(--ease); }
 .kit-body{ flex:1 1 auto; min-width:0; }
