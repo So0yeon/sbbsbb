@@ -68,6 +68,10 @@ function setScore(el, s){ if (el) el.textContent = s; }
 function finish(host, ui, ok, done, mini){
   ui.action.textContent = ok ? '잘 하였소 →' : (mini.retryLabel || '다시 해 보겠소');
   ui.action.className = ok ? 'mg-btn' : 'mg-btn sub';
+  // stack·sort·dig·trace·route·order·spot·cipher 는 놀이 중 단추를 style.display='none' 으로
+  // 숨겨 둔다. cloneNode(true) 는 그 인라인 스타일까지 그대로 옮기므로, 여기서 지우지 않으면
+  // "잘 하였소" 단추가 만들어지고도 보이지 않아 다음으로 넘어갈 길이 없어진다.
+  ui.action.style.display = '';
   const fresh = ui.action.cloneNode(true);
   ui.action.replaceWith(fresh);
   onPress(fresh, () => done(ok));
