@@ -122,7 +122,11 @@ export function switchWorld(id){
 
   ST.WORLD_ID = id;
   ST.currentWorld = w;
-  ST.QUESTS = applyNeoMinis(w.quests || []);   // 신석기는 이식해 온 놀이를 쓴다
+  // 이식해 온 놀이(강가에 토기 세우기 포함)는 신석기에만 덮어씌운다.
+  // 예전에는 모든 시대에 걸어 놓아, 청동기 등 다른 시대에도 「강가에 토기 세우기」
+  // (빗살무늬토기) 임무가 함께 얹혀 있었다 — w.quests 가 시대 데이터와 같은 배열이라
+  // 한 번 얹히면 그 시대 데이터에 그대로 눌어붙었다.
+  ST.QUESTS = id === 'neolithic' ? applyNeoMinis(w.quests || []) : (w.quests || []);
   ST.NPCS = NPCS_BY_WORLD[id] || [];
   ST.RELICS = RELICS_BY_WORLD[id] || [];
   ST.AREAS = AREAS_BY_WORLD[id] || {};
