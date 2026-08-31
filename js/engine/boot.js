@@ -23,6 +23,7 @@ import { chainOf } from './chains.js';
 import { initQuestEngine, setChain, openChain, closeChain, tickChain, shouldAutoOpen } from './quest-engine.js';
 import './neo-games.js';                      // 이식해 온 신석기 미니게임을 엔진 표에 올린다
 import { applyNeoMinis } from './neo-quest-minis.js';
+import './bronze-games.js';                    // 청동기 전용 미니게임(cast·mirror·dolmen·palisade)을 엔진 표에 올린다
 
 let canvas, renderer, scene, camera, clock;
 let running = false;

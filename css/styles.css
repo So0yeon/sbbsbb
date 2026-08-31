@@ -765,6 +765,31 @@ b{ font-weight:700; }
 
 
 /* ══════════════════════════════════════════════════════════════
+   청동기 전용 미니게임 (js/engine/bronze-games.js)
+   추상 막대 대신 실제 장면(도가니·거울·고인돌)을 그린다.
+   ══════════════════════════════════════════════════════════════ */
+.bz-svg{ display:block; width:100%; height:auto; }
+.bz-cast .mg-gauge{ margin-top:14px; }
+.bz-mirror .mg-track.bz-slim{ height:12px; border-radius:6px; margin-top:10px; }
+.bz-mirror .mg-track.bz-slim .mg-needle{ width:3px; top:-2px; bottom:-2px; }
+.bz-dolmen{ position:relative; }
+#bzPad{ transition:none; }
+.bz-folk{ transition:transform .2s var(--ease); }
+#bzCapInner{ transform-box:fill-box; transform-origin:50% 50%; }
+#bzCapInner.bz-settle{ animation:bzSettle .5s var(--ease); }
+@keyframes bzSettle{
+  0%{ transform:scale(1,1); }
+  45%{ transform:scale(1.05,.9); }
+  100%{ transform:scale(1,1); }
+}
+.bz-mote{ animation:bzMote .7s ease-out forwards; transform-box:fill-box; transform-origin:50% 50%; }
+@keyframes bzMote{
+  0%{ transform:translate(0,0); opacity:1; }
+  100%{ transform:translate(var(--dx),var(--dy)); opacity:0; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
    시대 완료
    ══════════════════════════════════════════════════════════════ */
 #eraCompleteModal{
